@@ -1,7 +1,7 @@
 {
-	"name": "projectTROXY",
-	"short_name": "projectTROXY",
-	"description": "",
+	"name": "TowerLoot",
+	"short_name": "TowerLoot",
+	"description": "simple game :)",
 	"start_url": "index.html",
 	"display": "fullscreen",
 	"orientation": "landscape",
