@@ -3114,23 +3114,22 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		C3.Plugins.Spritefont2.Cnds.CompareText,
 		C3.Plugins.Spritefont2.Acts.SetVisible,
 		C3.Plugins.System.Cnds.IsGroupActive,
+		C3.Plugins.Sprite.Acts.Spawn,
+		C3.Plugins.Sprite.Acts.Destroy,
+		C3.Behaviors.Physics.Acts.ApplyImpulseAtAngle,
 		C3.Plugins.Sprite.Acts.SetVisible,
 		C3.Plugins.Sprite.Cnds.IsAnimPlaying,
-		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.Sprite.Cnds.OnAnyAnimFinished,
 		C3.Plugins.Sprite.Acts.SetAnimSpeed,
 		C3.Behaviors.Physics.Acts.SetImmovable,
 		C3.Behaviors.Sin.Acts.SetEnabled,
 		C3.Plugins.Sprite.Cnds.IsOverlappingOffset,
 		C3.Plugins.Sprite.Exps.Count,
-		C3.Plugins.Sprite.Acts.Spawn,
 		C3.Behaviors.Pin.Acts.Pin,
 		C3.Plugins.Sprite.Cnds.IsOnScreen,
 		C3.Plugins.Sprite.Acts.ZMoveToObject,
 		C3.Plugins.System.Acts.SetLayerScale,
 		C3.Plugins.Sprite.Acts.SetAngle,
-		C3.Behaviors.Physics.Acts.ApplyImpulse,
-		C3.Behaviors.Physics.Acts.ApplyImpulseAtAngle,
 		C3.Behaviors.Physics.Acts.SetEnabled,
 		C3.Plugins.Mouse.Cnds.OnClick,
 		C3.Plugins.System.Acts.CreateObjectByName,
@@ -3171,6 +3170,7 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		{chess: 0},
 		{player: 0},
 		{rockCircle: 0},
+		{finish: 0},
 		{rockLong: 0},
 		{rockShort: 0},
 		{rockSqrMini: 0},
@@ -3346,6 +3346,7 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 			const n0 = p._GetNode(0);
 			return () => C3.lerp(n0.ExpObject(), 360, 0.15);
 		},
+		() => 1000,
 		p => {
 			const v0 = p._GetNode(0).GetVar();
 			return () => (v0.GetValue() + 1);
@@ -3400,6 +3401,28 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 			return () => (n0.ExpInstVar()).toString();
 		},
 		() => "game_mechanics",
+		() => "dinamyte",
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			return () => (C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()) / 100);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			return () => C3.toDegrees(C3.angleTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()));
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			return () => (C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()) / 70);
+		},
 		() => 16,
 		() => "win",
 		() => 3,
@@ -3455,20 +3478,81 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		() => 71,
 		() => 119,
 		() => 57,
-		p => {
-			const n0 = p._GetNode(0);
-			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			const n3 = p._GetNode(3);
-			return () => (2000 / C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()));
-		},
-		p => {
-			const n0 = p._GetNode(0);
-			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			const n3 = p._GetNode(3);
-			return () => C3.toDegrees(C3.angleTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()));
-		},
+		() => "level_4",
+		() => 4,
+		() => 121,
+		() => 105,
+		() => 51,
+		() => 136,
+		() => 98,
+		() => 104,
+		() => 142,
+		() => 112,
+		() => 38,
+		() => 128,
+		() => 22,
+		() => "level_5",
+		() => 5,
+		() => 83,
+		() => 113,
+		() => 72.024,
+		() => 92.687,
+		() => 167,
+		() => 95,
+		() => 117,
+		() => 49,
+		() => 146,
+		() => 147,
+		() => 85,
+		() => 166,
+		() => 132,
+		() => 36,
+		() => "level_6",
+		() => 108,
+		() => 39,
+		() => 87,
+		() => 106,
+		() => 63,
+		() => 138,
+		() => 92,
+		() => 198,
+		() => 58,
+		() => 335,
+		() => 201,
+		() => 42,
+		() => 100,
+		() => 215,
+		() => "level_7",
+		() => 7,
+		() => 170,
+		() => 89,
+		() => 69,
+		() => 82,
+		() => 60,
+		() => 46,
+		() => 76,
+		() => "level_8",
+		() => 8,
+		() => 176,
+		() => 27,
+		() => 44,
+		() => 96,
+		() => 109,
+		() => 33,
+		() => 19,
+		() => 124,
+		() => 139,
+		() => "level_9",
+		() => 9,
+		() => 99,
+		() => 86,
+		() => 50,
+		() => 43,
+		() => 78,
+		() => 37,
+		() => 156,
+		() => 56,
+		() => 17,
 		() => "level_editor",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -3515,14 +3599,7 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 			return () => (and((and((and((n0.ExpObject() + ", X = "), Math.round(n1.ExpObject())) + ", Y = "), Math.round(n2.ExpObject())) + ", Angle = "), Math.round(n3.ExpObject())) + "\n");
 		},
 		() => "level_edit",
-		() => "двойной щелчок левой клавиши - спавн обьекта\nодин щелчок левой - редактирование обьекта\nстрелочки - перемещение обьекта при редактировании\nклавиши 'э' и '\\' - изменение угла обьекта при редактировании\nчтобы удалить обьект нажмите на название обьекта в верхнем правом углу и нажмите делит.\nчтобы сохранить уровень и передать разработчику, а так же протестировать, нажмите сохранить и опробывать, далее сделайте скриншот и скопируйте текст из верхнего левого угла.\nнажатый шифт ускоряет действия при редактировании.\nудачи!",
-		p => {
-			const n0 = p._GetNode(0);
-			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			const n3 = p._GetNode(3);
-			return () => (C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()) / 100);
-		}
+		() => "двойной щелчок левой клавиши - спавн обьекта\nодин щелчок левой - редактирование обьекта\nстрелочки - перемещение обьекта при редактировании\nклавиши 'э' и '\\' - изменение угла обьекта при редактировании\nчтобы удалить обьект нажмите на название обьекта в верхнем правом углу и нажмите делит.\nчтобы сохранить уровень и передать разработчику, а так же протестировать, нажмите сохранить и опробывать, далее сделайте скриншот и скопируйте текст из верхнего левого угла.\nнажатый шифт ускоряет действия при редактировании.\nудачи!"
 	];
 }
 
