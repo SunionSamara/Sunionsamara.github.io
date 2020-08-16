@@ -3049,6 +3049,41 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 'use strict';{const C3=self.C3;C3.Behaviors.Pin.Exps={PinnedUID(){return this._pinInst?this._pinInst.GetUID():-1}}};
 
 
+'use strict';{const C3=self.C3;C3.Behaviors.MoveTo=class MoveToBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.MoveTo.Type=class MoveToType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;const PROP_MAX_SPEED=0;const PROP_ACCELERATION=1;const PROP_DECELERATION=2;const PROP_ROTATE_SPEED=3;const PROP_SET_ANGLE=4;const PROP_STOP_ON_SOLIDS=5;const PROP_ENABLED=6;C3.Behaviors.MoveTo.Instance=class MoveToInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this._maxSpeed=200;this._acc=600;this._dec=600;this._rotateSpeed=0;this._setAngle=true;this._stopOnSolids=false;this._isEnabled=true;this._speed=0;this._movingAngle=
+this.GetWorldInfo().GetAngle();this._waypoints=[];if(properties){this._maxSpeed=properties[PROP_MAX_SPEED];this._acc=properties[PROP_ACCELERATION];this._dec=properties[PROP_DECELERATION];this._rotateSpeed=C3.toRadians(properties[PROP_ROTATE_SPEED]);this._setAngle=properties[PROP_SET_ANGLE];this._stopOnSolids=properties[PROP_STOP_ON_SOLIDS];this._isEnabled=properties[PROP_ENABLED]}}Release(){super.Release()}SaveToJson(){return{"ms":this._maxSpeed,"acc":this._acc,"dec":this._dec,"rs":this._rotateSpeed,
+"sa":this._setAngle,"sos":this._stopOnSolids,"s":this._speed,"ma":this._movingAngle,"wp":this._waypoints.map(p=>({"x":p.x,"y":p.y})),"e":this._isEnabled}}LoadFromJson(o){this._maxSpeed=o["ms"];this._acc=o["acc"];this._dec=o["dec"];this._rotateSpeed=o["rs"];this._setAngle=o["sa"];this._stopOnSolids=o["sos"];this._speed=o["s"];this._movingAngle=o["ma"];this._waypoints=o["wp"].map(p=>({x:p["x"],y:p["y"]}));this._SetEnabled(o["e"]);if(this._isEnabled&&this._waypoints.length>0)this._StartTicking()}_AddWaypoint(x,
+y,isDirect){if(isDirect)C3.clearArray(this._waypoints);this._waypoints.push({x,y});if(this._isEnabled)this._StartTicking()}_IsMoving(){return this._waypoints.length>0}_Stop(){C3.clearArray(this._waypoints);this._speed=0;this._StopTicking()}_GetTargetX(){if(this._waypoints.length>0)return this._waypoints[0].x;else return 0}_GetTargetY(){if(this._waypoints.length>0)return this._waypoints[0].y;else return 0}_SetSpeed(s){if(!this._IsMoving())return;this._speed=Math.min(s,this._maxSpeed)}_IsRotationEnabled(){return this._rotateSpeed!==
+0}Tick(){if(!this._isEnabled||!this._IsMoving())return;const dt=this._runtime.GetDt(this._inst);const wi=this._inst.GetWorldInfo();const startX=wi.GetX();const startY=wi.GetY();const startAngle=wi.GetAngle();let curSpeed=this._speed;let maxSpeed=this._maxSpeed;const acc=this._acc;const dec=this._dec;const targetX=this._GetTargetX();const targetY=this._GetTargetY();const angleToTarget=C3.angleTo(startX,startY,targetX,targetY);let isWithinStoppingDistance=false;if(dec>0&&this._waypoints.length===1){const stoppingDist=
+.5*curSpeed*curSpeed/dec*1.0001;isWithinStoppingDistance=C3.distanceSquared(startX,startY,targetX,targetY)<=stoppingDist*stoppingDist;if(isWithinStoppingDistance){const remainingDist=C3.distanceTo(startX,startY,targetX,targetY);curSpeed=Math.sqrt(2*dec*remainingDist);maxSpeed=curSpeed;this._speed=curSpeed}}if(this._IsRotationEnabled()){const da=C3.angleDiff(this._movingAngle,angleToTarget);if(da>Number.EPSILON){const t=da/this._rotateSpeed;const dist=C3.distanceTo(wi.GetX(),wi.GetY(),targetX,targetY);
+const r=dist/(2*Math.sin(da));const curveDist=r*da;maxSpeed=Math.min(maxSpeed,C3.clamp(curveDist/t,0,this._maxSpeed))}}let curAcc=isWithinStoppingDistance?-dec:acc;const stepDist=Math.min(curSpeed*dt+.5*curAcc*dt*dt,maxSpeed*dt);if(isWithinStoppingDistance){if(dec>0){this._speed=Math.max(this._speed-dec*dt,0);if(this._speed===0){this._OnArrived(wi,targetX,targetY);return}}}else if(acc===0)this._speed=maxSpeed;else this._speed=Math.min(this._speed+acc*dt,maxSpeed);if(C3.distanceSquared(wi.GetX(),wi.GetY(),
+targetX,targetY)<=stepDist*stepDist){this._OnArrived(wi,targetX,targetY);return}if(this._IsRotationEnabled())this._movingAngle=C3.angleRotate(this._movingAngle,angleToTarget,this._rotateSpeed*dt);else this._movingAngle=angleToTarget;wi.OffsetXY(Math.cos(this._movingAngle)*stepDist,Math.sin(this._movingAngle)*stepDist);if(this._setAngle)wi.SetAngle(this._movingAngle);wi.SetBboxChanged();this._CheckSolidCollision(startX,startY,startAngle)}_OnArrived(wi,targetX,targetY){wi.SetXY(targetX,targetY);wi.SetBboxChanged();
+this._waypoints.shift();if(this._waypoints.length===0){this._speed=0;this._StopTicking()}this.Trigger(C3.Behaviors.MoveTo.Cnds.OnArrived)}_CheckSolidCollision(startX,startY,startAngle){const collisionEngine=this._runtime.GetCollisionEngine();if(this._stopOnSolids&&collisionEngine.TestOverlapSolid(this._inst)){this._Stop();const wi=this._inst.GetWorldInfo();const x=wi.GetX();const y=wi.GetY();const a=C3.angleTo(x,y,startX,startY);const dist=C3.distanceTo(x,y,startX,startY);if(!collisionEngine.PushOutSolid(this._inst,
+Math.cos(a),Math.sin(a),Math.max(dist,1))){wi.SetXY(startX,startY);wi.SetAngle(startAngle);wi.SetBboxChanged()}this.Trigger(C3.Behaviors.MoveTo.Cnds.OnHitSolid)}}GetPropertyValueByIndex(index){switch(index){case PROP_MAX_SPEED:return this._maxSpeed;case PROP_ACCELERATION:return this._acc;case PROP_DECELERATION:return this._dec;case PROP_ROTATE_SPEED:return C3.toDegrees(this._rotateSpeed);case PROP_SET_ANGLE:return this._setAngle;case PROP_STOP_ON_SOLIDS:return this._stopOnSolids;case PROP_ENABLED:return this._isEnabled}}SetPropertyValueByIndex(index,
+value){switch(index){case PROP_MAX_SPEED:this._maxSpeed=value;break;case PROP_ACCELERATION:this._acc=value;break;case PROP_DECELERATION:this._dec=value;break;case PROP_ROTATE_SPEED:this._rotateSpeed=C3.toRadians(value);break;case PROP_SET_ANGLE:this._setAngle=value;break;case PROP_STOP_ON_SOLIDS:this._stopOnSolids=value;break;case PROP_ENABLED:this._SetEnabled(value);break}}_SetEnabled(e){e=!!e;if(this._isEnabled===e)return;this._isEnabled=e;if(this._isEnabled&&this._IsMoving())this._StartTicking();
+else this._StopTicking()}GetDebuggerProperties(){const prefix="behaviors.moveto";return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:prefix+".debugger.speed",value:this._speed,onedit:v=>this._SetSpeed(v)},{name:prefix+".debugger.angle-of-motion",value:C3.toDegrees(this._movingAngle),onedit:v=>this._movingAngle=C3.toRadians(v)},{name:prefix+".debugger.target-x",value:this._GetTargetX()},{name:prefix+".debugger.target-y",value:this._GetTargetY()},{name:prefix+".debugger.waypoint-count",
+value:this._waypoints.length},{name:prefix+".properties.max-speed.name",value:this._maxSpeed,onedit:v=>this._maxSpeed=v},{name:prefix+".properties.acceleration.name",value:this._acc,onedit:v=>this._acc=v},{name:prefix+".properties.deceleration.name",value:this._dec,onedit:v=>this._dec=v},{name:prefix+".properties.rotate-speed.name",value:C3.toDegrees(this._rotateSpeed),onedit:v=>this._rotateSpeed=C3.toRadians(v)},{name:prefix+".properties.enabled.name",value:this._isEnabled,onedit:v=>this._SetEnabled(v)}]}]}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.MoveTo.Cnds={IsMoving(){return this._IsMoving()},CompareSpeed(cmp,s){return C3.compare(this._speed,cmp,s)},IsEnabled(){return this._isEnabled},OnArrived(){return true},OnHitSolid(){return true}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.MoveTo.Acts={MoveToPosition(x,y,mode){this._AddWaypoint(x,y,mode===0)},MoveToObject(objectClass,imgPt,mode){if(!objectClass)return;const inst=objectClass.GetPairedInstance(this._inst);if(!inst||!inst.GetWorldInfo())return;const [x,y]=inst.GetImagePoint(imgPt);this._AddWaypoint(x,y,mode===0)},MoveAlongPathfindingPath(mode){const behInst=this._inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.Pathfinding);if(!behInst)return;const path=behInst._GetPath();if(path.length===
+0)return;for(let i=0,len=path.length;i<len;++i){const n=path[i];this._AddWaypoint(n.x,n.y,i===0&&mode===0)}},MoveAlongTimeline(timeline,trackId,mode){let trackState=null;if(trackId)trackState=timeline.GetTrackById(trackId);else trackState=C3.first(timeline.GetTracks());if(!trackState)return;const xTrack=trackState.GetPropertyTrack("offsetX");const yTrack=trackState.GetPropertyTrack("offsetY");if(!xTrack||!yTrack)return;const xPositions=[...xTrack.GetPropertyKeyframeValues()];const yPositions=[...yTrack.GetPropertyKeyframeValues()];
+if(xPositions.length===0||yPositions.length===0)return;let xOrigin=0;let yOrigin=0;const wi=this._inst.GetWorldInfo();if(xTrack.GetResultMode()==="relative")xOrigin=wi.GetX();if(yTrack.GetResultMode()==="relative")yOrigin=wi.GetY();for(let i=0,len=Math.min(xPositions.length,yPositions.length);i<len;++i){const x=xPositions[i]+xOrigin;const y=yPositions[i]+yOrigin;this._AddWaypoint(x,y,i===0&&mode===0)}},MoveAlongTimelineByName(timelineName,trackId,mode){const timeline=this._runtime.GetTimelineManager().GetTimelineByName(timelineName);
+if(!timeline)return;C3.Behaviors.MoveTo.Acts.MoveAlongTimeline.call(this,timeline,trackId,mode)},Stop(){this._Stop()},SetMovingAngle(a){this._movingAngle=C3.toRadians(a);if(this._isEnabled&&this._setAngle&&!this._IsMoving()){const wi=this.GetWorldInfo();wi.SetAngle(this._movingAngle);wi.SetBboxChanged()}},SetSpeed(s){this._SetSpeed(s)},SetMaxSpeed(ms){this._maxSpeed=Math.max(ms,0);this._SetSpeed(this._speed)},SetAcceleration(a){this._acc=Math.max(a,0)},SetDeceleration(d){this._dec=Math.max(d,0)},
+SetRotateSpeed(r){this._rotateSpeed=Math.max(C3.toRadians(r),0)},SetStopOnSolids(e){this._stopOnSolids=!!e},SetEnabled(e){this._SetEnabled(e)}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.MoveTo.Exps={Speed(){return this._speed},MaxSpeed(){return this._maxSpeed},Acceleration(){return this._acc},Deceleration(){return this._dec},MovingAngle(){return C3.toDegrees(this._movingAngle)},RotateSpeed(){return C3.toDegrees(this._rotateSpeed)},TargetX(){return this._GetTargetX()},TargetY(){return this._GetTargetY()},WaypointCount(){return this._waypoints.length},WaypointXAt(i){i=Math.floor(i);if(i<0||i>=this._waypoints.length)return 0;return this._waypoints[i].x},
+WaypointYAt(i){i=Math.floor(i);if(i<0||i>=this._waypoints.length)return 0;return this._waypoints[i].y}}};
+
+
 "use strict"
 {
 	const C3 = self.C3;
@@ -3069,6 +3104,7 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		C3.Plugins.Button,
 		C3.Plugins.TextBox,
 		C3.Plugins.Browser,
+		C3.Behaviors.MoveTo,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Acts.Wait,
@@ -3093,6 +3129,7 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		C3.Plugins.Sprite.Acts.SetInstanceVar,
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.Spritefont2.Acts.SetInstanceVar,
+		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Plugins.Touch.Cnds.OnTapGestureObject,
 		C3.Plugins.Touch.Cnds.IsTouchingObject,
 		C3.Plugins.Spritefont2.Cnds.CompareInstanceVar,
@@ -3127,6 +3164,11 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		C3.Plugins.Sprite.Exps.Count,
 		C3.Behaviors.Pin.Acts.Pin,
 		C3.Plugins.Sprite.Cnds.IsOnScreen,
+		C3.Behaviors.MoveTo.Acts.MoveToPosition,
+		C3.Behaviors.Pin.Acts.PinByProperties,
+		C3.Plugins.Sprite.Acts.SetEffectParam,
+		C3.Behaviors.Physics.Acts.SetFriction,
+		C3.Behaviors.Physics.Exps.Friction,
 		C3.Plugins.Sprite.Acts.ZMoveToObject,
 		C3.Plugins.System.Acts.SetLayerScale,
 		C3.Plugins.Sprite.Acts.SetAngle,
@@ -3138,7 +3180,6 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		C3.Plugins.Mouse.Exps.Y,
 		C3.Plugins.Button.Cnds.OnClicked,
 		C3.Plugins.Mouse.Cnds.OnObjectClicked,
-		C3.Plugins.Sprite.Acts.SetEffectParam,
 		C3.Plugins.Keyboard.Cnds.IsKeyDown,
 		C3.Plugins.System.Cnds.Else,
 		C3.Plugins.Sprite.Exps.Angle,
@@ -3166,6 +3207,8 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 	};
 	self.C3_JsPropNameTable = [
 		{picked: 0},
+		{freeze: 0},
+		{friction: 0},
 		{Physics: 0},
 		{chess: 0},
 		{player: 0},
@@ -3219,12 +3262,16 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		{TextInput: 0},
 		{Button4: 0},
 		{Browser: 0},
+		{MoveTo: 0},
+		{Sprite5: 0},
+		{SpriteFont2: 0},
 		{menuButtons: 0},
 		{land: 0},
 		{woods: 0},
 		{objects: 0},
 		{command: 0},
 		{level_list: 0},
+		{camera_pos: 0},
 		{level: 0},
 		{past_level: 0},
 		{physics: 0}
@@ -3355,6 +3402,11 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		() => 2,
 		() => 30.5,
 		() => 11,
+		() => "camera_start_from_right",
+		() => -180,
+		() => 67,
+		() => "camera_start_from_left",
+		() => 360,
 		() => 120,
 		p => {
 			const n0 = p._GetNode(0);
@@ -3391,6 +3443,7 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 			return () => v0.GetValue();
 		},
 		() => 6,
+		() => 0.2,
 		() => 0.1,
 		p => {
 			const n0 = p._GetNode(0);
@@ -3407,7 +3460,7 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 			const n1 = p._GetNode(1);
 			const n2 = p._GetNode(2);
 			const n3 = p._GetNode(3);
-			return () => (C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()) / 100);
+			return () => (5 / C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()));
 		},
 		p => {
 			const n0 = p._GetNode(0);
@@ -3416,17 +3469,14 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 			const n3 = p._GetNode(3);
 			return () => C3.toDegrees(C3.angleTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()));
 		},
-		p => {
-			const n0 = p._GetNode(0);
-			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			const n3 = p._GetNode(3);
-			return () => (C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()) / 70);
-		},
 		() => 16,
 		() => "win",
 		() => 3,
 		() => "game",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => C3.lerp(n0.ExpObject(), 72, 0.15);
+		},
 		() => "win_1",
 		p => {
 			const n0 = p._GetNode(0);
@@ -3439,6 +3489,28 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 			return () => C3.lerp(n0.ExpObject(), 180, 0.1);
 		},
 		() => "go_menu",
+		() => "achievments",
+		() => 4,
+		() => "Achievement Get!\ncomplete 5 levels",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() + 65);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() - 65);
+		},
+		() => 9,
+		() => "Achievement Get!\ncomplete 10 levels",
+		() => "cold_game",
+		() => "Tint",
+		() => 16644416,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpBehavior() / 5);
+		},
+		() => 5,
+		() => 0.3,
 		() => "game_levels",
 		() => "level_1",
 		() => 90,
@@ -3446,7 +3518,6 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		() => 70,
 		() => 131,
 		() => 80,
-		() => 67,
 		() => 59,
 		() => "level_2",
 		() => 152,
@@ -3479,7 +3550,6 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		() => 119,
 		() => 57,
 		() => "level_4",
-		() => 4,
 		() => 121,
 		() => 105,
 		() => 51,
@@ -3492,7 +3562,6 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		() => 128,
 		() => 22,
 		() => "level_5",
-		() => 5,
 		() => 83,
 		() => 113,
 		() => 72.024,
@@ -3543,7 +3612,6 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		() => 124,
 		() => 139,
 		() => "level_9",
-		() => 9,
 		() => 99,
 		() => 86,
 		() => 50,
@@ -3553,6 +3621,70 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		() => 156,
 		() => 56,
 		() => 17,
+		() => "level_10",
+		() => 10,
+		() => 110,
+		() => 125,
+		() => 23,
+		() => 157,
+		() => 68,
+		() => 28,
+		() => 189,
+		() => 270,
+		() => "level_11",
+		() => 153,
+		() => 143,
+		() => 173,
+		() => 45,
+		() => 129,
+		() => 168,
+		() => 148,
+		() => 32,
+		() => "level_12",
+		() => 12,
+		() => 48,
+		() => 79,
+		() => 205,
+		() => 29,
+		() => 194,
+		() => 214,
+		() => 24,
+		() => "level_13",
+		() => 13,
+		() => 97,
+		() => 40,
+		() => 55,
+		() => 88,
+		() => "level_14",
+		() => 14,
+		() => 74,
+		() => 339,
+		() => 52,
+		() => 184,
+		() => 185,
+		() => 177,
+		() => 41,
+		() => 192,
+		() => "level_15",
+		() => 122,
+		() => 65,
+		() => 150,
+		() => "level_16",
+		() => 158,
+		() => 91,
+		() => 126,
+		() => 193,
+		() => 203,
+		() => 196,
+		() => 118,
+		() => "level_17",
+		() => 144,
+		() => 31,
+		() => 107,
+		() => "level_18",
+		() => 18,
+		() => 187,
+		() => 21,
 		() => "level_editor",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -3599,7 +3731,8 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 			return () => (and((and((and((n0.ExpObject() + ", X = "), Math.round(n1.ExpObject())) + ", Y = "), Math.round(n2.ExpObject())) + ", Angle = "), Math.round(n3.ExpObject())) + "\n");
 		},
 		() => "level_edit",
-		() => "двойной щелчок левой клавиши - спавн обьекта\nодин щелчок левой - редактирование обьекта\nстрелочки - перемещение обьекта при редактировании\nклавиши 'э' и '\\' - изменение угла обьекта при редактировании\nчтобы удалить обьект нажмите на название обьекта в верхнем правом углу и нажмите делит.\nчтобы сохранить уровень и передать разработчику, а так же протестировать, нажмите сохранить и опробывать, далее сделайте скриншот и скопируйте текст из верхнего левого угла.\nнажатый шифт ускоряет действия при редактировании.\nудачи!"
+		() => "двойной щелчок левой клавиши - спавн обьекта\nодин щелчок левой - редактирование обьекта\nстрелочки - перемещение обьекта при редактировании\nклавиши 'э' и '\\' - изменение угла обьекта при редактировании\nчтобы удалить обьект нажмите на название обьекта в верхнем правом углу и нажмите делит.\nчтобы сохранить уровень и передать разработчику, а так же протестировать, нажмите сохранить и опробывать, далее сделайте скриншот и скопируйте текст из верхнего левого угла.\nнажатый шифт ускоряет действия при редактировании.\nудачи!",
+		() => "cold"
 	];
 }
 
