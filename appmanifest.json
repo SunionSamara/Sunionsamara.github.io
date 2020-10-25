@@ -1,7 +1,7 @@
 {
-	"name": "TowerLoot",
-	"short_name": "TowerLoot",
-	"description": "simple game :)",
+	"name": "The Sin",
+	"short_name": "The Sin",
+	"description": "",
 	"start_url": "index.html",
 	"display": "fullscreen",
 	"orientation": "landscape",
