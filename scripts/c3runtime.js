@@ -8469,9 +8469,9 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.Photon.Acts.requestLobbyStats,
 		C3.Behaviors.aekiro_dialog.Acts.Open,
 		C3.Plugins.AJAX.Acts.RequestFile,
+		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.Photon.Acts.createRoom,
 		C3.Plugins.System.Acts.GoToLayout,
-		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.Photon.Acts.setMyRoomMaxPlayers,
 		C3.Plugins.AJAX.Cnds.OnComplete,
 		C3.Plugins.AJAX.Exps.LastData,
@@ -8756,14 +8756,14 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		() => "ws",
 		() => "button_id_1",
 		p => {
-			const v0 = p._GetNode(0).GetVar();
-			return () => ("Комната игрока " + v0.GetValue());
-		},
-		() => 10,
-		p => {
 			const n0 = p._GetNode(0);
 			return () => (n0.ExpObject()).toString();
 		},
+		p => {
+			const v0 = p._GetNode(0).GetVar();
+			return () => (("Комната игрока " + v0.GetValue())).toString();
+		},
+		() => 10,
 		p => {
 			const n0 = p._GetNode(0);
 			const n1 = p._GetNode(1);
