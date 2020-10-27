@@ -8654,7 +8654,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		() => "idle",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => ("Комната: " + f0());
+			return () => f0();
 		},
 		() => "Photon",
 		() => 0,
@@ -8667,10 +8667,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			return () => ((and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_") + n4.ExpInstVar());
 		},
 		() => "",
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => f0();
-		},
 		p => {
 			const n0 = p._GetNode(0);
 			const n1 = p._GetNode(1);
