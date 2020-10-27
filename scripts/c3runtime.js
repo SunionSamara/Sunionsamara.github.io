@@ -8364,6 +8364,26 @@ inst.GetBehaviorInstanceFromCtor(C3.Behaviors.scrollto);if(!behInst||!behInst.Ge
 'use strict';{const C3=self.C3;C3.Behaviors.scrollto.Exps={}};
 
 
+'use strict';{const C3=self.C3;C3.Behaviors.solid=class SolidBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.solid.Type=class SolidType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;const ENABLE=0;const TAGS=1;const EMPTY_SET=new Set;C3.Behaviors.solid.Instance=class SolidInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this.SetEnabled(true);if(properties){this.SetEnabled(properties[ENABLE]);this.SetTags(properties[TAGS])}}Release(){super.Release()}SetEnabled(e){this._inst._SetSolidEnabled(!!e)}IsEnabled(){return this._inst._IsSolidEnabled()}SetTags(tagList){const savedDataMap=this._inst.GetSavedDataMap();
+if(!tagList.trim()){savedDataMap.delete("solidTags");return}let solidTags=savedDataMap.get("solidTags");if(!solidTags){solidTags=new Set;savedDataMap.set("solidTags",solidTags)}solidTags.clear();for(const tag of tagList.split(" "))if(tag)solidTags.add(tag.toLowerCase())}GetTags(){return this._inst.GetSavedDataMap().get("solidTags")||EMPTY_SET}SaveToJson(){return{"e":this.IsEnabled()}}LoadFromJson(o){this.SetEnabled(o["e"])}GetPropertyValueByIndex(index){switch(index){case ENABLE:return this.IsEnabled()}}SetPropertyValueByIndex(index,
+value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProperties(){return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:"behaviors.solid.properties.enabled.name",value:this.IsEnabled(),onedit:v=>this.SetEnabled(v)}]}]}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.solid.Cnds={IsEnabled(){return this.IsEnabled()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.solid.Acts={SetEnabled(e){this.SetEnabled(e)},SetTags(tagList){this.SetTags(tagList)}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.solid.Exps={}};
+
+
 "use strict"
 {
 	const C3 = self.C3;
@@ -8390,7 +8410,9 @@ inst.GetBehaviorInstanceFromCtor(C3.Behaviors.scrollto);if(!behInst||!behInst.Ge
 		C3.Plugins.TextBox,
 		C3.Behaviors.Pin,
 		C3.Behaviors.scrollto,
+		C3.Behaviors.solid,
 		C3.Plugins.System.Cnds.IsGroupActive,
+		C3.Behaviors.EightDir.Cnds.CompareSpeed,
 		C3.Behaviors.EightDir.Cnds.IsMoving,
 		C3.Plugins.Sprite.Cnds.IsBoolInstanceVarSet,
 		C3.Plugins.Sprite.Acts.SetAnim,
@@ -8431,6 +8453,8 @@ inst.GetBehaviorInstanceFromCtor(C3.Behaviors.scrollto);if(!behInst||!behInst.Ge
 		C3.Plugins.Spritefont2.Cnds.CompareInstanceVar,
 		C3.Plugins.Spritefont2.Acts.Destroy,
 		C3.Plugins.Sprite.Acts.Destroy,
+		C3.Plugins.Sprite.Cnds.CompareFrame,
+		C3.Plugins.Sprite.Acts.SetCollisions,
 		C3.Plugins.aekiro_proui.Acts.Init,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Behaviors.aekiro_gridView.Acts.Clear,
@@ -8446,7 +8470,6 @@ inst.GetBehaviorInstanceFromCtor(C3.Behaviors.scrollto);if(!behInst||!behInst.Ge
 		C3.Behaviors.aekiro_dialog.Acts.Open,
 		C3.Plugins.AJAX.Acts.RequestFile,
 		C3.Plugins.Photon.Acts.createRoom,
-		C3.Plugins.System.Exps.random,
 		C3.Plugins.System.Acts.GoToLayout,
 		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.Photon.Acts.setMyRoomMaxPlayers,
@@ -8519,6 +8542,9 @@ inst.GetBehaviorInstanceFromCtor(C3.Behaviors.scrollto);if(!behInst||!behInst.Ge
 		{"9patch": 0},
 		{ScrollTo: 0},
 		{cam: 0},
+		{Solid: 0},
+		{Sprite: 0},
+		{Sprite2: 0},
 		{photon_status: 0},
 		{my_nickname: 0}
 	];
@@ -8623,6 +8649,7 @@ inst.GetBehaviorInstanceFromCtor(C3.Behaviors.scrollto);if(!behInst||!behInst.Ge
 
 	self.C3_ExpressionFuncs = [
 		() => "moving",
+		() => 199,
 		() => "run",
 		() => "idle",
 		p => {
@@ -8733,9 +8760,8 @@ inst.GetBehaviorInstanceFromCtor(C3.Behaviors.scrollto);if(!behInst||!behInst.Ge
 		() => "ws",
 		() => "button_id_1",
 		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const f1 = p._GetNode(1).GetBoundMethod();
-			return () => and("room_", f0(f1(10000, 99999)));
+			const v0 = p._GetNode(0).GetVar();
+			return () => ("Комната игрока " + v0.GetValue());
 		},
 		() => 10,
 		p => {
