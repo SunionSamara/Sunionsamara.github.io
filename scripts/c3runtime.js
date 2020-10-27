@@ -8343,6 +8343,27 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 'use strict';{const C3=self.C3;C3.Behaviors.Pin.Exps={PinnedUID(){return this._pinInst?this._pinInst.GetUID():-1}}};
 
 
+'use strict';{const C3=self.C3;C3.Behaviors.scrollto=class ScrollToBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts);this._shakeMag=0;this._shakeStart=0;this._shakeEnd=0;this._shakeMode=0}Release(){super.Release()}SetShakeMagnitude(m){this._shakeMag=m}GetShakeMagnitude(){return this._shakeMag}SetShakeStart(s){this._shakeStart=s}GetShakeStart(){return this._shakeStart}SetShakeEnd(s){this._shakeEnd=s}GetShakeEnd(){return this._shakeEnd}SetShakeMode(m){this._shakeMode=m}GetShakeMode(){return this._shakeMode}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.scrollto.Type=class ScrollToType extends C3.SDKBehaviorTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;const ENABLE=0;C3.Behaviors.scrollto.Instance=class ScrollToInstance extends C3.SDKBehaviorInstanceBase{constructor(inst,properties){super(inst);this._isEnabled=true;if(properties)this._isEnabled=properties[ENABLE];if(this._isEnabled)this._StartTicking2()}Release(){super.Release()}SaveToJson(){const behavior=this.GetBehavior();return{"e":this._isEnabled,"smg":behavior.GetShakeMagnitude(),"ss":behavior.GetShakeStart(),"se":behavior.GetShakeEnd(),"smd":behavior.GetShakeMode()}}LoadFromJson(o){const behavior=
+this.GetBehavior();behavior.SetShakeMagnitude(o["smg"]);behavior.SetShakeStart(o["ss"]);behavior.SetShakeEnd(o["se"]);behavior.SetShakeMode(o["smd"]);this._isEnabled=o["e"];if(this._isEnabled)this._StartTicking2();else this._StopTicking2()}IsEnabled(){return this._isEnabled}Tick2(){if(!this.IsEnabled())return;const dt=this._runtime.GetDt(this._inst);const behavior=this.GetBehavior();const allInstances=behavior.GetInstances();let sumX=0;let sumY=0;let count=0;for(const inst of allInstances){const behInst=
+inst.GetBehaviorInstanceFromCtor(C3.Behaviors.scrollto);if(!behInst||!behInst.GetSdkInstance().IsEnabled())continue;const wi=inst.GetWorldInfo();sumX+=wi.GetX();sumY+=wi.GetY();++count}const layout=this._inst.GetWorldInfo().GetLayout();const now=this._runtime.GetGameTime();let offX=0;let offY=0;if(now>=behavior.GetShakeStart()&&now<behavior.GetShakeEnd()){let mag=behavior.GetShakeMagnitude()*Math.min(this._runtime.GetTimeScale(),1);if(behavior.GetShakeMode()===0)mag*=1-(now-behavior.GetShakeStart())/
+(behavior.GetShakeEnd()-behavior.GetShakeStart());const a=this._runtime.Random()*Math.PI*2;const d=this._runtime.Random()*mag;offX=Math.cos(a)*d;offY=Math.sin(a)*d}layout.SetScrollX(sumX/count+offX);layout.SetScrollY(sumY/count+offY)}GetPropertyValueByIndex(index){switch(index){case ENABLE:return this._isEnabled}}SetPropertyValueByIndex(index,value){switch(index){case ENABLE:this._isEnabled=!!value;this._isEnabled?this._StartTicking2():this._StopTicking2();break}}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.scrollto.Cnds={IsEnabled(){return this._isEnabled}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.scrollto.Acts={Shake(mag,dur,mode){const behavior=this.GetBehavior();behavior.SetShakeMagnitude(mag);behavior.SetShakeStart(this._runtime.GetGameTime());behavior.SetShakeEnd(this._runtime.GetGameTime()+dur);behavior.SetShakeMode(mode)},SetEnabled(e){this._isEnabled=e!==0;if(this._isEnabled)this._StartTicking2();else this._StopTicking2()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.scrollto.Exps={}};
+
+
 "use strict"
 {
 	const C3 = self.C3;
@@ -8368,6 +8389,7 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		C3.Behaviors.aekiro_scrollView,
 		C3.Plugins.TextBox,
 		C3.Behaviors.Pin,
+		C3.Behaviors.scrollto,
 		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Behaviors.EightDir.Cnds.IsMoving,
 		C3.Plugins.Sprite.Cnds.IsBoolInstanceVarSet,
@@ -8385,6 +8407,7 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		C3.Plugins.Sprite.Exps.Width,
 		C3.Behaviors.EightDir.Acts.SetEnabled,
 		C3.Plugins.Sprite.Acts.SetInstanceVar,
+		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Plugins.Photon.Cnds.onEvent,
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.System.Exps.int,
@@ -8398,11 +8421,16 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		C3.Plugins.Sprite.Exps.AnimationName,
 		C3.Plugins.Sprite.Exps.AnimationFrame,
 		C3.Plugins.Sprite.Cnds.CompareInstanceVar,
-		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Plugins.Sprite.Acts.SetWidth,
 		C3.Plugins.Sprite.Acts.SetAnimFrame,
 		C3.Plugins.System.Cnds.EveryTick,
+		C3.Plugins.Spritefont2.Exps.Y,
 		C3.Plugins.System.Acts.SortZOrderByInstVar,
+		C3.Plugins.Photon.Cnds.onActorLeave,
+		C3.Plugins.Photon.Exps.ActorNr,
+		C3.Plugins.Spritefont2.Cnds.CompareInstanceVar,
+		C3.Plugins.Spritefont2.Acts.Destroy,
+		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.aekiro_proui.Acts.Init,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Behaviors.aekiro_gridView.Acts.Clear,
@@ -8447,12 +8475,7 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		C3.Plugins.System.Exps.loopindex,
 		C3.Plugins.Photon.Acts.joinRoom,
 		C3.Behaviors.Sin.Acts.SetEnabled,
-		C3.Plugins.System.Acts.Wait,
-		C3.Plugins.Photon.Cnds.onActorLeave,
-		C3.Plugins.Photon.Exps.ActorNr,
-		C3.Plugins.Spritefont2.Cnds.CompareInstanceVar,
-		C3.Plugins.Sprite.Acts.Destroy,
-		C3.Plugins.Spritefont2.Acts.Destroy
+		C3.Plugins.System.Acts.Wait
 		];
 	};
 	self.C3_JsPropNameTable = [
@@ -8494,6 +8517,8 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		{Pin: 0},
 		{nicknames: 0},
 		{"9patch": 0},
+		{ScrollTo: 0},
+		{cam: 0},
 		{photon_status: 0},
 		{my_nickname: 0}
 	];
@@ -8619,6 +8644,11 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
 		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			return () => C3.lerp(n0.ExpObject(), n1.ExpObject(), 0.04);
+		},
 		() => "game",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -8678,6 +8708,10 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpObject();
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() + 70);
 		},
 		p => {
 			const v0 = p._GetNode(0).GetVar();
