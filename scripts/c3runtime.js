@@ -9289,7 +9289,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		},
 		p => {
 			const n0 = p._GetNode(0);
-			return () => n0.ExpBehavior("chat_nick");
+			return () => and(n0.ExpBehavior("chat_nick"), ":");
 		},
 		p => {
 			const n0 = p._GetNode(0);
