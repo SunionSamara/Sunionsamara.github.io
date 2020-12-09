@@ -8956,10 +8956,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Behaviors.aekiro_gridView.Acts.SetDataByJsonObject,
 		C3.Behaviors.aekiro_gridviewbind.Cnds.OnGridViewRender,
 		C3.Behaviors.aekiro_gridviewbind.Exps.get,
-		C3.Plugins.System.Cnds.Compare,
-		C3.Plugins.Mouse.Exps.AbsoluteX,
-		C3.Plugins.Mouse.Exps.AbsoluteY,
-		C3.Plugins.System.Cnds.TriggerOnce,
 		C3.Behaviors.aekiro_dialog.Acts.Open,
 		C3.Plugins.Sprite.Acts.SetY,
 		C3.Behaviors.aekiro_dialog.Acts.Close,
@@ -8968,6 +8964,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.Sprite.Exps.AnimationSpeed,
 		C3.Plugins.Sprite.Cnds.IsMirrored,
 		C3.Plugins.Sprite.Acts.SetAnimSpeed,
+		C3.Plugins.System.Cnds.Compare,
 		C3.Plugins.Sprite.Acts.SetX,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
@@ -9308,12 +9305,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior("chat_color");
 		},
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const f1 = p._GetNode(1).GetBoundMethod();
-			return () => C3.distanceTo(280, 200, f0(), f1());
-		},
-		() => 500,
 		() => 231,
 		() => 265,
 		() => 51,
@@ -9348,6 +9339,10 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		() => 20,
 		() => 10,
 		() => 4,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpInstVar();
+		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const n1 = p._GetNode(1);
