@@ -8965,6 +8965,10 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Behaviors.aekiro_dialog.Acts.Close,
 		C3.Plugins.Sprite.Exps.ImagePointY,
 		C3.Plugins.TextBox.Acts.SetCSSStyle,
+		C3.Plugins.Sprite.Exps.AnimationSpeed,
+		C3.Plugins.Sprite.Cnds.IsMirrored,
+		C3.Plugins.Sprite.Acts.SetAnimSpeed,
+		C3.Plugins.Sprite.Acts.SetX,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
@@ -9035,6 +9039,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		{Animation: 0},
 		{ZORDER: 0},
 		{nickname: 0},
+		{have_pet: 0},
 		{"8Direction": 0},
 		{hero: 0},
 		{nickname_id: 0},
@@ -9060,6 +9065,9 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		{"9patch6": 0},
 		{TextInput2: 0},
 		{Mouse: 0},
+		{my_pet: 0},
+		{pet_id: 0},
+		{pet_dragon: 0},
 		{photon_status: 0},
 		{my_nickname: 0},
 		{my_color: 0}
@@ -9268,6 +9276,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			const n0 = p._GetNode(0);
 			return () => (n0.ExpObject() - 70);
 		},
+		() => "chat",
 		() => "[]",
 		() => "button_send",
 		() => 3,
@@ -9305,8 +9314,8 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			return () => C3.distanceTo(280, 200, f0(), f1());
 		},
 		() => 500,
-		() => 201,
-		() => 228,
+		() => 231,
+		() => 265,
 		() => 51,
 		p => {
 			const n0 = p._GetNode(0);
@@ -9318,6 +9327,33 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		() => "none",
 		() => "outline",
 		() => "border",
+		() => 5,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			return () => and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject());
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			return () => C3.lerp(n0.ExpObject(), (n1.ExpObject() + 50), 0.01);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			return () => C3.lerp(n0.ExpObject(), (n1.ExpObject() - 50), 0.01);
+		},
+		() => 20,
+		() => 10,
+		() => 4,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			return () => and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject());
+		},
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
@@ -9334,7 +9370,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			const v0 = p._GetNode(0).GetVar();
 			return () => (("Комната игрока " + v0.GetValue())).toString();
 		},
-		() => 10,
 		p => {
 			const n0 = p._GetNode(0);
 			const n1 = p._GetNode(1);
