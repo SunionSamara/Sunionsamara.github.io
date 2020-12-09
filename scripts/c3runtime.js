@@ -8956,8 +8956,11 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Behaviors.aekiro_gridView.Acts.SetDataByJsonObject,
 		C3.Behaviors.aekiro_gridviewbind.Cnds.OnGridViewRender,
 		C3.Behaviors.aekiro_gridviewbind.Exps.get,
+		C3.Plugins.NinePatch.Cnds.IsBoolInstanceVarSet,
 		C3.Behaviors.aekiro_dialog.Acts.Open,
 		C3.Plugins.Sprite.Acts.SetY,
+		C3.Plugins.System.Acts.Wait,
+		C3.Plugins.NinePatch.Acts.SetBoolInstanceVar,
 		C3.Behaviors.aekiro_dialog.Acts.Close,
 		C3.Plugins.Sprite.Exps.ImagePointY,
 		C3.Plugins.TextBox.Acts.SetCSSStyle,
@@ -8994,7 +8997,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.System.Exps.loopindex,
 		C3.Plugins.Photon.Acts.joinRoom,
 		C3.Behaviors.Sin.Acts.SetEnabled,
-		C3.Plugins.System.Acts.Wait,
 		C3.Behaviors.Sin.Cnds.IsEnabled
 		];
 	};
@@ -9059,6 +9061,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		{Sprite4: 0},
 		{y_point: 0},
 		{Sprite5: 0},
+		{opened: 0},
 		{"9patch6": 0},
 		{TextInput2: 0},
 		{Mouse: 0},
@@ -9308,6 +9311,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		() => 231,
 		() => 265,
 		() => 51,
+		() => 0.1,
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpObject("point");
@@ -9324,7 +9328,8 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			const n1 = p._GetNode(1);
 			const n2 = p._GetNode(2);
 			const n3 = p._GetNode(3);
-			return () => and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject());
+			const n4 = p._GetNode(4);
+			return () => and((and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_"), n4.ExpObject());
 		},
 		p => {
 			const n0 = p._GetNode(0);
@@ -9342,6 +9347,12 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpInstVar();
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => f0(f1((f2()).toString(), 4, "_"));
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
