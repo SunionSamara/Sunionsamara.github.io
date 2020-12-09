@@ -8964,6 +8964,10 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Behaviors.aekiro_dialog.Acts.Close,
 		C3.Plugins.Sprite.Exps.ImagePointY,
 		C3.Plugins.TextBox.Acts.SetCSSStyle,
+		C3.Plugins.NinePatch.Cnds.CompareY,
+		C3.Plugins.NinePatch.Exps.Y,
+		C3.Behaviors.aekiro_gameobject.Acts.SetOpacity,
+		C3.Plugins.NinePatch.Exps.X,
 		C3.Plugins.Sprite.Exps.AnimationSpeed,
 		C3.Plugins.Sprite.Cnds.IsMirrored,
 		C3.Plugins.Sprite.Acts.SetAnimSpeed,
@@ -8982,10 +8986,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.AJAX.Cnds.OnComplete,
 		C3.Plugins.AJAX.Exps.LastData,
 		C3.Plugins.System.Cnds.ForEach,
-		C3.Plugins.NinePatch.Cnds.CompareY,
-		C3.Behaviors.aekiro_gameobject.Acts.SetOpacity,
-		C3.Plugins.NinePatch.Exps.X,
-		C3.Plugins.NinePatch.Exps.Y,
 		C3.Plugins.Sprite.Exps.ImagePointX,
 		C3.Plugins.Photon.Exps.RoomPlayerCount,
 		C3.Plugins.NinePatch.Acts.SetInstanceVar,
@@ -9057,6 +9057,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		{"9patch3": 0},
 		{"9patch4": 0},
 		{Sprite3: 0},
+		{chat: 0},
 		{"9patch5": 0},
 		{Sprite4: 0},
 		{y_point: 0},
@@ -9246,7 +9247,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => ((1 / 60) * f0());
+			return () => ((1 / 30) * f0());
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -9322,6 +9323,21 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		() => "none",
 		() => "outline",
 		() => "border",
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			return () => C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), (n3.ExpObject() - 235));
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			return () => C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), (n3.ExpObject() + 235));
+		},
+		() => "pet",
 		() => 5,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
