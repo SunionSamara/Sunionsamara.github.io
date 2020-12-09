@@ -8916,6 +8916,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Plugins.Sprite.Acts.SetEffectParam,
 		C3.Plugins.Photon.Cnds.onEvent,
+		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.System.Exps.int,
 		C3.Plugins.System.Exps.tokenat,
@@ -8923,6 +8924,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
 		C3.Behaviors.Pin.Acts.PinByProperties,
 		C3.Plugins.Spritefont2.Acts.SetInstanceVar,
+		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Exps.dt,
 		C3.Plugins.Sprite.Exps.AnimationName,
@@ -8975,7 +8977,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.Sprite.Acts.SetX,
 		C3.Plugins.Photon.Cnds.onJoinRoom,
 		C3.Plugins.System.Acts.SetBoolVar,
-		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Cnds.CompareBoolVar,
 		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.Spritefont2.Acts.SetDefaultColor,
@@ -9225,6 +9226,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			const v0 = p._GetNode(0).GetVar();
 			return () => v0.GetValue();
 		},
+		() => 3,
 		() => "game",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -9296,7 +9298,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		() => "chat",
 		() => "[]",
 		() => "button_send",
-		() => 3,
 		p => {
 			const v0 = p._GetNode(0).GetVar();
 			const n1 = p._GetNode(1);
