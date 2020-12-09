@@ -8973,13 +8973,18 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.Sprite.Acts.SetAnimSpeed,
 		C3.Plugins.System.Cnds.Compare,
 		C3.Plugins.Sprite.Acts.SetX,
+		C3.Plugins.Photon.Cnds.onJoinRoom,
+		C3.Plugins.System.Acts.SetBoolVar,
+		C3.Plugins.System.Acts.SetVar,
+		C3.Plugins.System.Cnds.CompareBoolVar,
+		C3.Plugins.System.Acts.AddVar,
+		C3.Plugins.Spritefont2.Acts.SetDefaultColor,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
 		C3.Behaviors.aekiro_sliderbar.Exps.value,
 		C3.Plugins.Photon.Acts.requestLobbyStats,
 		C3.Plugins.AJAX.Acts.RequestFile,
-		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.Photon.Acts.createRoom,
 		C3.Plugins.Photon.Acts.setMyRoomMaxPlayers,
 		C3.Plugins.System.Acts.GoToLayout,
@@ -9048,10 +9053,11 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		{Sprite: 0},
 		{Sprite2: 0},
 		{players: 0},
-		{text: 0},
+		{room_text: 0},
 		{chat_text: 0},
 		{text3: 0},
 		{chat_nick: 0},
+		{ping: 0},
 		{SliderBar: 0},
 		{"9patch2": 0},
 		{"9patch3": 0},
@@ -9069,6 +9075,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		{my_pet: 0},
 		{pet_id: 0},
 		{pet_dragon: 0},
+		{go_ping: 0},
 		{photon_status: 0},
 		{my_nickname: 0},
 		{my_color: 0}
@@ -9247,7 +9254,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => ((1 / 30) * f0());
+			return () => ((1 / 60) * f0());
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -9376,6 +9383,15 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			const n2 = p._GetNode(2);
 			return () => and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject());
 		},
+		() => 100,
+		p => {
+			const v0 = p._GetNode(0).GetVar();
+			return () => (and("ping: ", v0.GetValue()) + "ms");
+		},
+		() => 50,
+		() => 12316360,
+		() => 12314868,
+		() => 12040185,
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
