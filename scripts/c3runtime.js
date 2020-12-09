@@ -9075,6 +9075,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		{my_pet: 0},
 		{pet_id: 0},
 		{pet_dragon: 0},
+		{pet_dragon2: 0},
 		{go_ping: 0},
 		{photon_status: 0},
 		{my_nickname: 0},
@@ -9202,6 +9203,14 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		},
 		() => "",
 		() => 1,
+		() => 4,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const v3 = p._GetNode(3).GetVar();
+			return () => and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), v3.GetValue());
+		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
@@ -9366,7 +9375,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		},
 		() => 20,
 		() => 10,
-		() => 4,
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpInstVar();
@@ -9376,13 +9384,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			const f1 = p._GetNode(1).GetBoundMethod();
 			const f2 = p._GetNode(2).GetBoundMethod();
 			return () => f0(f1((f2()).toString(), 4, "_"));
-		},
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			const v3 = p._GetNode(3).GetVar();
-			return () => and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), v3.GetValue());
 		},
 		() => "ping",
 		() => 100,
