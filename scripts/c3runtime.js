@@ -9381,8 +9381,10 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const n1 = p._GetNode(1);
 			const n2 = p._GetNode(2);
-			return () => and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject());
+			const v3 = p._GetNode(3).GetVar();
+			return () => and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), v3.GetValue());
 		},
+		() => "ping",
 		() => 100,
 		p => {
 			const v0 = p._GetNode(0).GetVar();
