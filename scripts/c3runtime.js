@@ -2411,6 +2411,16 @@ self["C3_Shaders"]["hsladjust"] = {
 	animated: false,
 	parameters: [["huerotate",0,"percent"],["satadjust",0,"percent"],["lumadjust",0,"percent"]]
 };
+self["C3_Shaders"]["water"] = {
+	src: "#ifdef GL_FRAGMENT_PRECISION_HIGH\n#define highmedp highp\n#else\n#define highmedp mediump\n#endif\nvarying mediump vec2 vTex;\nuniform lowp sampler2D samplerFront;\nuniform mediump vec2 srcStart;\nuniform mediump vec2 srcEnd;\nprecision mediump float;\nuniform highmedp float seconds;\nuniform mediump vec2 pixelSize;\nconst float PI = 3.1415926535897932;\nuniform float speed;\nuniform float speed_x;\nuniform float speed_y;\nuniform float intensity;\nconst float steps = 8.0;\nuniform float frequency;\nuniform float angle; // better when a prime\nuniform float delta;\nuniform float intence;\nuniform float emboss;\nfloat col(vec2 coord)\n{\nfloat delta_theta = 2.0 * PI / angle;\nfloat col = 0.0;\nfloat theta = 0.0;\nfor (float i = 0.0; i < steps; i++)\n{\nvec2 adjc = coord;\ntheta = delta_theta*i;\nadjc.x += cos(theta)*seconds*speed + seconds * speed_x;\nadjc.y -= sin(theta)*seconds*speed - seconds * speed_y;\ncol = col + cos( (adjc.x*cos(theta) - adjc.y*sin(theta))*frequency)*intensity;\n}\nreturn cos(col);\n}\nvoid main(void)\n{\nmediump vec2 tex = (vTex - srcStart) / (srcEnd - srcStart);\nvec2 p = tex, c1 = p, c2 = p;\nfloat cc1 = col(c1);\nc2.x += (1.0 / pixelSize.x) / delta;\nfloat dx = emboss*(cc1-col(c2))/delta;\nc2.x = p.x;\nc2.y += (1.0 / pixelSize.y) / delta;\nfloat dy = emboss*(cc1-col(c2))/delta;\nc1.x += dx;\nc1.y = -(c1.y+dy);\nfloat alpha = 1.+dot(dx,dy)*intence;\nc1.y = -c1.y;\nc1 = clamp(c1, 0.0, 1.0);\ngl_FragColor = texture2D(samplerFront, mix(srcStart, srcEnd, c1)) * alpha;\n}",
+	extendBoxHorizontal: 40,
+	extendBoxVertical: 40,
+	crossSampling: false,
+	mustPreDraw: false,
+	preservesOpaqueness: false,
+	animated: true,
+	parameters: [["speed",0,"percent"],["speed_x",0,"percent"],["speed_y",0,"percent"],["intensity",0,"float"],["frequency",0,"float"],["angle",0,"float"],["delta",0,"float"],["intence",0,"float"],["emboss",0,"percent"]]
+};
 
 
 'use strict';{const C3=self.C3;let cacheRegex=null;let lastRegex="";let lastFlags="";let regexMatches=[];let lastMatchesStr="";let lastMatchesRegex="";let lastMatchesFlags="";const forEachStack=C3.New(C3.ArrayStack);function ForEachOrdered_SortInstances(a,b){const va=a[1];const vb=b[1];if(typeof va==="number"&&typeof vb==="number")return va-vb;else{const sa=""+va;const sb=""+vb;if(sa<sb)return-1;else if(sa>sb)return 1;else return 0}}C3.Plugins.System=class SystemPlugin extends C3.SDKPluginBase{constructor(opts){super(opts);
@@ -8916,7 +8926,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Plugins.Sprite.Acts.SetEffectParam,
 		C3.Plugins.Photon.Cnds.onEvent,
-		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.System.Exps.int,
 		C3.Plugins.System.Exps.tokenat,
@@ -8924,7 +8933,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
 		C3.Behaviors.Pin.Acts.PinByProperties,
 		C3.Plugins.Spritefont2.Acts.SetInstanceVar,
-		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Exps.dt,
 		C3.Plugins.Sprite.Exps.AnimationName,
@@ -8977,6 +8985,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		C3.Plugins.Sprite.Acts.SetX,
 		C3.Plugins.Photon.Cnds.onJoinRoom,
 		C3.Plugins.System.Acts.SetBoolVar,
+		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Cnds.CompareBoolVar,
 		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.Spritefont2.Acts.SetDefaultColor,
@@ -9077,6 +9086,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		{pet_id: 0},
 		{pet_dragon: 0},
 		{pet_dragon2: 0},
+		{Sprite6: 0},
 		{go_ping: 0},
 		{photon_status: 0},
 		{my_nickname: 0},
@@ -9226,7 +9236,6 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 			const v0 = p._GetNode(0).GetVar();
 			return () => v0.GetValue();
 		},
-		() => 3,
 		() => "game",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -9298,6 +9307,7 @@ value){switch(index){case ENABLE:this.SetEnabled(value);break}}GetDebuggerProper
 		() => "chat",
 		() => "[]",
 		() => "button_send",
+		() => 3,
 		p => {
 			const v0 = p._GetNode(0).GetVar();
 			const n1 = p._GetNode(1);
