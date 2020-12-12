@@ -9624,6 +9624,7 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 			const n3 = p._GetNode(3);
 			return () => C3.clamp(C3.lerp(n0.ExpObject(), n1.ExpObject(), 0.9), (n2.ExpObject() - 320), (n3.ExpObject() + 320));
 		},
+		() => 6,
 		() => "cooldownscreamEnd",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
