@@ -9136,14 +9136,11 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		C3.Plugins.System.Exps.random,
 		C3.Plugins.Sprite.Acts.Spawn,
 		C3.Behaviors.Sin.Acts.SetEnabled,
-		C3.Plugins.Timeline.Cnds.IsPlayingByTags,
 		C3.Plugins.Sprite.Acts.SetFlipped,
 		C3.Plugins.System.Cnds.Else,
 		C3.Plugins.Timeline.Acts.StopAllTimelines,
+		C3.Plugins.Timeline.Cnds.IsPlayingByTags,
 		C3.Plugins.System.Cnds.TriggerOnce,
-		C3.Plugins.System.Acts.Signal,
-		C3.Plugins.Sprite.Cnds.CompareOpacity,
-		C3.Plugins.System.Acts.WaitForSignal,
 		C3.Plugins.Timeline.Acts.PlayTimeline,
 		C3.Behaviors.Fade.Acts.StartFade,
 		C3.Plugins.Photon.Acts.connect,
@@ -9245,6 +9242,7 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		{text3: 0},
 		{chat_nick: 0},
 		{ping: 0},
+		{open: 0},
 		{Fade: 0},
 		{knife: 0},
 		{DestroyOutsideLayout: 0},
@@ -9641,7 +9639,6 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		() => 240,
 		() => 300,
 		() => -1,
-		() => "event7",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
