@@ -9141,7 +9141,9 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		C3.Plugins.System.Cnds.Else,
 		C3.Plugins.Timeline.Acts.StopAllTimelines,
 		C3.Plugins.System.Cnds.TriggerOnce,
+		C3.Plugins.System.Acts.Signal,
 		C3.Plugins.Sprite.Cnds.CompareOpacity,
+		C3.Plugins.System.Acts.WaitForSignal,
 		C3.Plugins.Timeline.Acts.PlayTimeline,
 		C3.Behaviors.Fade.Acts.StartFade,
 		C3.Plugins.Photon.Acts.connect,
@@ -9639,6 +9641,7 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		() => 240,
 		() => 300,
 		() => -1,
+		() => "event7",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
