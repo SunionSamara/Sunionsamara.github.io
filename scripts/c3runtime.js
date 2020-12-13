@@ -9120,30 +9120,31 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		C3.Plugins.System.Cnds.CompareBoolVar,
 		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.Spritefont2.Acts.SetDefaultColor,
-		C3.Plugins.Timeline.Cnds.IsPlayingByTags,
-		C3.Plugins.Sprite.Acts.SetVisible,
-		C3.Plugins.Sprite.Acts.SetOpacity,
-		C3.Plugins.Timeline.Acts.PlayTimeline,
-		C3.Plugins.Sprite.Acts.SetFlipped,
-		C3.Plugins.Sprite.Acts.SetAngle,
-		C3.Plugins.System.Cnds.Else,
-		C3.Plugins.Mouse.Cnds.OnClick,
-		C3.Plugins.Sprite.Cnds.CompareOpacity,
-		C3.Behaviors.Fade.Acts.StartFade,
-		C3.Plugins.Sprite.Acts.SetPosToObject,
-		C3.Plugins.Timeline.Acts.StopAllTimelines,
 		C3.Plugins.System.Cnds.ForEach,
 		C3.Plugins.Sprite.Cnds.IsOnScreen,
 		C3.Plugins.Sprite.Exps.UID,
+		C3.Plugins.Sprite.Acts.SetAngle,
+		C3.Plugins.Sprite.Acts.SetPosToObject,
+		C3.Plugins.Sprite.Acts.SetOpacity,
 		C3.Plugins.System.Exps.min,
 		C3.Plugins.System.Exps.max,
 		C3.Plugins.Sprite.Acts.SetScale,
+		C3.Plugins.Sprite.Acts.SetVisible,
 		C3.Plugins.Sprite.Cnds.OnDestroyed,
 		C3.Behaviors.Timer.Acts.StartTimer,
 		C3.Behaviors.Timer.Cnds.OnTimer,
 		C3.Plugins.System.Exps.random,
 		C3.Plugins.Sprite.Acts.Spawn,
 		C3.Behaviors.Sin.Acts.SetEnabled,
+		C3.Plugins.Timeline.Cnds.IsPlayingByTags,
+		C3.Plugins.Sprite.Acts.SetFlipped,
+		C3.Plugins.System.Cnds.Else,
+		C3.Plugins.Mouse.Cnds.OnClick,
+		C3.Plugins.Sprite.Cnds.CompareOpacity,
+		C3.Plugins.Timeline.Acts.PlayTimeline,
+		C3.Behaviors.Fade.Acts.StartFade,
+		C3.Plugins.Timeline.Acts.StopAllTimelines,
+		C3.Plugins.System.Cnds.TriggerOnce,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
@@ -9379,7 +9380,8 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 			const n3 = p._GetNode(3);
 			const n4 = p._GetNode(4);
 			const v5 = p._GetNode(5).GetVar();
-			return () => and((((and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_") + n4.ExpInstVar()) + "_"), v5.GetValue());
+			const n6 = p._GetNode(6);
+			return () => ((and((((and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_") + n4.ExpInstVar()) + "_"), v5.GetValue()) + "_") + n6.ExpInstVar());
 		},
 		() => "",
 		() => 1,
@@ -9417,6 +9419,11 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 			const f1 = p._GetNode(1).GetBoundMethod();
 			const f2 = p._GetNode(2).GetBoundMethod();
 			return () => f0(f1((f2()).toString(), 2, "_"));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			return () => f0(f1(), 6, "_");
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -9575,10 +9582,6 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		() => 12316360,
 		() => 12314868,
 		() => 12040185,
-		() => "knife",
-		() => "murder",
-		() => 240,
-		() => 300,
 		() => "arrow",
 		p => {
 			const n0 = p._GetNode(0);
@@ -9631,6 +9634,12 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 			return () => and("good", f0(0, 10));
 		},
 		() => 8,
+		() => "knife",
+		() => "murder",
+		() => 7,
+		() => 240,
+		() => 300,
+		() => -1,
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
