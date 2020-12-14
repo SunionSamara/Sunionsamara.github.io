@@ -9138,11 +9138,14 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		C3.Behaviors.Sin.Acts.SetEnabled,
 		C3.Plugins.Sprite.Acts.SetFlipped,
 		C3.Plugins.System.Cnds.Else,
-		C3.Plugins.Timeline.Acts.StopAllTimelines,
+		C3.Plugins.Timeline.Acts.StopTimelineByTags,
 		C3.Plugins.Timeline.Cnds.IsPlayingByTags,
 		C3.Plugins.System.Cnds.TriggerOnce,
 		C3.Plugins.Timeline.Acts.PlayTimeline,
 		C3.Behaviors.Fade.Acts.StartFade,
+		C3.Plugins.Mouse.Exps.X,
+		C3.Plugins.Mouse.Exps.Y,
+		C3.Plugins.Sprite.Exps.Angle,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
@@ -9255,11 +9258,13 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		{Sprite4: 0},
 		{Anchor: 0},
 		{anchor: 0},
+		{gun: 0},
 		{arrow: 0},
 		{go_ping: 0},
 		{photon_status: 0},
 		{my_nickname: 0},
-		{my_color: 0}
+		{my_color: 0},
+		{version: 0}
 	];
 }
 
@@ -9633,12 +9638,33 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 			return () => and("good", f0(0, 10));
 		},
 		() => 8,
-		() => "knife",
 		() => "murder",
 		() => 7,
 		() => 240,
 		() => 300,
+		() => "knife",
 		() => -1,
+		() => "sheriff",
+		() => "pc",
+		() => "gun",
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const f2 = p._GetNode(2).GetBoundMethod();
+			const f3 = p._GetNode(3).GetBoundMethod();
+			return () => C3.toDegrees(C3.angleTo(n0.ExpObject(), n1.ExpObject(), f2(), f3()));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => ((1 / 30) * f0());
+		},
+		() => 81,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			return () => f0(f1());
+		},
+		() => "sherrif_gun_pc",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
