@@ -9640,11 +9640,6 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		() => 8,
 		() => "murder",
 		() => 7,
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const n1 = p._GetNode(1);
-			return () => and(and(f0(), "_"), n1.ExpInstVar());
-		},
 		() => 240,
 		() => 300,
 		() => "knife",
