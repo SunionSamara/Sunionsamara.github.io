@@ -9640,10 +9640,20 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		() => 8,
 		() => "murder",
 		() => 7,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			return () => and(and(f0(), "_"), n1.ExpInstVar());
+		},
 		() => 240,
 		() => 300,
 		() => "knife",
 		() => -1,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			return () => f0(f1(), 1, "_");
+		},
 		() => "sheriff",
 		() => "pc",
 		() => "gun",
@@ -9664,7 +9674,6 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 			const f1 = p._GetNode(1).GetBoundMethod();
 			return () => f0(f1());
 		},
-		() => "sherrif_gun_pc",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
