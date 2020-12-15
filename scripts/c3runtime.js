@@ -8999,6 +8999,40 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 'use strict';{const C3=self.C3;C3.Behaviors.Anchor.Exps={}};
 
 
+'use strict';{const C3=self.C3;C3.Behaviors.Bullet=class BulletBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Bullet.Type=class BulletType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;const IBehaviorInstance=self.IBehaviorInstance;const SPEED=0;const ACCELERATION=1;const GRAVITY=2;const BOUNCE_OFF_SOLIDS=3;const SET_ANGLE=4;const STEPPING=5;const ENABLE=6;C3.Behaviors.Bullet.Instance=class BulletInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);const wi=this.GetWorldInfo();this._speed=0;this._acc=0;this._g=0;this._bounceOffSolid=false;this._setAngle=false;this._isStepping=false;this._isEnabled=true;this._dx=
+0;this._dy=0;this._lastX=wi.GetX();this._lastY=wi.GetY();this._lastKnownAngle=wi.GetAngle();this._travelled=0;this._stepSize=Math.min(Math.abs(wi.GetWidth()),Math.abs(wi.GetHeight())/2);this._stopStepping=false;if(properties){this._speed=properties[SPEED];this._acc=properties[ACCELERATION];this._g=properties[GRAVITY];this._bounceOffSolid=!!properties[BOUNCE_OFF_SOLIDS];this._setAngle=!!properties[SET_ANGLE];this._isStepping=!!properties[STEPPING];this._isEnabled=!!properties[ENABLE]}const a=wi.GetAngle();
+this._dx=Math.cos(a)*this._speed;this._dy=Math.sin(a)*this._speed;if(this._isEnabled){this._StartTicking();if(this._bounceOffSolid)this._StartPostTicking()}}Release(){super.Release()}SaveToJson(){const o={"dx":this._dx,"dy":this._dy,"lx":this._lastX,"ly":this._lastY,"lka":this._lastKnownAngle,"t":this._travelled};if(this._acc!==0)o["acc"]=this._acc;if(this._g!==0)o["g"]=this._g;if(this._isStepping)o["st"]=this._isStepping;if(!this._isEnabled)o["e"]=this._isEnabled;if(this._bounceOffSolid)o["bos"]=
+this._bounceOffSolid;if(this._setAngle)o["sa"]=this._setAngle;return o}LoadFromJson(o){this._dx=o["dx"];this._dy=o["dy"];this._lastX=o["lx"];this._lastY=o["ly"];this._lastKnownAngle=o["lka"];this._travelled=o["t"];this._acc=o.hasOwnProperty("acc")?o["acc"]:0;this._g=o.hasOwnProperty("g")?o["g"]:0;this._isStepping=o.hasOwnProperty("st")?o["st"]:false;this._bounceOffSolid=o.hasOwnProperty("bos")?o["bos"]:false;this._setAngle=o.hasOwnProperty("sa")?o["sa"]:false;this._SetEnabled(o.hasOwnProperty("e")?
+o["e"]:true)}Tick(){if(!this._isEnabled)return;const dt=this._runtime.GetDt(this._inst);const wi=this._inst.GetWorldInfo();if(wi.GetAngle()!==this._lastKnownAngle){const angle=wi.GetAngle();if(this._setAngle){const s=C3.distanceTo(0,0,this._dx,this._dy);this._dx=Math.cos(angle)*s;this._dy=Math.sin(angle)*s}this._lastKnownAngle=angle}let xacc=0;let yacc=0;if(this._acc!==0){let s=C3.distanceTo(0,0,this._dx,this._dy);let a=0;if(this._dx===0&&this._dy===0)a=wi.GetAngle();else a=C3.angleTo(0,0,this._dx,
+this._dy);s+=this._acc*dt;xacc=Math.cos(a)*this._acc;yacc=Math.sin(a)*this._acc;if(s<0){s=0;xacc=0;yacc=0}this._dx=Math.cos(a)*s;this._dy=Math.sin(a)*s}if(this._g!==0){this._dy+=this._g*dt;yacc+=this._g}this._lastX=wi.GetX();this._lastY=wi.GetY();if(this._dx!==0||this._dy!==0){const mx=this._dx*dt+.5*xacc*dt*dt;const my=this._dy*dt+.5*yacc*dt*dt;const stepDist=C3.distanceTo(0,0,mx,my);this._MoveBy(mx,my,stepDist);this._travelled+=stepDist;if(this._setAngle&&(mx!==0||my!==0)){const a=C3.angleTo(0,
+0,mx,my);wi.SetAngle(a);this._lastKnownAngle=wi.GetAngle()}wi.SetBboxChanged()}}_MoveBy(mx,my,stepDist){const wi=this.GetWorldInfo();if(!this._isStepping||stepDist<=this._stepSize){wi.OffsetXY(mx,my);wi.SetBboxChanged();if(this._isStepping)this.Trigger(C3.Behaviors.Bullet.Cnds.OnStep);return}this._stopStepping=false;const startX=wi.GetX();const startY=wi.GetY();const endX=startX+mx;const endY=startY+my;const a=C3.angleTo(0,0,mx,my);const stepX=Math.cos(a)*this._stepSize;const stepY=Math.sin(a)*this._stepSize;
+const stepCount=Math.floor(stepDist/this._stepSize);for(let i=1;i<=stepCount;++i){wi.SetXY(startX+stepX*i,startY+stepY*i);wi.SetBboxChanged();this.Trigger(C3.Behaviors.Bullet.Cnds.OnStep);if(this._inst.IsDestroyed()||this._stopStepping)return}wi.SetXY(endX,endY);wi.SetBboxChanged();this.Trigger(C3.Behaviors.Bullet.Cnds.OnStep)}PostTick(){if(!this._isEnabled||!this._bounceOffSolid||this._dx===0&&this._dy===0)return;const dt=this._runtime.GetDt(this._inst);const wi=this._inst.GetWorldInfo();const collisionEngine=
+this._runtime.GetCollisionEngine();const bounceSolid=collisionEngine.TestOverlapSolid(this._inst);if(bounceSolid){collisionEngine.RegisterCollision(this._inst,bounceSolid);const s=C3.distanceTo(0,0,this._dx,this._dy);const bounceAngle=collisionEngine.CalculateBounceAngle(this._inst,this._lastX,this._lastY);this._dx=Math.cos(bounceAngle)*s;this._dy=Math.sin(bounceAngle)*s;wi.OffsetXY(this._dx*dt,this._dy*dt);wi.SetBboxChanged();if(this._setAngle){wi.SetAngle(bounceAngle);this._lastKnownAngle=wi.GetAngle();
+wi.SetBboxChanged()}if(!collisionEngine.PushOutSolid(this._inst,this._dx/s,this._dy/s,Math.max(s*2.5*dt,30)))collisionEngine.PushOutSolidNearest(this._inst,100)}}GetPropertyValueByIndex(index){switch(index){case SPEED:return this._GetSpeed();case ACCELERATION:return this._GetAcceleration();case GRAVITY:return this._GetGravity();case SET_ANGLE:return this._setAngle;case STEPPING:return this._isStepping;case ENABLE:return this._IsEnabled()}}SetPropertyValueByIndex(index,value){switch(index){case SPEED:this._SetSpeed(value);
+break;case ACCELERATION:this._acc=value;break;case GRAVITY:this._g=value;break;case SET_ANGLE:this._setAngle=!!value;break;case STEPPING:this._isStepping=!!value;break;case ENABLE:this._SetEnabled(!!value);break}}_SetSpeed(s){const a=C3.angleTo(0,0,this._dx,this._dy);this._dx=Math.cos(a)*s;this._dy=Math.sin(a)*s}_GetSpeed(){return C3.round6dp(C3.distanceTo(0,0,this._dx,this._dy))}_SetAcceleration(a){this._acc=a}_GetAcceleration(){return this._acc}_SetGravity(g){this._g=g}_GetGravity(){return this._g}_SetAngleOfMotion(a){const s=
+C3.distanceTo(0,0,this._dx,this._dy);this._dx=Math.cos(a)*s;this._dy=Math.sin(a)*s}_GetAngleOfMotion(){return C3.angleTo(0,0,this._dx,this._dy)}_SetBounceOffSolids(b){b=!!b;if(this._bounceOffSolid===b)return;this._bounceOffSolid=b;if(this._isEnabled)if(this._bounceOffSolid)this._StartPostTicking();else this._StopPostTicking()}_IsBounceOffSolids(){return this._bounceOffSolid}_SetDistanceTravelled(d){this._travelled=d}_GetDistanceTravelled(){return this._travelled}_SetEnabled(e){this._isEnabled=!!e;
+if(this._isEnabled){this._StartTicking();if(this._bounceOffSolid)this._StartPostTicking()}else{this._StopTicking();this._StopPostTicking()}}_IsEnabled(){return this._isEnabled}GetDebuggerProperties(){const prefix="behaviors.bullet";return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:prefix+".debugger.vector-x",value:this._dx,onedit:v=>this._dx=v},{name:prefix+".debugger.vector-y",value:this._dy,onedit:v=>this._dy=v},{name:prefix+".properties.speed.name",value:this._GetSpeed(),onedit:v=>
+this._SetSpeed(v)},{name:prefix+".debugger.angle-of-motion",value:C3.toDegrees(this._GetAngleOfMotion())},{name:prefix+".properties.gravity.name",value:this._GetGravity(),onedit:v=>this._SetGravity(v)},{name:prefix+".properties.acceleration.name",value:this._GetAcceleration(),onedit:v=>this._SetAcceleration(v)},{name:prefix+".debugger.distance-travelled",value:this._GetDistanceTravelled()},{name:prefix+".properties.enabled.name",value:this._IsEnabled(),onedit:v=>this._SetEnabled(v)}]}]}GetScriptInterfaceClass(){return self.IBulletBehaviorInstance}};
+const map=new WeakMap;self.IBulletBehaviorInstance=class IBulletBehaviorInstance extends IBehaviorInstance{constructor(){super();map.set(this,IBehaviorInstance._GetInitInst().GetSdkInstance())}get speed(){return map.get(this)._GetSpeed()}set speed(s){map.get(this)._SetSpeed(s)}get acceleration(){return map.get(this)._GetAcceleration()}set acceleration(a){map.get(this)._SetAcceleration(a)}get gravity(){return map.get(this)._GetGravity()}set gravity(g){map.get(this)._SetGravity(g)}get angleOfMotion(){return map.get(this)._GetAngleOfMotion()}set angleOfMotion(a){map.get(this)._SetAngleOfMotion(a)}get bounceOffSolids(){return map.get(this)._IsBounceOffSolids()}set bounceOffSolids(b){map.get(this)._SetBounceOffSolids(!!b)}get distanceTravelled(){return map.get(this)._GetDistanceTravelled()}set distanceTravelled(d){map.get(this)._SetDistanceTravelled(d)}get isEnabled(){return map.get(this)._IsEnabled()}set isEnabled(e){map.get(this)._SetEnabled(e)}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Bullet.Cnds={CompareSpeed(cmp,s){const speed=Math.sqrt(this._dx*this._dx+this._dy*this._dy);return C3.compare(speed,cmp,s)},CompareTravelled(cmp,d){return C3.compare(this._GetDistanceTravelled(),cmp,d)},OnStep(){return true},IsEnabled(){return this._IsEnabled()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Bullet.Acts={SetSpeed(s){this._SetSpeed(s)},SetAcceleration(a){this._SetAcceleration(a)},SetGravity(g){this._SetGravity(g)},SetAngleOfMotion(a){this._SetAngleOfMotion(C3.toRadians(a))},Bounce(objectClass){if(!objectClass)return;const otherInst=objectClass.GetFirstPicked(this._inst);if(!otherInst)return;const wi=this._inst.GetWorldInfo();const collisionEngine=this._runtime.GetCollisionEngine();const dt=this._runtime.GetDt(this._inst);const s=C3.distanceTo(0,
+0,this._dx,this._dy);const bounceAngle=collisionEngine.CalculateBounceAngle(this._inst,this._lastX,this._lastY,otherInst);this._dx=Math.cos(bounceAngle)*s;this._dy=Math.sin(bounceAngle)*s;wi.OffsetXY(this._dx*dt,this._dy*dt);wi.SetBboxChanged();if(this._setAngle){wi.SetAngle(bounceAngle);this._lastKnownAngle=wi.GetAngle();wi.SetBboxChanged()}if(s!==0)if(this._bounceOffSolid){if(!collisionEngine.PushOutSolid(this._inst,this._dx/s,this._dy/s,Math.max(s*2.5*dt,30)))collisionEngine.PushOutSolidNearest(this._inst,
+100)}else collisionEngine.PushOut(this._inst,this._dx/s,this._dy/s,Math.max(s*2.5*dt,30),otherInst)},SetBounceOffSolids(b){this._SetBounceOffSolids(b)},SetDistanceTravelled(d){this._SetDistanceTravelled(d)},SetEnabled(e){this._SetEnabled(e)},StopStepping(){this._stopStepping=true}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Bullet.Exps={Speed(){return this._GetSpeed()},Acceleration(){return this._GetAcceleration()},AngleOfMotion(){return C3.toDegrees(this._GetAngleOfMotion())},DistanceTravelled(){return this._GetDistanceTravelled()},Gravity(){return this._GetGravity()}}};
+
+
 "use strict"
 {
 	const C3 = self.C3;
@@ -9033,6 +9067,7 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		C3.Behaviors.Fade,
 		C3.Behaviors.destroy,
 		C3.Behaviors.Anchor,
+		C3.Behaviors.Bullet,
 		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Behaviors.EightDir.Cnds.CompareSpeed,
 		C3.Behaviors.EightDir.Cnds.IsMoving,
@@ -9143,9 +9178,16 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		C3.Plugins.System.Cnds.TriggerOnce,
 		C3.Plugins.Timeline.Acts.PlayTimeline,
 		C3.Behaviors.Fade.Acts.StartFade,
+		C3.Plugins.Mouse.Cnds.OnClick,
 		C3.Plugins.Mouse.Exps.X,
 		C3.Plugins.Mouse.Exps.Y,
+		C3.Plugins.Sprite.Cnds.OnCollision,
+		C3.Plugins.System.Cnds.Repeat,
 		C3.Plugins.Sprite.Exps.Angle,
+		C3.Behaviors.Bullet.Acts.SetSpeed,
+		C3.Plugins.Sprite.Cnds.IsOverlappingOffset,
+		C3.Plugins.Sprite.Cnds.OnCreated,
+		C3.Plugins.Sprite.Cnds.IsFlipped,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
@@ -9259,6 +9301,9 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		{Anchor: 0},
 		{anchor: 0},
 		{gun: 0},
+		{Bullet: 0},
+		{Sprite5: 0},
+		{Sprite6: 0},
 		{arrow: 0},
 		{go_ping: 0},
 		{photon_status: 0},
@@ -9644,8 +9689,48 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 		() => 300,
 		() => "knife",
 		() => -1,
+		() => 71,
+		() => 72,
 		() => "sheriff",
 		() => "pc",
+		() => "shoot",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const f3 = p._GetNode(3).GetBoundMethod();
+			const f4 = p._GetNode(4).GetBoundMethod();
+			return () => and(and(f0(), "_"), C3.toDegrees(C3.angleTo(n1.ExpObject(), n2.ExpObject(), f3(), f4())));
+		},
+		() => 2,
+		() => "hole",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => f0(f1(f2(), 1, "_"));
+		},
+		() => 0.05,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(2, 4);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const f1 = p._GetNode(1).GetBoundMethod();
+			return () => ((-n0.ExpObject()) + f1((-20), 20));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(20, 100);
+		},
+		() => 40,
+		() => 35,
+		p => {
+			const n0 = p._GetNode(0);
+			const f1 = p._GetNode(1).GetBoundMethod();
+			return () => (n0.ExpObject() + f1((-20), 20));
+		},
 		() => "gun",
 		p => {
 			const n0 = p._GetNode(0);
@@ -9659,11 +9744,13 @@ bbox.getBottom();this._isEnabled=true;this._StartTicking()}}}};
 			return () => ((1 / 30) * f0());
 		},
 		() => 81,
+		() => 180,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
 			return () => f0(f1());
 		},
+		() => "other",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
