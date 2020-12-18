@@ -9536,15 +9536,16 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		C3.Plugins.Sprite.Acts.SetInstanceVar,
 		C3.Plugins.System.Exps.tokenat,
 		C3.Plugins.Photon.Exps.EventData,
+		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
 		C3.Plugins.System.Exps.int,
 		C3.Behaviors.Pin.Acts.PinByProperties,
 		C3.Plugins.Spritefont2.Acts.SetInstanceVar,
 		C3.Plugins.Sprite.Cnds.CompareInstanceVar,
-		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
 		C3.Plugins.Photon.Cnds.onActorJoin,
-		C3.Plugins.Sprite.Exps.Width,
-		C3.Plugins.Photon.Exps.ActorNr,
 		C3.Plugins.System.Acts.AddVar,
+		C3.Plugins.System.Cnds.Compare,
+		C3.Plugins.Photon.Exps.ActorNr,
+		C3.Plugins.Sprite.Exps.Width,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Exps.dt,
 		C3.Plugins.Sprite.Exps.AnimationName,
@@ -9590,7 +9591,6 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		C3.Plugins.Sprite.Exps.AnimationSpeed,
 		C3.Plugins.Sprite.Cnds.IsMirrored,
 		C3.Plugins.Sprite.Acts.SetAnimSpeed,
-		C3.Plugins.System.Cnds.Compare,
 		C3.Plugins.Sprite.Acts.SetX,
 		C3.Plugins.System.Acts.SetBoolVar,
 		C3.Plugins.System.Acts.SetVar,
@@ -9945,6 +9945,7 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
 		},
+		() => 1,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const n1 = p._GetNode(1);
@@ -9958,15 +9959,6 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => (f0()).toString();
-		},
-		() => 1,
-		() => 4,
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			const v3 = p._GetNode(3).GetVar();
-			return () => and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), v3.GetValue());
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10088,6 +10080,7 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		},
 		() => 20,
 		() => 10,
+		() => 4,
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpInstVar();
@@ -10097,6 +10090,13 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const f1 = p._GetNode(1).GetBoundMethod();
 			const f2 = p._GetNode(2).GetBoundMethod();
 			return () => f0(f1((f2()).toString(), 4, "_"));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const v3 = p._GetNode(3).GetVar();
+			return () => and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), v3.GetValue());
 		},
 		() => "ping",
 		() => 100,
