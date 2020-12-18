@@ -9518,44 +9518,44 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		C3.Plugins.Keyboard.Cnds.IsKeyDown,
 		C3.Behaviors.EightDir.Acts.SimulateControl,
 		C3.Plugins.Sprite.Acts.SetMirrored,
-		C3.Plugins.Photon.Cnds.isJoinedToRoom,
+		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Spritefont2.Acts.SetText,
 		C3.Plugins.Photon.Exps.MyRoomName,
-		C3.Plugins.Photon.Cnds.onActorJoin,
+		C3.Plugins.System.Cnds.OnLayoutStart,
+		C3.Plugins.Sprite.Acts.Destroy,
+		C3.Plugins.Photon.Cnds.onJoinRoom,
 		C3.Plugins.Photon.Acts.raiseEvent,
 		C3.Plugins.Photon.Exps.MyActorNr,
+		C3.Behaviors.EightDir.Acts.SetEnabled,
+		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Plugins.Sprite.Exps.X,
 		C3.Plugins.Sprite.Exps.Y,
-		C3.Plugins.Sprite.Exps.Width,
-		C3.Behaviors.EightDir.Acts.SetEnabled,
-		C3.Plugins.Sprite.Acts.SetInstanceVar,
-		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Plugins.Sprite.Acts.SetEffectParam,
 		C3.Plugins.Photon.Cnds.onEvent,
 		C3.Plugins.System.Acts.CreateObject,
-		C3.Plugins.System.Exps.int,
+		C3.Plugins.Sprite.Acts.SetInstanceVar,
 		C3.Plugins.System.Exps.tokenat,
 		C3.Plugins.Photon.Exps.EventData,
-		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
+		C3.Plugins.System.Exps.int,
 		C3.Behaviors.Pin.Acts.PinByProperties,
 		C3.Plugins.Spritefont2.Acts.SetInstanceVar,
+		C3.Plugins.Sprite.Cnds.CompareInstanceVar,
+		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
+		C3.Plugins.Photon.Cnds.onActorJoin,
+		C3.Plugins.Sprite.Exps.Width,
+		C3.Plugins.Photon.Exps.ActorNr,
 		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Exps.dt,
 		C3.Plugins.Sprite.Exps.AnimationName,
 		C3.Plugins.Sprite.Exps.AnimationFrame,
-		C3.Plugins.Sprite.Cnds.CompareInstanceVar,
 		C3.Plugins.Sprite.Acts.SetWidth,
 		C3.Plugins.Sprite.Acts.SetAnimFrame,
-		C3.Plugins.System.Cnds.OnLayoutStart,
-		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Spritefont2.Exps.Y,
 		C3.Plugins.System.Acts.SortZOrderByInstVar,
 		C3.Plugins.Photon.Cnds.onActorLeave,
-		C3.Plugins.Photon.Exps.ActorNr,
 		C3.Plugins.Spritefont2.Cnds.CompareInstanceVar,
 		C3.Plugins.Spritefont2.Acts.Destroy,
-		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.System.Acts.SubVar,
 		C3.Plugins.Sprite.Cnds.CompareFrame,
 		C3.Plugins.Sprite.Acts.SetCollisions,
@@ -9592,7 +9592,6 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		C3.Plugins.Sprite.Acts.SetAnimSpeed,
 		C3.Plugins.System.Cnds.Compare,
 		C3.Plugins.Sprite.Acts.SetX,
-		C3.Plugins.Photon.Cnds.onJoinRoom,
 		C3.Plugins.System.Acts.SetBoolVar,
 		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Cnds.CompareBoolVar,
@@ -9645,6 +9644,7 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		C3.Plugins.BHT_Smart_Random.Acts.New,
 		C3.Plugins.BHT_Smart_Random.Exps.Next,
 		C3.Plugins.Arr.Exps.At,
+		C3.Plugins.NinePatch.Cnds.IsOnScreen,
 		C3.Behaviors.Tween.Cnds.IsPlaying,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
@@ -9889,27 +9889,11 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		() => "Photon",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
-			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			const n3 = p._GetNode(3);
-			const n4 = p._GetNode(4);
-			const v5 = p._GetNode(5).GetVar();
-			const n6 = p._GetNode(6);
-			return () => ((and((((and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_") + n4.ExpInstVar()) + "_"), v5.GetValue()) + "_") + n6.ExpInstVar());
+			const v1 = p._GetNode(1).GetVar();
+			const v2 = p._GetNode(2).GetVar();
+			return () => ((and((((and((and((and(and(f0(), "_"), 1284) + "_"), 701) + "_"), 65) + "_") + v1.GetValue()) + "_"), v2.GetValue()) + "_") + "");
 		},
 		() => "",
-		() => 4,
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			const v3 = p._GetNode(3).GetVar();
-			return () => and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), v3.GetValue());
-		},
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => f0();
-		},
 		p => {
 			const n0 = p._GetNode(0);
 			const n1 = p._GetNode(1);
@@ -9921,18 +9905,8 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			return () => v0.GetValue();
 		},
 		() => "game",
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const f1 = p._GetNode(1).GetBoundMethod();
-			const f2 = p._GetNode(2).GetBoundMethod();
-			return () => f0(f1((f2()).toString(), 1, "_"));
-		},
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const f1 = p._GetNode(1).GetBoundMethod();
-			const f2 = p._GetNode(2).GetBoundMethod();
-			return () => f0(f1((f2()).toString(), 2, "_"));
-		},
+		() => 1284,
+		() => 701,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
@@ -9954,6 +9928,12 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
 			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => f0(f1((f2()).toString(), 1, "_"));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
 			return () => (f0(f1((f2()).toString(), 2, "_")) - 70);
 		},
 		p => {
@@ -9961,7 +9941,33 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const f1 = p._GetNode(1).GetBoundMethod();
 			return () => f0((f1()).toString(), 4, "_");
 		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0();
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			const n4 = p._GetNode(4);
+			const v5 = p._GetNode(5).GetVar();
+			const n6 = p._GetNode(6);
+			return () => ((and((((and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_") + n4.ExpInstVar()) + "_"), v5.GetValue()) + "_") + n6.ExpInstVar());
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => (f0()).toString();
+		},
 		() => 1,
+		() => 4,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const v3 = p._GetNode(3).GetVar();
+			return () => and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), v3.GetValue());
+		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => ((1 / 60) * f0());
@@ -9974,6 +9980,12 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const n4 = p._GetNode(4);
 			const n5 = p._GetNode(5);
 			return () => and((((and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_") + n4.ExpObject()) + "_"), n5.ExpObject());
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => f0(f1((f2()).toString(), 2, "_"));
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10263,9 +10275,10 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const n4 = p._GetNode(4);
 			return () => n0.ExpObject(f1(f2((f3()).toString(), n4.ExpInstVar(), "_")), 1, 0);
 		},
+		() => "text_start",
 		p => {
 			const n0 = p._GetNode(0);
-			return () => (n0.ExpObject() - 300);
+			return () => (n0.ExpObject() - 50);
 		},
 		p => {
 			const n0 = p._GetNode(0);
