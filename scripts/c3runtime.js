@@ -9636,6 +9636,8 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		C3.Behaviors.EightDir.Acts.SetIgnoreInput,
 		C3.Plugins.Spritefont2.Acts.SetOpacity,
 		C3.Behaviors.Tween.Cnds.OnTweensFinished,
+		C3.Plugins.System.Acts.SetLayerVisible,
+		C3.Plugins.NinePatch.Acts.Destroy,
 		C3.Plugins.AJAX.Acts.RequestFile,
 		C3.Plugins.AJAX.Cnds.OnComplete,
 		C3.Plugins.Arr.Acts.JSONLoad,
@@ -9644,8 +9646,8 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		C3.Plugins.BHT_Smart_Random.Acts.New,
 		C3.Plugins.BHT_Smart_Random.Exps.Next,
 		C3.Plugins.Arr.Exps.At,
-		C3.Plugins.NinePatch.Cnds.IsOnScreen,
 		C3.Behaviors.Tween.Cnds.IsPlaying,
+		C3.Plugins.Spritefont2.Acts.SetVisible,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
@@ -10222,6 +10224,7 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		() => "button_start",
 		() => 69,
 		() => "background_start",
+		() => "text_start",
 		() => "end",
 		() => "background_end",
 		() => "role_choose",
@@ -10269,7 +10272,6 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const n4 = p._GetNode(4);
 			return () => n0.ExpObject(f1(f2((f3()).toString(), n4.ExpInstVar(), "_")), 1, 0);
 		},
-		() => "text_start",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => (n0.ExpObject() - 50);
