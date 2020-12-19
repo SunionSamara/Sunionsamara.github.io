@@ -9540,9 +9540,9 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		C3.Plugins.System.Exps.int,
 		C3.Behaviors.Pin.Acts.PinByProperties,
 		C3.Plugins.Spritefont2.Acts.SetInstanceVar,
+		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.Sprite.Cnds.CompareInstanceVar,
 		C3.Plugins.Photon.Cnds.onActorJoin,
-		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.Sprite.Exps.Width,
 		C3.Plugins.Photon.Exps.ActorNr,
 		C3.Plugins.System.Cnds.Every,
@@ -9927,6 +9927,11 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
+			return () => f0((f1()).toString(), 4, "_");
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
 			const f2 = p._GetNode(2).GetBoundMethod();
 			return () => f0(f1((f2()).toString(), 1, "_"));
 		},
@@ -9936,16 +9941,11 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const f2 = p._GetNode(2).GetBoundMethod();
 			return () => (f0(f1((f2()).toString(), 2, "_")) - 70);
 		},
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const f1 = p._GetNode(1).GetBoundMethod();
-			return () => f0((f1()).toString(), 4, "_");
-		},
+		() => 1,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
 		},
-		() => 1,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const n1 = p._GetNode(1);
@@ -9962,7 +9962,7 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => ((1 / 60) * f0());
+			return () => ((1 / 30) * f0());
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10059,6 +10059,10 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			return () => C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), (n3.ExpObject() + 235));
 		},
 		() => "pet",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => ((1 / 60) * f0());
+		},
 		() => 5,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10212,10 +10216,6 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const f2 = p._GetNode(2).GetBoundMethod();
 			const f3 = p._GetNode(3).GetBoundMethod();
 			return () => C3.toDegrees(C3.angleTo(n0.ExpObject(), n1.ExpObject(), f2(), f3()));
-		},
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => ((1 / 30) * f0());
 		},
 		() => 81,
 		() => 180,
