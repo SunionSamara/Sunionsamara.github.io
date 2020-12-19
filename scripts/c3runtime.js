@@ -9930,16 +9930,12 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			return () => f0((f1()).toString(), 4, "_");
 		},
 		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const f1 = p._GetNode(1).GetBoundMethod();
-			const f2 = p._GetNode(2).GetBoundMethod();
-			return () => f0(f1((f2()).toString(), 1, "_"));
+			const n0 = p._GetNode(0);
+			return () => n0.ExpObject();
 		},
 		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			const f1 = p._GetNode(1).GetBoundMethod();
-			const f2 = p._GetNode(2).GetBoundMethod();
-			return () => (f0(f1((f2()).toString(), 2, "_")) - 70);
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() - 70);
 		},
 		() => 1,
 		p => {
@@ -9977,6 +9973,12 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
 			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => f0(f1((f2()).toString(), 1, "_"));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
 			return () => f0(f1((f2()).toString(), 2, "_"));
 		},
 		p => {
@@ -9988,15 +9990,7 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		() => "nickname",
 		p => {
 			const n0 = p._GetNode(0);
-			return () => n0.ExpObject();
-		},
-		p => {
-			const n0 = p._GetNode(0);
 			return () => (n0.ExpObject() + 70);
-		},
-		p => {
-			const n0 = p._GetNode(0);
-			return () => (n0.ExpObject() - 70);
 		},
 		() => "chat",
 		() => "[]",
