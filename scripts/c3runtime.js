@@ -9809,6 +9809,9 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Arr.Exps.At,
 		C3.Behaviors.Tween.Cnds.IsPlaying,
 		C3.Plugins.Spritefont2.Acts.SetVisible,
+		C3.Plugins.shadowlight.Acts.ZMoveToObject,
+		C3.Plugins.Tilemap.Acts.ZMoveToObject,
+		C3.Plugins.Spritefont2.Acts.ZMoveToObject,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
@@ -10343,7 +10346,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const f4 = p._GetNode(4).GetBoundMethod();
 			return () => and(and(f0(), "_"), C3.toDegrees(C3.angleTo(n1.ExpObject(), n2.ExpObject(), f3(), f4())));
 		},
-		() => 2,
 		() => "hole",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10391,6 +10393,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		() => "button_start",
 		() => 69,
 		() => "background_start",
+		() => 2,
 		() => "text_start",
 		() => "end",
 		() => "background_end",
