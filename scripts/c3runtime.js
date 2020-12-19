@@ -9378,6 +9378,24 @@ timer)}this._UpdateTickState()}Tick(){const dt=this._runtime.GetDt(this._inst);f
 'use strict';{const C3=self.C3;C3.Behaviors.Timer.Exps={CurrentTime(name){const timer=this._timers.get(name.toLowerCase());if(!timer)return 0;return timer.GetCurrentTime()},TotalTime(name){const timer=this._timers.get(name.toLowerCase());if(!timer)return 0;return timer.GetTotalTime()},Duration(name){const timer=this._timers.get(name.toLowerCase());if(!timer)return 0;return timer.GetDuration()}}};
 
 
+'use strict';{const C3=self.C3;C3.Behaviors.destroy=class DestroyOutsideLayoutBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.destroy.Type=class DestroyOutsideLayoutType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.destroy.Instance=class DestroyOutsideLayoutInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this._StartTicking()}Release(){super.Release()}Tick(){const wi=this._inst.GetWorldInfo();const bbox=wi.GetBoundingBox();const layout=wi.GetLayout();if(bbox.getRight()<0||bbox.getBottom()<0||bbox.getLeft()>layout.GetWidth()||bbox.getTop()>layout.GetHeight())this._runtime.DestroyInstance(this._inst)}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.destroy.Cnds={}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.destroy.Acts={}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.destroy.Exps={}};
+
+
 'use strict';{const C3=self.C3;C3.Behaviors.Pin=class PinBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
 
 
@@ -9453,24 +9471,6 @@ value:this._waitTime,onedit:v=>this._waitTime=v},{name:prefix+".properties.fade-
 
 
 'use strict';{const C3=self.C3;C3.Behaviors.Fade.Exps={FadeInTime(){return this._fadeInTime},WaitTime(){return this._waitTime},FadeOutTime(){return this._fadeOutTime}}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.destroy=class DestroyOutsideLayoutBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.destroy.Type=class DestroyOutsideLayoutType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.destroy.Instance=class DestroyOutsideLayoutInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this._StartTicking()}Release(){super.Release()}Tick(){const wi=this._inst.GetWorldInfo();const bbox=wi.GetBoundingBox();const layout=wi.GetLayout();if(bbox.getRight()<0||bbox.getBottom()<0||bbox.getLeft()>layout.GetWidth()||bbox.getTop()>layout.GetHeight())this._runtime.DestroyInstance(this._inst)}}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.destroy.Cnds={}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.destroy.Acts={}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.destroy.Exps={}};
 
 
 'use strict';{const C3=self.C3;C3.Behaviors.Anchor=class AnchorBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
@@ -9657,10 +9657,10 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Behaviors.scrollto,
 		C3.Behaviors.EightDir,
 		C3.Behaviors.Timer,
+		C3.Behaviors.destroy,
 		C3.Behaviors.Pin,
 		C3.Behaviors.solid,
 		C3.Behaviors.Fade,
-		C3.Behaviors.destroy,
 		C3.Behaviors.Anchor,
 		C3.Behaviors.Bullet,
 		C3.Behaviors.Tween,
@@ -9684,8 +9684,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.shadowlight.Acts.SetPosToObject,
 		C3.Plugins.Sprite.Acts.SetPosToObject,
 		C3.Plugins.System.Cnds.TriggerOnce,
-		C3.Plugins.System.Cnds.OnLayoutStart,
-		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.Photon.Cnds.onJoinRoom,
 		C3.Plugins.Photon.Acts.raiseEvent,
 		C3.Plugins.Photon.Exps.MyActorNr,
@@ -9716,9 +9714,11 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Sprite.Acts.SetAnimFrame,
 		C3.Plugins.Spritefont2.Exps.Y,
 		C3.Plugins.System.Acts.SortZOrderByInstVar,
+		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.Photon.Cnds.onActorLeave,
 		C3.Plugins.Spritefont2.Cnds.CompareInstanceVar,
 		C3.Plugins.Spritefont2.Acts.Destroy,
+		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.System.Acts.SubVar,
 		C3.Plugins.Sprite.Cnds.CompareFrame,
 		C3.Plugins.Sprite.Acts.SetCollisions,
@@ -9892,6 +9892,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		{cooldownscream: 0},
 		{"8Direction": 0},
 		{Timer: 0},
+		{DestroyOutsideLayout: 0},
 		{hero: 0},
 		{nickname_id: 0},
 		{Pin: 0},
@@ -9908,7 +9909,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		{open: 0},
 		{Fade: 0},
 		{knife: 0},
-		{DestroyOutsideLayout: 0},
 		{pet: 0},
 		{debug_text: 0},
 		{role_text: 0},
