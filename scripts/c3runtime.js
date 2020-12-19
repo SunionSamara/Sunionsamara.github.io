@@ -9543,9 +9543,8 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		C3.Plugins.Sprite.Cnds.CompareInstanceVar,
 		C3.Plugins.Photon.Cnds.onActorJoin,
 		C3.Plugins.System.Acts.AddVar,
-		C3.Plugins.System.Cnds.Compare,
-		C3.Plugins.Photon.Exps.ActorNr,
 		C3.Plugins.Sprite.Exps.Width,
+		C3.Plugins.Photon.Exps.ActorNr,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Exps.dt,
 		C3.Plugins.Sprite.Exps.AnimationName,
@@ -9591,6 +9590,7 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 		C3.Plugins.Sprite.Exps.AnimationSpeed,
 		C3.Plugins.Sprite.Cnds.IsMirrored,
 		C3.Plugins.Sprite.Acts.SetAnimSpeed,
+		C3.Plugins.System.Cnds.Compare,
 		C3.Plugins.Sprite.Acts.SetX,
 		C3.Plugins.System.Acts.SetBoolVar,
 		C3.Plugins.System.Acts.SetVar,
@@ -9891,7 +9891,7 @@ true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tw
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const v1 = p._GetNode(1).GetVar();
 			const v2 = p._GetNode(2).GetVar();
-			return () => ((and((((and((and((and(and(f0(), "_"), 1284) + "_"), 701) + "_"), 65) + "_") + v1.GetValue()) + "_"), v2.GetValue()) + "_") + "");
+			return () => ((and((((and((and((and(and(f0(), "_"), 1284) + "_"), 701) + "_"), 65) + "_") + v1.GetValue()) + "_"), v2.GetValue()) + "_") + "life");
 		},
 		() => "",
 		p => {
