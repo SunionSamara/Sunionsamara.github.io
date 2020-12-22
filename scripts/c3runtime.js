@@ -10224,7 +10224,8 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		p => {
 			const n0 = p._GetNode(0);
 			const n1 = p._GetNode(1);
-			return () => C3.lerp(n0.ExpObject(), n1.ExpInstVar(), 0.1);
+			const n2 = p._GetNode(2);
+			return () => C3.lerp(n0.ExpInstVar(), (n1.ExpInstVar() + n2.ExpInstVar()), 0.1);
 		},
 		() => "nickname",
 		p => {
