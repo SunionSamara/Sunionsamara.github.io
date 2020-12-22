@@ -9810,15 +9810,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Sprite.Cnds.IsOverlappingOffset,
 		C3.Plugins.Sprite.Cnds.OnCreated,
 		C3.Plugins.Sprite.Cnds.IsFlipped,
-		C3.Plugins.AJAX.Acts.RequestFile,
-		C3.Plugins.AJAX.Cnds.OnComplete,
-		C3.Plugins.Arr.Acts.JSONLoad,
-		C3.Plugins.AJAX.Exps.LastData,
 		C3.Plugins.System.Cnds.CompareVar,
-		C3.Plugins.Photon.Acts.setMyRoomIsOpen,
-		C3.Plugins.BHT_Smart_Random.Acts.New,
-		C3.Plugins.BHT_Smart_Random.Exps.Next,
-		C3.Plugins.Arr.Exps.At,
 		C3.Plugins.NinePatch.Acts.SetVisible,
 		C3.Behaviors.aekiro_button.Acts.setEnabled,
 		C3.Behaviors.Tween.Acts.TweenOneProperty,
@@ -9829,6 +9821,16 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.NinePatch.Acts.Destroy,
 		C3.Behaviors.Tween.Cnds.IsPlaying,
 		C3.Plugins.Spritefont2.Acts.SetVisible,
+		C3.Plugins.AJAX.Acts.RequestFile,
+		C3.Plugins.AJAX.Cnds.OnComplete,
+		C3.Plugins.Arr.Acts.JSONLoad,
+		C3.Plugins.AJAX.Exps.LastData,
+		C3.Plugins.Photon.Acts.setMyRoomIsOpen,
+		C3.Plugins.Photon.Acts.setMyRoomIsVisible,
+		C3.Plugins.BHT_Smart_Random.Acts.New,
+		C3.Plugins.BHT_Smart_Random.Exps.Next,
+		C3.Plugins.Arr.Exps.At,
+		C3.Plugins.shadowlight.Acts.MoveToTop,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
@@ -10408,8 +10410,17 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		},
 		() => "other",
 		() => "role_choose",
-		() => "positions",
+		() => "button_start",
 		() => 69,
+		() => "background_start",
+		() => "text_start",
+		() => "end",
+		() => "background_end",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() - 50);
+		},
+		() => "positions",
 		() => 96,
 		p => {
 			const n0 = p._GetNode(0);
@@ -10442,25 +10453,16 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const f1 = p._GetNode(1).GetBoundMethod();
 			const f2 = p._GetNode(2).GetBoundMethod();
 			const f3 = p._GetNode(3).GetBoundMethod();
-			const n4 = p._GetNode(4);
-			return () => n0.ExpObject(f1(f2((f3()).toString(), n4.ExpInstVar(), "_")), 0, 0);
+			const f4 = p._GetNode(4).GetBoundMethod();
+			return () => n0.ExpObject(f1(f2((f3()).toString(), f4(), "_")), 0, 0);
 		},
 		p => {
 			const n0 = p._GetNode(0);
 			const f1 = p._GetNode(1).GetBoundMethod();
 			const f2 = p._GetNode(2).GetBoundMethod();
 			const f3 = p._GetNode(3).GetBoundMethod();
-			const n4 = p._GetNode(4);
-			return () => n0.ExpObject(f1(f2((f3()).toString(), n4.ExpInstVar(), "_")), 1, 0);
-		},
-		() => "button_start",
-		() => "background_start",
-		() => "text_start",
-		() => "end",
-		() => "background_end",
-		p => {
-			const n0 = p._GetNode(0);
-			return () => (n0.ExpObject() - 50);
+			const f4 = p._GetNode(4).GetBoundMethod();
+			return () => n0.ExpObject(f1(f2((f3()).toString(), f4(), "_")), 1, 0);
 		},
 		p => {
 			const n0 = p._GetNode(0);
