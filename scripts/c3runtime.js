@@ -9699,11 +9699,13 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Behaviors.EightDir.Acts.SimulateControl,
 		C3.Plugins.Sprite.Acts.SetMirrored,
 		C3.Plugins.System.Cnds.EveryTick,
-		C3.Plugins.Spritefont2.Acts.SetText,
-		C3.Plugins.Photon.Exps.MyRoomName,
 		C3.Plugins.shadowlight.Acts.SetPosToObject,
 		C3.Plugins.Sprite.Acts.SetPosToObject,
 		C3.Plugins.System.Cnds.TriggerOnce,
+		C3.Plugins.System.Cnds.CompareVar,
+		C3.Plugins.Spritefont2.Acts.SetText,
+		C3.Plugins.Photon.Exps.MyRoomName,
+		C3.Plugins.System.Exps.tokenat,
 		C3.Plugins.Photon.Cnds.onJoinRoom,
 		C3.Plugins.Photon.Acts.raiseEvent,
 		C3.Plugins.Photon.Exps.MyActorNr,
@@ -9715,7 +9717,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Photon.Cnds.onEvent,
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.Sprite.Acts.SetInstanceVar,
-		C3.Plugins.System.Exps.tokenat,
 		C3.Plugins.Photon.Exps.EventData,
 		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
 		C3.Plugins.System.Exps.int,
@@ -9810,7 +9811,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Sprite.Cnds.IsOverlappingOffset,
 		C3.Plugins.Sprite.Cnds.OnCreated,
 		C3.Plugins.Sprite.Cnds.IsFlipped,
-		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.NinePatch.Acts.SetVisible,
 		C3.Behaviors.aekiro_button.Acts.setEnabled,
 		C3.Behaviors.Tween.Acts.TweenOneProperty,
@@ -9849,7 +9849,13 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Photon.Exps.RoomNameAt,
 		C3.Plugins.System.Exps.loopindex,
 		C3.Plugins.Photon.Acts.joinRoom,
-		C3.Behaviors.Sin.Cnds.IsEnabled
+		C3.Behaviors.Sin.Cnds.IsEnabled,
+		C3.Plugins.System.Acts.WaitForPreviousActions,
+		C3.Plugins.Touch.Exps.TouchCount,
+		C3.Plugins.Touch.Exps.XAt,
+		C3.Plugins.Touch.Exps.YAt,
+		C3.Plugins.Sprite.Acts.MoveAtAngle,
+		C3.Plugins.System.Cnds.IsBetweenAngles
 		];
 	};
 	self.C3_JsPropNameTable = [
@@ -9869,6 +9875,8 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		{button_id: 0},
 		{Button: 0},
 		{buttons: 0},
+		{ru: 0},
+		{en: 0},
 		{id: 0},
 		{GridViewDataBind: 0},
 		{buttons_text: 0},
@@ -9957,14 +9965,23 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		{"9patch2": 0},
 		{ShadowLight: 0},
 		{Tilemap: 0},
+		{Sprite2: 0},
+		{a: 0},
+		{d: 0},
+		{TArea: 0},
+		{TPin: 0},
 		{arrow: 0},
 		{text: 0},
+		{spritefonts: 0},
 		{go_ping: 0},
 		{photon_status: 0},
 		{my_nickname: 0},
 		{my_color: 0},
 		{version: 0},
-		{player_count: 0}
+		{player_count: 0},
+		{launguage: 0},
+		{showThumbstick: 0},
+		{dist: 0}
 	];
 }
 
@@ -10071,12 +10088,20 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		() => "run",
 		() => "idle",
 		() => 0,
+		() => "light",
+		() => "ru",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const v1 = p._GetNode(1).GetVar();
-			return () => (and((f0() + " "), v1.GetValue()) + "/10");
+			return () => (and((("Комната игрока " + f0()) + " "), v1.GetValue()) + "/10");
 		},
-		() => "light",
+		() => "en",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const v2 = p._GetNode(2).GetVar();
+			return () => (and((f0(f1(), 0, "_") + "'s room "), v2.GetValue()) + "/10");
+		},
 		() => "Photon",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10442,11 +10467,15 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const n10 = p._GetNode(10);
 			return () => and((and((and((and((and((and((and((and((and((and(and(n0.ExpObject(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_"), n4.ExpObject()) + "_"), n5.ExpObject()) + "_"), n6.ExpObject()) + "_"), n7.ExpObject()) + "_"), n8.ExpObject()) + "_"), n9.ExpObject()) + "_"), n10.ExpObject());
 		},
-		() => "МАНЬЯК",
+		() => "MURDER",
 		() => -374112606371839,
+		() => "your task is to kill everyone before the timer expires, do it secretly, you don't want to hunt yourself?",
+		() => "МАНЬЯК",
 		() => "ваша задача, убить всех до истечения таймера, делайте это скрытно, Вы же не хотите устроить охоту на себя?",
-		() => "ДЕТЕКТИВ",
+		() => "DETECTIVE",
 		() => -59123145785343,
+		() => "your task, by deduction to find and eliminate the maniac, be careful, do not make a mistake with the shot!",
+		() => "ДЕТЕКТИВ",
 		() => "ваша задача, методом дедукции найти, и устранить маньяка, будьте осторожны, не ошибитесь с выстрелом!",
 		p => {
 			const n0 = p._GetNode(0);
@@ -10478,7 +10507,9 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		},
 		p => {
 			const v0 = p._GetNode(0).GetVar();
-			return () => (("Комната игрока " + v0.GetValue())).toString();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => and((v0.GetValue() + "_"), f1(f2(100, 1000)));
 		},
 		p => {
 			const n0 = p._GetNode(0);
@@ -10498,7 +10529,13 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const n0 = p._GetNode(0);
 			const f1 = p._GetNode(1).GetBoundMethod();
 			const n2 = p._GetNode(2);
-			return () => and(and(and(n0.ExpBehavior("room_name"), "   "), f1(n2.ExpBehavior("room_name"))), "/10");
+			return () => (and((and("Комната игрока ", n0.ExpBehavior("room_name")) + "   "), f1(n2.ExpBehavior("room_name"))) + "/10");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const n2 = p._GetNode(2);
+			return () => and(and(and(n0.ExpBehavior("room_name"), "'s room "), f1(n2.ExpBehavior("room_name"))), "/10");
 		},
 		p => {
 			const n0 = p._GetNode(0);
@@ -10515,7 +10552,8 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
-			return () => (("{\n\"room_name\":\"" + f0(f1())) + "\"\n}");
+			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => (("{\n\"room_name\":\"" + f0(f1(f2()), 0, "_")) + "\"\n}");
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10527,7 +10565,65 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			return () => (n0.ExpInstVar()).toString();
 		},
 		() => "button_id_11",
-		() => 0.3
+		() => 0.3,
+		() => "button_id_10",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpInstVar_Family();
+		},
+		() => "t",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			return () => f0(f1(), "UI");
+		},
+		() => 400,
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const f2 = p._GetNode(2).GetBoundMethod();
+			const f3 = p._GetNode(3).GetBoundMethod();
+			const f4 = p._GetNode(4).GetBoundMethod();
+			const f5 = p._GetNode(5).GetBoundMethod();
+			return () => C3.toDegrees(C3.angleTo(n0.ExpObject(), n1.ExpObject(), f2(f3(), "UI"), f4(f5(), "UI")));
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const f2 = p._GetNode(2).GetBoundMethod();
+			const f3 = p._GetNode(3).GetBoundMethod();
+			const f4 = p._GetNode(4).GetBoundMethod();
+			const f5 = p._GetNode(5).GetBoundMethod();
+			return () => C3.distanceTo(n0.ExpObject(), n1.ExpObject(), f2(f3(), "UI"), f4(f5(), "UI"));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const v1 = p._GetNode(1).GetVar();
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			return () => f0(v1.GetValue(), ((n2.ExpObject() / 2) - (n3.ExpObject() / 3)));
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			return () => (n0.ExpObject() + (n1.ExpInstVar() * Math.cos(C3.toRadians(n2.ExpInstVar()))));
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			return () => (n0.ExpObject() + (n1.ExpInstVar() * Math.sin(C3.toRadians(n2.ExpInstVar()))));
+		},
+		() => -1000,
+		() => 120,
+		() => -60,
+		() => 60,
+		() => "Simulate Keyboard Controls",
+		() => 30,
+		() => 150,
+		() => 210,
+		() => 330
 	];
 }
 
