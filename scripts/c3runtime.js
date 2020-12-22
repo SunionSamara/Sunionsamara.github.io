@@ -9732,6 +9732,8 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.System.Exps.dt,
 		C3.Plugins.Sprite.Exps.AnimationName,
 		C3.Plugins.Sprite.Exps.AnimationFrame,
+		C3.Behaviors.EightDir.Exps.VectorX,
+		C3.Behaviors.EightDir.Exps.VectorY,
 		C3.Plugins.Sprite.Acts.SetWidth,
 		C3.Plugins.Sprite.Acts.SetAnimFrame,
 		C3.Plugins.Sprite.Acts.SetX,
@@ -9925,6 +9927,8 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		{cooldownscream: 0},
 		{vectorx: 0},
 		{vectory: 0},
+		{c_pos_x: 0},
+		{c_pos_y: 0},
 		{"8Direction": 0},
 		{Timer: 0},
 		{DestroyOutsideLayout: 0},
@@ -10189,7 +10193,9 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const n3 = p._GetNode(3);
 			const n4 = p._GetNode(4);
 			const n5 = p._GetNode(5);
-			return () => and((((and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_") + n4.ExpObject()) + "_"), n5.ExpObject());
+			const n6 = p._GetNode(6);
+			const n7 = p._GetNode(7);
+			return () => and((and((and((((and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_") + n4.ExpObject()) + "_"), n5.ExpObject()) + "_"), n6.ExpBehavior()) + "_"), n7.ExpBehavior());
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10201,18 +10207,24 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
 			const f2 = p._GetNode(2).GetBoundMethod();
-			return () => f0(f1((f2()).toString(), 1, "_"));
+			const f3 = p._GetNode(3).GetBoundMethod();
+			const f4 = p._GetNode(4).GetBoundMethod();
+			const f5 = p._GetNode(5).GetBoundMethod();
+			return () => (f0(f1((f2()).toString(), 1, "_")) + f3(f4((f5()).toString(), 6, "_")));
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
 			const f2 = p._GetNode(2).GetBoundMethod();
-			return () => f0(f1((f2()).toString(), 2, "_"));
+			const f3 = p._GetNode(3).GetBoundMethod();
+			const f4 = p._GetNode(4).GetBoundMethod();
+			const f5 = p._GetNode(5).GetBoundMethod();
+			return () => (f0(f1((f2()).toString(), 2, "_")) + f3(f4((f5()).toString(), 7, "_")));
 		},
 		p => {
 			const n0 = p._GetNode(0);
 			const n1 = p._GetNode(1);
-			return () => C3.lerp(n0.ExpObject(), n1.ExpInstVar(), 0.01);
+			return () => C3.lerp(n0.ExpObject(), n1.ExpInstVar(), 0.1);
 		},
 		() => "nickname",
 		p => {
@@ -10306,6 +10318,18 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		() => 20,
 		() => 10,
 		() => 4,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => f0(f1((f2()).toString(), 1, "_"));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => f0(f1((f2()).toString(), 2, "_"));
+		},
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpInstVar();
