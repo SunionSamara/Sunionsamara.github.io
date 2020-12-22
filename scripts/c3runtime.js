@@ -9851,11 +9851,13 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Photon.Acts.joinRoom,
 		C3.Behaviors.Sin.Cnds.IsEnabled,
 		C3.Plugins.System.Acts.WaitForPreviousActions,
+		C3.Plugins.System.Exps.layoutname,
 		C3.Plugins.Touch.Exps.TouchCount,
 		C3.Plugins.Touch.Exps.XAt,
 		C3.Plugins.Touch.Exps.YAt,
 		C3.Plugins.Sprite.Acts.MoveAtAngle,
-		C3.Plugins.System.Cnds.IsBetweenAngles
+		C3.Plugins.System.Cnds.IsBetweenAngles,
+		C3.Plugins.System.Acts.SetGroupActive
 		];
 	};
 	self.C3_JsPropNameTable = [
@@ -10567,10 +10569,15 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		() => "button_id_11",
 		() => 0.3,
 		() => "button_id_10",
+		() => "button_id_100",
+		() => "menu",
+		() => "phone",
+		() => "menu_phone",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpInstVar_Family();
 		},
+		() => "joystick",
 		() => "t",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
