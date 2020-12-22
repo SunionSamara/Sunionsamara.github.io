@@ -9704,8 +9704,8 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.System.Cnds.TriggerOnce,
 		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.Spritefont2.Acts.SetText,
-		C3.Plugins.Photon.Exps.MyRoomName,
 		C3.Plugins.System.Exps.tokenat,
+		C3.Plugins.Photon.Exps.MyRoomName,
 		C3.Plugins.Photon.Cnds.onJoinRoom,
 		C3.Plugins.Photon.Acts.raiseEvent,
 		C3.Plugins.Photon.Exps.MyActorNr,
@@ -9811,6 +9811,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Sprite.Cnds.IsOverlappingOffset,
 		C3.Plugins.Sprite.Cnds.OnCreated,
 		C3.Plugins.Sprite.Cnds.IsFlipped,
+		C3.Behaviors.aekiro_gameobject.Acts.Destroy,
 		C3.Plugins.NinePatch.Acts.SetVisible,
 		C3.Behaviors.aekiro_button.Acts.setEnabled,
 		C3.Behaviors.Tween.Acts.TweenOneProperty,
@@ -10094,8 +10095,9 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		() => "ru",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
-			const v1 = p._GetNode(1).GetVar();
-			return () => (and((("Комната игрока " + f0()) + " "), v1.GetValue()) + "/10");
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const v2 = p._GetNode(2).GetVar();
+			return () => (and((("Комната игрока " + f0(f1(), 0, "_")) + " "), v2.GetValue()) + "/10");
 		},
 		() => "en",
 		p => {
@@ -10528,16 +10530,18 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			return () => C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject("up"), n3.ExpObject("up"));
 		},
 		p => {
-			const n0 = p._GetNode(0);
-			const f1 = p._GetNode(1).GetBoundMethod();
-			const n2 = p._GetNode(2);
-			return () => (and((and("Комната игрока ", n0.ExpBehavior("room_name")) + "   "), f1(n2.ExpBehavior("room_name"))) + "/10");
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const f2 = p._GetNode(2).GetBoundMethod();
+			const n3 = p._GetNode(3);
+			return () => (and((("Комната игрока " + f0(n1.ExpBehavior("room_name"), 0, "_")) + "   "), f2(n3.ExpBehavior("room_name"))) + "/10");
 		},
 		p => {
-			const n0 = p._GetNode(0);
-			const f1 = p._GetNode(1).GetBoundMethod();
-			const n2 = p._GetNode(2);
-			return () => and(and(and(n0.ExpBehavior("room_name"), "'s room "), f1(n2.ExpBehavior("room_name"))), "/10");
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const f2 = p._GetNode(2).GetBoundMethod();
+			const n3 = p._GetNode(3);
+			return () => (and((f0(n1.ExpBehavior("room_name"), 0, "_") + "'s room "), f2(n3.ExpBehavior("room_name"))) + "/10");
 		},
 		p => {
 			const n0 = p._GetNode(0);
@@ -10554,17 +10558,12 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
-			const f2 = p._GetNode(2).GetBoundMethod();
-			return () => (("{\n\"room_name\":\"" + f0(f1(f2()), 0, "_")) + "\"\n}");
+			return () => (("{\n\"room_name\":\"" + f0(f1())) + "\"\n}");
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const n1 = p._GetNode(1);
 			return () => f0(n1.ExpInstVar());
-		},
-		p => {
-			const n0 = p._GetNode(0);
-			return () => (n0.ExpInstVar()).toString();
 		},
 		() => "button_id_11",
 		() => 0.3,
