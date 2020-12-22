@@ -9730,14 +9730,12 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Photon.Exps.ActorNr,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Exps.dt,
-		C3.Behaviors.EightDir.Exps.VectorX,
-		C3.Behaviors.EightDir.Exps.VectorY,
 		C3.Plugins.Sprite.Exps.AnimationName,
 		C3.Plugins.Sprite.Exps.AnimationFrame,
 		C3.Plugins.Sprite.Acts.SetWidth,
 		C3.Plugins.Sprite.Acts.SetAnimFrame,
-		C3.Behaviors.EightDir.Acts.SetVectorX,
-		C3.Behaviors.EightDir.Acts.SetVectorY,
+		C3.Plugins.Sprite.Acts.SetX,
+		C3.Plugins.Sprite.Acts.SetY,
 		C3.Plugins.Spritefont2.Exps.Y,
 		C3.Plugins.System.Acts.SortZOrderByInstVar,
 		C3.Plugins.System.Cnds.OnLayoutStart,
@@ -9766,7 +9764,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Behaviors.aekiro_gridviewbind.Exps.get,
 		C3.Plugins.NinePatch.Cnds.IsBoolInstanceVarSet,
 		C3.Behaviors.aekiro_dialog.Acts.Open,
-		C3.Plugins.Sprite.Acts.SetY,
 		C3.Plugins.System.Acts.Wait,
 		C3.Plugins.NinePatch.Acts.SetBoolInstanceVar,
 		C3.Behaviors.aekiro_dialog.Acts.Close,
@@ -9780,7 +9777,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Sprite.Cnds.IsMirrored,
 		C3.Plugins.Sprite.Acts.SetAnimSpeed,
 		C3.Plugins.System.Cnds.Compare,
-		C3.Plugins.Sprite.Acts.SetX,
 		C3.Plugins.System.Acts.SetBoolVar,
 		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Cnds.CompareBoolVar,
@@ -10131,8 +10127,8 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			return () => v0.GetValue();
 		},
 		() => 2,
-		() => 1284,
-		() => 701,
+		() => 2428,
+		() => 3247,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
@@ -10193,7 +10189,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const n3 = p._GetNode(3);
 			const n4 = p._GetNode(4);
 			const n5 = p._GetNode(5);
-			return () => and((((and((and((and(and(f0(), "_"), n1.ExpBehavior()) + "_"), n2.ExpBehavior()) + "_"), n3.ExpObject()) + "_") + n4.ExpObject()) + "_"), n5.ExpObject());
+			return () => and((((and((and((and(and(f0(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_") + n4.ExpObject()) + "_"), n5.ExpObject());
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10215,7 +10211,8 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		},
 		p => {
 			const n0 = p._GetNode(0);
-			return () => n0.ExpInstVar();
+			const n1 = p._GetNode(1);
+			return () => C3.lerp(n0.ExpObject(), n1.ExpInstVar(), 0.01);
 		},
 		() => "nickname",
 		p => {
@@ -10309,6 +10306,10 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		() => 20,
 		() => 10,
 		() => 4,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpInstVar();
+		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
