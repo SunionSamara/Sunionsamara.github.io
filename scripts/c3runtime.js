@@ -9736,6 +9736,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Behaviors.EightDir.Exps.VectorY,
 		C3.Plugins.Sprite.Acts.SetWidth,
 		C3.Plugins.Sprite.Acts.SetAnimFrame,
+		C3.Plugins.Sprite.Acts.AddInstanceVar,
 		C3.Plugins.Sprite.Acts.SetX,
 		C3.Plugins.Sprite.Acts.SetY,
 		C3.Plugins.Spritefont2.Exps.Y,
@@ -10229,9 +10230,12 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		},
 		p => {
 			const n0 = p._GetNode(0);
+			return () => n0.ExpInstVar();
+		},
+		p => {
+			const n0 = p._GetNode(0);
 			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			return () => C3.lerp(n0.ExpInstVar(), (n1.ExpInstVar() + n2.ExpInstVar()), 0.1);
+			return () => C3.lerp(n0.ExpObject(), n1.ExpInstVar(), 0.1);
 		},
 		() => "nickname",
 		p => {
@@ -10325,10 +10329,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		() => 20,
 		() => 10,
 		() => 4,
-		p => {
-			const n0 = p._GetNode(0);
-			return () => n0.ExpInstVar();
-		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const f1 = p._GetNode(1).GetBoundMethod();
