@@ -9709,7 +9709,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Photon.Cnds.onJoinRoom,
 		C3.Plugins.Photon.Acts.raiseEvent,
 		C3.Plugins.Photon.Exps.MyActorNr,
-		C3.Behaviors.EightDir.Acts.SetEnabled,
 		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Plugins.Sprite.Exps.X,
 		C3.Plugins.Sprite.Exps.Y,
@@ -9719,6 +9718,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Sprite.Acts.SetInstanceVar,
 		C3.Plugins.Photon.Exps.EventData,
 		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
+		C3.Behaviors.EightDir.Acts.SetEnabled,
 		C3.Behaviors.EightDir.Acts.SetIgnoreInput,
 		C3.Plugins.System.Exps.int,
 		C3.Behaviors.Pin.Acts.PinByProperties,
@@ -9808,6 +9808,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Mouse.Exps.X,
 		C3.Plugins.Mouse.Exps.Y,
 		C3.Plugins.Sprite.Cnds.OnCollision,
+		C3.Plugins.Tilemap.Cnds.IsOnLayer,
 		C3.Plugins.System.Cnds.Repeat,
 		C3.Plugins.System.Exps.random,
 		C3.Plugins.Sprite.Exps.Angle,
@@ -9815,6 +9816,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Sprite.Cnds.IsOverlappingOffset,
 		C3.Plugins.Sprite.Cnds.OnCreated,
 		C3.Plugins.Sprite.Cnds.IsFlipped,
+		C3.Plugins.shadowlight.Acts.MoveToTop,
 		C3.Behaviors.aekiro_gameobject.Acts.Destroy,
 		C3.Plugins.NinePatch.Acts.SetVisible,
 		C3.Behaviors.aekiro_button.Acts.setEnabled,
@@ -9834,7 +9836,17 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.BHT_Smart_Random.Acts.New,
 		C3.Plugins.BHT_Smart_Random.Exps.Next,
 		C3.Plugins.Arr.Exps.At,
-		C3.Plugins.shadowlight.Acts.MoveToTop,
+		C3.Plugins.System.Exps.choose,
+		C3.Plugins.System.Exps.loopindex,
+		C3.Plugins.Sprite.Acts.SetHeight,
+		C3.Plugins.System.Cnds.For,
+		C3.Plugins.System.Acts.SetLayerScale,
+		C3.Plugins.System.Exps.layerscale,
+		C3.Behaviors.Sin.Acts.SetPeriod,
+		C3.Behaviors.Sin.Exps.Period,
+		C3.Plugins.Spritefont2.Acts.TypewriterText,
+		C3.Plugins.Spritefont2.Acts.SetScale,
+		C3.Plugins.Sprite.Exps.Height,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
@@ -9848,10 +9860,8 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.NinePatch.Acts.SetInstanceVar,
 		C3.Plugins.Photon.Cnds.onLobbyStats,
 		C3.Plugins.Photon.Exps.RoomCount,
-		C3.Plugins.System.Cnds.For,
 		C3.Plugins.Json.Exps.ArraySize,
 		C3.Plugins.Photon.Exps.RoomNameAt,
-		C3.Plugins.System.Exps.loopindex,
 		C3.Plugins.Photon.Acts.joinRoom,
 		C3.Behaviors.Sin.Cnds.IsEnabled,
 		C3.Plugins.System.Acts.WaitForPreviousActions,
@@ -9930,6 +9940,8 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		{vectory: 0},
 		{c_pos_x: 0},
 		{c_pos_y: 0},
+		{effect_saturation: 0},
+		{death: 0},
 		{"8Direction": 0},
 		{Timer: 0},
 		{hero: 0},
@@ -9954,6 +9966,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		{role_text: 0},
 		{role_text2: 0},
 		{role_text3: 0},
+		{game_end: 0},
 		{heroid: 0},
 		{parent_uid: 0},
 		{Sine2: 0},
@@ -9980,9 +9993,13 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		{d: 0},
 		{TArea: 0},
 		{TPin: 0},
+		{Sprite7: 0},
+		{detail: 0},
+		{Array2: 0},
 		{arrow: 0},
 		{text: 0},
 		{spritefonts: 0},
+		{game_objects: 0},
 		{go_ping: 0},
 		{photon_status: 0},
 		{my_nickname: 0},
@@ -10118,7 +10135,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const v1 = p._GetNode(1).GetVar();
 			const v2 = p._GetNode(2).GetVar();
-			return () => ((and((((and((and((and(and(f0(), "_"), 1284) + "_"), 701) + "_"), 65) + "_") + v1.GetValue()) + "_"), v2.GetValue()) + "_") + "life");
+			return () => ((and((((and((and((and(and(f0(), "_"), 2327) + "_"), 3277) + "_"), 65) + "_") + v1.GetValue()) + "_"), v2.GetValue()) + "_") + "life");
 		},
 		() => "",
 		p => {
@@ -10433,6 +10450,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			return () => f0(f1(f2(), 1, "_"));
 		},
 		() => 0.05,
+		() => "building_top",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0(2, 4);
@@ -10502,6 +10520,12 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const n10 = p._GetNode(10);
 			return () => and((and((and((and((and((and((and((and((and((and(and(n0.ExpObject(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_"), n4.ExpObject()) + "_"), n5.ExpObject()) + "_"), n6.ExpObject()) + "_"), n7.ExpObject()) + "_"), n8.ExpObject()) + "_"), n9.ExpObject()) + "_"), n10.ExpObject());
 		},
+		() => 15,
+		() => 155,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(0, 21);
+		},
 		() => "MURDER",
 		() => -374112606371839,
 		() => "your task is to kill everyone before the timer expires, do it secretly, you don't want to hunt yourself?",
@@ -10528,6 +10552,147 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const f4 = p._GetNode(4).GetBoundMethod();
 			return () => n0.ExpObject(f1(f2((f3()).toString(), f4(), "_")), 1, 0);
 		},
+		() => "detail_pos",
+		() => "game",
+		p => {
+			const n0 = p._GetNode(0);
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => n0.ExpObject(f1(f2()), 0, 0);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
+			return () => n0.ExpObject(f1(f2()), 1, 0);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => (f0(1, 2)).toString();
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0("loop_detail");
+		},
+		() => 45,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() / 2);
+		},
+		() => 179,
+		() => "a",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => (0.01 * f0("a"));
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => C3.lerp(n0.ExpInstVar(), 0, 0.004);
+		},
+		() => "b",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => (0.01 * f0("b"));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => C3.lerp(f0(4), 1.3, 0.04);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => C3.lerp(f0(3), 1.3, 0.04);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => C3.lerp(f0(2), 1.3, 0.04);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => C3.lerp(f0(1), 1.3, 0.04);
+		},
+		() => "c",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => (0.01 * f0("c"));
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => C3.lerp(n0.ExpBehavior(), 10, 0.0007);
+		},
+		() => "d",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() - 1);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => (0.01 * f0("d"));
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() + 150);
+		},
+		() => "1",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() + 280);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() - 150);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() - 280);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			return () => f0((("игрок " + n1.ExpInstVar()) + " был все это время маньяком, какой ужас..."), (("игрок " + n2.ExpInstVar()) + " оказался предателем (где то это уже было...)"), (("игрок " + n3.ExpInstVar()) + " оказался любителем резать плоть, боже, что за животное..."));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(3, 5);
+		},
+		() => "ПОТЕРПЕВШИЕ победили",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(2, 3);
+		},
+		() => 0.5,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			return () => f0((("player " + n1.ExpInstVar()) + " has been a maniac all this time, what a horror..."), (("player " + n2.ExpInstVar()) + " was an imposter (somewhere it was already...)"), (("player " + n3.ExpInstVar()) + " turned out to be a flesh-slicer, God, what a f*ck..."));
+		},
+		() => "VICTIMS win",
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			const n2 = p._GetNode(2);
+			const n3 = p._GetNode(3);
+			return () => C3.distanceTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject());
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			return () => C3.lerp(n0.ExpObject(), n1.ExpObject(), 0.004);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			return () => C3.lerp(n0.ExpObject(), (n1.ExpObject() + 30), 0.004);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() * 2);
+		},
+		() => 0.25,
+		() => 156,
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
