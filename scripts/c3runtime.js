@@ -9846,7 +9846,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Behaviors.Sin.Exps.Period,
 		C3.Plugins.Spritefont2.Acts.TypewriterText,
 		C3.Plugins.Spritefont2.Acts.SetScale,
-		C3.Plugins.Sprite.Exps.Height,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
@@ -10552,7 +10551,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const f4 = p._GetNode(4).GetBoundMethod();
 			return () => n0.ExpObject(f1(f2((f3()).toString(), f4(), "_")), 1, 0);
 		},
-		() => "detail_pos",
 		() => "game",
 		p => {
 			const n0 = p._GetNode(0);
@@ -10687,11 +10685,9 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const n1 = p._GetNode(1);
 			return () => C3.lerp(n0.ExpObject(), (n1.ExpObject() + 30), 0.004);
 		},
-		p => {
-			const n0 = p._GetNode(0);
-			return () => (n0.ExpObject() * 2);
-		},
+		() => 135,
 		() => 0.25,
+		() => 150,
 		() => 156,
 		p => {
 			const n0 = p._GetNode(0);
@@ -10823,7 +10819,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		() => 60,
 		() => "Simulate Keyboard Controls",
 		() => 30,
-		() => 150,
 		() => 210,
 		() => 330
 	];
