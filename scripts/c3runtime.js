@@ -9836,9 +9836,9 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.BHT_Smart_Random.Exps.Next,
 		C3.Plugins.Arr.Exps.At,
 		C3.Plugins.System.Exps.choose,
-		C3.Plugins.System.Exps.loopindex,
 		C3.Plugins.Sprite.Acts.SetHeight,
 		C3.Plugins.System.Cnds.For,
+		C3.Plugins.System.Exps.loopindex,
 		C3.Plugins.System.Acts.SetLayerScale,
 		C3.Plugins.System.Exps.layerscale,
 		C3.Behaviors.Sin.Acts.SetPeriod,
@@ -10566,7 +10566,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => f0("loop_detail");
+			return () => f0(0, 1000);
 		},
 		() => 45,
 		p => {
