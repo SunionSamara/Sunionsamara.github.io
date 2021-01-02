@@ -9739,8 +9739,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Sprite.Acts.AddInstanceVar,
 		C3.Plugins.Sprite.Acts.SetX,
 		C3.Plugins.Sprite.Acts.SetY,
-		C3.Plugins.Spritefont2.Exps.Y,
-		C3.Plugins.System.Acts.SortZOrderByInstVar,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.Photon.Cnds.onActorLeave,
 		C3.Plugins.Spritefont2.Cnds.CompareInstanceVar,
@@ -9791,6 +9789,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Sprite.Acts.SetOpacity,
 		C3.Plugins.System.Exps.min,
 		C3.Plugins.System.Exps.max,
+		C3.Plugins.System.Acts.SortZOrderByInstVar,
 		C3.Plugins.Sprite.Acts.SetScale,
 		C3.Plugins.Sprite.Acts.SetVisible,
 		C3.Plugins.Sprite.Cnds.OnDestroyed,
@@ -10000,6 +9999,7 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		{spritefonts: 0},
 		{game_objects: 0},
 		{go_ping: 0},
+		{detail_last_pos: 0},
 		{photon_status: 0},
 		{my_nickname: 0},
 		{my_color: 0},
@@ -10255,10 +10255,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			return () => C3.lerp(n0.ExpObject(), n1.ExpInstVar(), 0.1);
 		},
 		() => "nickname",
-		p => {
-			const n0 = p._GetNode(0);
-			return () => (n0.ExpObject() + 70);
-		},
 		() => "chat",
 		() => "[]",
 		() => "button_send",
@@ -10519,12 +10515,6 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const n10 = p._GetNode(10);
 			return () => and((and((and((and((and((and((and((and((and((and(and(n0.ExpObject(), "_"), n1.ExpObject()) + "_"), n2.ExpObject()) + "_"), n3.ExpObject()) + "_"), n4.ExpObject()) + "_"), n5.ExpObject()) + "_"), n6.ExpObject()) + "_"), n7.ExpObject()) + "_"), n8.ExpObject()) + "_"), n9.ExpObject()) + "_"), n10.ExpObject());
 		},
-		() => 15,
-		() => 155,
-		p => {
-			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => f0(0, 21);
-		},
 		() => "MURDER",
 		() => -374112606371839,
 		() => "your task is to kill everyone before the timer expires, do it secretly, you don't want to hunt yourself?",
@@ -10551,18 +10541,24 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 			const f4 = p._GetNode(4).GetBoundMethod();
 			return () => n0.ExpObject(f1(f2((f3()).toString(), f4(), "_")), 1, 0);
 		},
+		() => 155,
+		() => "details_pos",
+		() => 15,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			return () => f0(f1(0, 21));
+		},
 		() => "game",
 		p => {
 			const n0 = p._GetNode(0);
-			const f1 = p._GetNode(1).GetBoundMethod();
-			const f2 = p._GetNode(2).GetBoundMethod();
-			return () => n0.ExpObject(f1(f2()), 0, 0);
+			const v1 = p._GetNode(1).GetVar();
+			return () => n0.ExpObject(v1.GetValue(), 0, 0);
 		},
 		p => {
 			const n0 = p._GetNode(0);
-			const f1 = p._GetNode(1).GetBoundMethod();
-			const f2 = p._GetNode(2).GetBoundMethod();
-			return () => n0.ExpObject(f1(f2()), 1, 0);
+			const v1 = p._GetNode(1).GetVar();
+			return () => n0.ExpObject(v1.GetValue(), 1, 0);
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
