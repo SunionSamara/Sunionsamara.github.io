@@ -14839,11 +14839,10 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		C3.Plugins.Spritefont2.Acts.TypewriterText,
 		C3.Plugins.Spritefont2.Acts.SetScale,
 		C3.Plugins.Sprite.Cnds.IsOverlapping,
-		C3.Plugins.Sprite.Cnds.IsAnimPlaying,
-		C3.Plugins.Audio.Acts.Play,
-		C3.Plugins.Audio.Acts.Stop,
 		C3.Plugins.Audio.Acts.SetListenerObject,
+		C3.Plugins.Sprite.Cnds.IsAnimPlaying,
 		C3.Plugins.Audio.Acts.PlayAtObject,
+		C3.Plugins.Audio.Acts.Stop,
 		C3.Plugins.Photon.Acts.connect,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.Photon.Exps.ErrorMessage,
@@ -15680,6 +15679,12 @@ value){switch(index){case HEIGHT:this.SetHeight(value);break;case TAG:this.SetTa
 		() => 156,
 		() => "hero_point",
 		() => 360,
+		() => 250,
+		() => "my_steps",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => and("steps_", n0.ExpInstVar());
+		},
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
