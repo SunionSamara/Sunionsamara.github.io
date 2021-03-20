@@ -15385,6 +15385,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Plugins.VKBridge.Acts.BridgeConnect,
 		C3.Plugins.VKBridge.Cnds.BridgeConnectSuccess,
 		C3.Plugins.VKBridge.Acts.Authorization,
+		C3.Plugins.VKBridge.Acts.StorageGet,
 		C3.Plugins.VKBridge.Cnds.StorageGetSuccess,
 		C3.Plugins.VKBridge.Exps.StorageData,
 		C3.Plugins.VKBridge.Exps.UserID
@@ -16653,6 +16654,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		() => 30,
 		() => 210,
 		() => 330,
+		() => "user,inventory",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0("user");
