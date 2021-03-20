@@ -2437,6 +2437,16 @@ self["C3_Shaders"]["water"] = {
 	animated: true,
 	parameters: [["speed",0,"percent"],["speed_x",0,"percent"],["speed_y",0,"percent"],["intensity",0,"float"],["frequency",0,"float"],["angle",0,"float"],["delta",0,"float"],["intence",0,"float"],["emboss",0,"percent"]]
 };
+self["C3_Shaders"]["outline"] = {
+	src: "varying mediump vec2 vTex;\nuniform lowp sampler2D samplerFront;\nuniform mediump vec2 pixelSize;\nuniform lowp vec3 cl;\nuniform lowp float width;\nuniform lowp float diag;\nvoid main(void)\n{\nmediump vec4 front = texture2D(samplerFront, vTex);\nmediump float dx = pixelSize.x*width;\nmediump float dy = pixelSize.y*width;\nmediump float a0 = texture2D(samplerFront, vTex + vec2(-dx*diag, dy*diag)).a;\nmediump float a1 = texture2D(samplerFront, vTex + vec2(dx*diag, -dy*diag)).a;\nmediump float a2 = texture2D(samplerFront, vTex + vec2(-dx*diag, -dy*diag)).a;\nmediump float a3 = texture2D(samplerFront, vTex + vec2(dx*diag, dy*diag)).a;\nmediump float a4 = texture2D(samplerFront, vTex + vec2(-dx, 0.0)).a;\nmediump float a5 = texture2D(samplerFront, vTex + vec2(dx, 0.0)).a;\nmediump float a6 = texture2D(samplerFront, vTex + vec2(0.0, dy)).a;\nmediump float a7 = texture2D(samplerFront, vTex + vec2(0.0, -dy)).a;\nmediump float ina = max(max(max(max(max(max(max(a0,a1),a2),a3),a4),a5),a6),a7)-front.a;\nmediump float outa = ina + front.a*(1.0-ina);\nmediump vec3 outrgb = (vec3(cl.x, cl.y, cl.z)*ina + front.rgb*front.a*(1.0-ina));\ngl_FragColor = vec4(outrgb, outa);\n}",
+	extendBoxHorizontal: 0,
+	extendBoxVertical: 0,
+	crossSampling: false,
+	mustPreDraw: false,
+	preservesOpaqueness: true,
+	animated: false,
+	parameters: [["width",0,"float"],["cl",0,"color"],["diag",0,"float"]]
+};
 self["C3_Shaders"]["Mikal_LinearLight"] = {
 	src: "varying mediump vec2 vTex;\nuniform lowp sampler2D samplerFront;\nuniform mediump vec2 srcStart;\nuniform mediump vec2 srcEnd;\nuniform lowp sampler2D samplerBack;\nuniform mediump vec2 destStart;\nuniform mediump vec2 destEnd;\nvoid main(void) {\nlowp vec4 front = texture2D(samplerFront, vTex);\nmediump vec2 tex = (vTex - srcStart) / (srcEnd - srcStart);\nlowp vec4 back = texture2D(samplerBack, mix(destStart, destEnd, tex));\nfront.r = (front.r > 0.5) ? (back.r + 2.*(front.r-0.5)) : (back.r + 2.*front.r - 1.);\nfront.g = (front.g > 0.5) ? (back.g + 2.*(front.g-0.5)) : (back.g + 2.*front.g - 1.);\nfront.b = (front.b > 0.5) ? (back.b + 2.*(front.b-0.5)) : (back.b + 2.*front.b - 1.);\ngl_FragColor = front * back.a;\n}",
 	extendBoxHorizontal: 0,
@@ -2467,6 +2477,4925 @@ self["C3_Shaders"]["blurvertical"] = {
 	animated: false,
 	parameters: [["intensity",0,"percent"]]
 };
+
+
+// Photon-Javascript_SDK.js
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/// --------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// ------------------- Exitgames.Common
+/// --------------------------------------------------------------------------------------------------------------------------------------------------------------
+/**
+    Exitgames
+    @namespace Exitgames
+*/
+/**
+    Exitgames utilities
+    @namespace Exitgames.Common
+*/
+var Exitgames;
+(function (Exitgames) {
+    var Common;
+    (function (Common) {
+        var Logger = /** @class */ (function () {
+            /**
+                @classdesc Logger with ability to control logging level.
+                Prints messages to browser console.
+                Each logging method perfoms toString() calls and default formatting of arguments only after it checks logging level. Therefore disabled level logging method call with plain arguments doesn't involves much overhead.
+                But if one prefer custom formatting or some calculation for logging methods arguments he should check logging level before doing this to avoid unnecessary operations:
+                if(logger.isLevelEnabled(Logger.Level.DEBUG)) {
+                    logger.debug("", someCall(x, y), x + "," + y);
+                }
+                @constructor Exitgames.Common.Logger
+                @param {string} [prefix=""] All log messages will be prefixed with that.
+                @param {Exitgames.Common.Logger.Level} [level=Level.INFO] Initial logging level.
+            */
+            function Logger(prefix, level) {
+                if (prefix === void 0) { prefix = ""; }
+                if (level === void 0) { level = Logger.Level.INFO; }
+                this.prefix = prefix;
+                this.level = level;
+            }
+            /**
+                @summary Sets logger prefix.
+                @method Exitgames.Common.Logger#setPrefix
+                @param {stirng} prefix New prefix.
+            */
+            Logger.prototype.setPrefix = function (prefix) {
+                this.prefix = prefix;
+            };
+            /**
+                @summary Gets logger prefix.
+                @method Exitgames.Common.Logger#getPrefix
+                @returns {string} Prefix.
+            */
+            Logger.prototype.getPrefix = function () {
+                return this.prefix;
+            };
+            /**
+                @summary Changes current logging level.
+                @method Exitgames.Common.Logger#setLevel
+                @param {Exitgames.Common.Logger.Level} level New logging level.
+            */
+            Logger.prototype.setLevel = function (level) {
+                level = Math.max(level, Logger.Level.DEBUG);
+                level = Math.min(level, Logger.Level.OFF);
+                this.level = level;
+            };
+            /**
+                @summary Sets global method to be called on logger.exception call.
+                @method Exitgames.Common.Logger#setExceptionHandler
+                @param {(string) => boolean} handler Exception handler. Return true to cancel throwing.
+            */
+            Logger.setExceptionHandler = function (handler) {
+                this.exceptionHandler = handler;
+            };
+            /**
+                @summary Checks if logging level active.
+                @method Exitgames.Common.Logger#isLevelEnabled
+                @param {Exitgames.Common.Logger.Level} level Level to check.
+                @returns {boolean} True if level active.
+            */
+            Logger.prototype.isLevelEnabled = function (level) { return level >= this.level; };
+            /**
+                @summary Returns current logging level.
+                @method Exitgames.Common.Logger#getLevel
+                @returns {Exitgames.Common.Logger.Level} Current logging level.
+            */
+            Logger.prototype.getLevel = function () { return this.level; };
+            /**
+                @summary Logs message if logging level = DEBUG, INFO, WARN, ERROR
+                @method Exitgames.Common.Logger#debug
+                @param {string} mess Message to log.
+                @param {...any} optionalParams For every additional parameter toString() applies and result added to the end of log message after space character.
+            */
+            Logger.prototype.debug = function (mess) {
+                var optionalParams = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    optionalParams[_i - 1] = arguments[_i];
+                }
+                this.log(Logger.Level.DEBUG, mess, optionalParams);
+            };
+            /**
+                @summary Logs message if logging level = INFO, WARN, ERROR
+                @method Exitgames.Common.Logger#info
+                @param {string} mess Message to log.
+                @param {...any} optionalParams For every additional parameter toString() applies and result added to the end of log message after space character.
+            */
+            Logger.prototype.info = function (mess) {
+                var optionalParams = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    optionalParams[_i - 1] = arguments[_i];
+                }
+                this.log(Logger.Level.INFO, mess, optionalParams);
+            };
+            /**
+                @summary Logs message if logging level = WARN, ERROR
+                @method Exitgames.Common.Logger#warn
+                @param {string} mess Message to log.
+                @param {...any} optionalParams For every additional parameter toString() applies and result added to the end of log message after space character.
+            */
+            Logger.prototype.warn = function (mess) {
+                var optionalParams = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    optionalParams[_i - 1] = arguments[_i];
+                }
+                this.log(Logger.Level.WARN, mess, optionalParams);
+            };
+            /**
+                @summary Logs message if logging level = ERROR
+                @method Exitgames.Common.Logger#error
+                @param {string} mess Message to log.
+                @param {...any} optionalParams For every additional parameter toString() applies and result added to the end of log message after space character.
+            */
+            Logger.prototype.error = function (mess) {
+                var optionalParams = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    optionalParams[_i - 1] = arguments[_i];
+                }
+                this.log(Logger.Level.ERROR, mess, optionalParams);
+            };
+            /**
+                @summary Throws an Error or executes exception handler if set.
+                @method Exitgames.Common.Logger#exception
+                @param {string} mess Message passed to Error or exception handler.
+                @param {...any} optionalParams For every additional parameter toString() applies and result added to the end of log message after space character.
+            */
+            Logger.prototype.exception = function (code, mess) {
+                var optionalParams = [];
+                for (var _i = 2; _i < arguments.length; _i++) {
+                    optionalParams[_i - 2] = arguments[_i];
+                }
+                if (Logger.exceptionHandler && Logger.exceptionHandler(code, this.format0(mess, optionalParams))) {
+                    return;
+                }
+                throw new Error(this.format0("[" + code + "] " + mess, optionalParams));
+            };
+            /**
+                @summary Applies default logger formatting to arguments
+                @method Exitgames.Common.Logger#format
+                @param {string} mess String to start formatting with.
+                @param {...any} optionalParams For every additional parameter toString() applies and result added to the end of formatted string after space character.
+                @returns {string} Formatted string.
+            */
+            Logger.prototype.format = function (mess) {
+                var optionalParams = [];
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    optionalParams[_i - 1] = arguments[_i];
+                }
+                return this.format0(mess, optionalParams);
+            };
+            /**
+                @summary Applies default logger formatting to array of objects.
+                @method Exitgames.Common.Logger#format
+                @param {string} mess String to start formatting with.
+                @param {any[]} optionalParams For every additional parameter toString() applies and result added to the end of formatted string after space character.
+                @returns {string} Formatted string.
+            */
+            Logger.prototype.formatArr = function (mess, optionalParams) { return this.format0(mess, optionalParams); };
+            Logger.prototype.log = function (level, msg, optionalParams) {
+                if (level >= this.level) {
+                    // for global vars console !== undefined throws an error
+                    if (typeof console !== "undefined" && msg !== undefined) {
+                        try {
+                            var logMethod;
+                            if (console.hasOwnProperty(Logger.log_types[level])) {
+                                logMethod = console[Logger.log_types[level]];
+                            }
+                            else {
+                                logMethod = console["log"];
+                            }
+                            if (logMethod) {
+                                logMethod.apply(console, [this.prefix, msg].concat(optionalParams));
+                            }
+                        }
+                        catch (error) {
+                            // silently fail
+                        }
+                    }
+                }
+            };
+            Logger.prototype.format0 = function (msg, optionalParams) {
+                return (this.prefix == "" ? "" : this.prefix + " ") + msg + " " + optionalParams.map(function (x) {
+                    if (x !== undefined) {
+                        switch (typeof x) {
+                            case "object":
+                                try {
+                                    return JSON.stringify(x);
+                                }
+                                catch (error) {
+                                    return x.toString() + "(" + error + ")";
+                                }
+                            default:
+                                return x.toString();
+                        }
+                    }
+                }).join(" ");
+            };
+            /**
+                @summary Logging levels. Set to restrict log output.
+                @member Exitgames.Common.Logger.Level
+                @readonly
+                @property {number} DEBUG All logging methods enabled.
+                @property {number} INFO info(...), warn(...), error(...) methods enabled.
+                @property {number} WARN warn(...) and error(...) methods enabled.
+                @property {number} ERROR Only error(...) method enabled.
+                @property {number} OFF Logging off.
+            */
+            Logger.Level = {
+                //TRACE : 0,
+                DEBUG: 1,
+                INFO: 2,
+                WARN: 3,
+                ERROR: 4,
+                //FATAL: 5,
+                OFF: 6
+            };
+            Logger.log_types = ["debug", "debug", "info", "warn", "error"];
+            return Logger;
+        }());
+        Common.Logger = Logger;
+        var Util = /** @class */ (function () {
+            function Util() {
+            }
+            Util.isArray = function (obj) {
+                return Object.prototype.toString.call(obj) === "[object Array]";
+            };
+            Util.getPropertyOrElse = function (obj, prop, defaultValue) {
+                if (obj.hasOwnProperty(prop)) {
+                    return obj[prop];
+                }
+                else {
+                    return defaultValue;
+                }
+            };
+            return Util;
+        }());
+        Common.Util = Util;
+    })(Common = Exitgames.Common || (Exitgames.Common = {}));
+})(Exitgames || (Exitgames = {}));
+/// <reference path="photon-common.ts"/>
+/**
+    Photon
+    @namespace Photon
+*/
+var Photon;
+(function (Photon) {
+    /**
+        @summary These are the options that can be used as underlying transport protocol.
+        @member Photon.ConnectionProtocol
+        @readonly
+        @property {number} Ws WebSockets connection.
+        @property {number} Wss WebSockets Secure connection.
+    **/
+    var ConnectionProtocol;
+    (function (ConnectionProtocol) {
+        ConnectionProtocol[ConnectionProtocol["Ws"] = 0] = "Ws";
+        ConnectionProtocol[ConnectionProtocol["Wss"] = 1] = "Wss";
+    })(ConnectionProtocol = Photon.ConnectionProtocol || (Photon.ConnectionProtocol = {}));
+    // Stubs for extended types used by photon-peer-em (emscripten)
+    var TypeExtType;
+    (function (TypeExtType) {
+        TypeExtType[TypeExtType["None"] = 0] = "None";
+        TypeExtType[TypeExtType["Byte"] = 1] = "Byte";
+        TypeExtType[TypeExtType["Short"] = 2] = "Short";
+        TypeExtType[TypeExtType["Int"] = 3] = "Int";
+        TypeExtType[TypeExtType["Long"] = 4] = "Long";
+        TypeExtType[TypeExtType["Float"] = 5] = "Float";
+        TypeExtType[TypeExtType["Double"] = 6] = "Double";
+        TypeExtType[TypeExtType["String"] = 7] = "String";
+        TypeExtType[TypeExtType["Bool"] = 8] = "Bool";
+        TypeExtType[TypeExtType["Table"] = 9] = "Table";
+        TypeExtType[TypeExtType["Dict"] = 10] = "Dict";
+        TypeExtType[TypeExtType["Object"] = 11] = "Object";
+    })(TypeExtType = Photon.TypeExtType || (Photon.TypeExtType = {}));
+    var TypeExt = /** @class */ (function () {
+        function TypeExt() {
+        }
+        TypeExt.Is = function (x) {
+            return false;
+        };
+        TypeExt.Byte = function (x) {
+            return x;
+        };
+        TypeExt.Short = function (x) {
+            return x;
+        };
+        TypeExt.Int = function (x) {
+            return x;
+        };
+        TypeExt.Long = function (x) {
+            return x;
+        };
+        TypeExt.Float = function (x) {
+            return x;
+        };
+        TypeExt.Double = function (x) {
+            return x;
+        };
+        TypeExt.String = function (x) {
+            return x;
+        };
+        TypeExt.Bool = function (x) {
+            return x;
+        };
+        TypeExt.Dict = function (t1, t2, x) {
+            return x;
+        };
+        TypeExt.TableTypedKeys = function () {
+            return {};
+        };
+        TypeExt.DictTypedKeys = function (keyType, valType) {
+            return {};
+        };
+        TypeExt.PutTypedKey = function (x, k, v) {
+            x[k] = v;
+        };
+        return TypeExt;
+    }());
+    Photon.TypeExt = TypeExt;
+    var PhotonPeer = /** @class */ (function () {
+        /**
+            @classdesc Instances of the PhotonPeer class are used to connect to a Photon server and communicate with it.
+            A PhotonPeer instance allows communication with the Photon Server, which in turn distributes messages to other PhotonPeer clients.
+            An application can use more than one PhotonPeer instance, which are treated as separate users on the server.
+            Each should have its own listener instance, to separate the operations, callbacks and events.
+            @constructor Photon.PhotonPeer
+            @param {Photon.ConnectionProtocol} protocol Connection protocol.
+            @param {string} address Server address:port.
+            @param {string} [subprotocol=""] WebSocket protocol.
+            @param {string} [debugName=""] Log messages prefixed with this value.
+        */
+        function PhotonPeer(protocol, address, subprotocol, debugName) {
+            if (subprotocol === void 0) { subprotocol = ""; }
+            if (debugName === void 0) { debugName = ""; }
+            this.protocol = protocol;
+            this.address = address;
+            this.subprotocol = subprotocol;
+            /**
+                @summary Peer sends 'keep alive' message to server as this timeout exceeded after last send operation.
+                Set it < 1000 to disable 'keep alive' operation
+                @member Photon.PhotonPeer#keepAliveTimeoutMs
+                @type {number}
+                @default 3000
+            */
+            this.keepAliveTimeoutMs = 3000;
+            this._frame = "~m~";
+            this._isConnecting = false;
+            this._isConnected = false;
+            this._isClosing = false;
+            this._peerStatusListeners = {};
+            this._eventListeners = {};
+            this._responseListeners = {};
+            this.lastRtt = 0;
+            this.initTimestamp = Date.now();
+            this.keepAliveTimer = 0;
+            this.url = this.addProtocolPrefix(this.address, this.protocol);
+            this._logger = new Exitgames.Common.Logger(debugName && debugName != "" ? debugName + ":" : "");
+        }
+        PhotonPeer.prototype.addProtocolPrefix = function (address, protocol) {
+            var protocolPrefix = {
+                ws: "ws://",
+                wss: "wss://"
+            };
+            for (var k in protocolPrefix) {
+                if (address.indexOf(protocolPrefix[k]) == 0) {
+                    return address;
+                }
+            }
+            switch (protocol) {
+                case ConnectionProtocol.Ws:
+                    return protocolPrefix.ws + address;
+                case ConnectionProtocol.Wss:
+                    return protocolPrefix.wss + address;
+                default: // error
+                    return protocolPrefix.ws + address;
+            }
+        };
+        PhotonPeer.prototype.Destroy = function () {
+        };
+        /**
+            @summary Checks if peer is connecting.
+            @method Photon.PhotonPeer#isConnecting
+            @returns {boolean} True if peer is connecting.
+        */
+        PhotonPeer.prototype.isConnecting = function () { return this._isConnecting; };
+        PhotonPeer.prototype.getLastRtt = function () { return this.lastRtt; };
+        /**
+            @summary Checks if peer is connected.
+            @method Photon.PhotonPeer#isConnected
+            @returns {boolean} True if peer is connected.
+        */
+        PhotonPeer.prototype.isConnected = function () { return this._isConnected; };
+        /**
+            @summary Checks if peer is closing.
+            @method Photon.PhotonPeer#isClosing
+            @returns {boolean} True if peer is closing.
+        */
+        PhotonPeer.prototype.isClosing = function () { return this._isClosing; };
+        /**
+            @summary Starts connection to server.
+            @method Photon.PhotonPeer#connect
+        */
+        PhotonPeer.prototype.connect = function (appid) {
+            var _this = this;
+            this._sessionid = undefined;
+            var url = this.url + "/" + appid + "?libversion=4.1.0.0";
+            if (this.subprotocol == "") {
+                this._socket = new WebSocket(url, "Json");
+            }
+            else {
+                this._socket = new WebSocket(url, this.subprotocol);
+            }
+            this._onConnecting();
+            // Set event handlers.
+            this._socket.onopen = function (ev) {
+                //this.logger.debug("onopen");
+            };
+            this._socket.onmessage = function (ev) {
+                var message = _this._decode(ev.data);
+                _this._onMessage(message.toString());
+            };
+            this._socket.onclose = function (ev) {
+                _this._logger.debug("onclose: wasClean =", ev.wasClean, ", code=", ev.code, ", reason =", ev.reason);
+                if (_this._isConnecting) {
+                    _this._onConnectFailed(ev);
+                }
+                else {
+                    if (1006 == ev.code) { //TODO: avoid using constants. what is the 1006
+                        _this._onTimeout();
+                    }
+                    _this._onDisconnect();
+                }
+            };
+            this._socket.onerror = function (ev) {
+                _this._onError(ev);
+            };
+        };
+        /**
+            @summary Disconnects from server.
+            @method Photon.PhotonPeer#disconnect
+        */
+        PhotonPeer.prototype.disconnect = function () {
+            this._isClosing = true;
+            if (this._socket) {
+                this._socket.close();
+            }
+        };
+        /**
+            @summary Sends operation to the Photon Server.
+            @method Photon.PhotonPeer#sendOperation
+            @param {number} code Code of operation.
+            @param {object} [data] Parameters of operation as a flattened array of key-value pairs: [key1, value1, key2, value2...]
+            @param {boolean} [sendReliable=false] Selects if the operation must be acknowledged or not. If false, the operation is not guaranteed to reach the server.
+            @param {number} [channelId=0] The channel in which this operation should be sent.
+        */
+        PhotonPeer.prototype.sendOperation = function (code, data, sendReliable, channelId) {
+            if (sendReliable === void 0) { sendReliable = false; }
+            if (channelId === void 0) { channelId = 0; }
+            var sndJSON = { "req": code, "vals": [] };
+            if (Exitgames.Common.Util.isArray(data)) {
+                sndJSON["vals"] = data;
+            }
+            else {
+                if (data === undefined) {
+                    sndJSON["vals"] = [];
+                }
+                else {
+                    this._logger.exception(201, "PhotonPeer[sendOperation] - Trying to send non array data:", data);
+                }
+            }
+            this._send(sndJSON);
+            this._logger.debug("PhotonPeer[sendOperation] - Sending request:", sndJSON);
+        };
+        /**
+            @summary Registers listener for peer status change.
+            @method Photon.PhotonPeer#addPeerStatusListener
+            @param {PhotonPeer.StatusCodes} statusCode Status change to this value will be listening.
+            @param {Function} callback The listener function that processes the status change. This function don't accept any parameters.
+        */
+        PhotonPeer.prototype.addPeerStatusListener = function (statusCode, callback) {
+            this._addListener(this._peerStatusListeners, statusCode, callback);
+        };
+        /**
+            @summary Registers listener for custom event.
+            @method Photon.PhotonPeer#addEventListener
+            @param {number} eventCode Custom event code.
+            @param {Function} callback The listener function that processes the event. This function may accept object with event content.
+        */
+        PhotonPeer.prototype.addEventListener = function (eventCode, callback) {
+            this._addListener(this._eventListeners, eventCode.toString(), callback);
+        };
+        /**
+            @summary Registers listener for operation response.
+            @method Photon.PhotonPeer#addResponseListener
+            @param {number} operationCode Operation code.
+            @param {Function} callback The listener function that processes the event. This function may accept object with operation response content.
+        */
+        PhotonPeer.prototype.addResponseListener = function (operationCode, callback) {
+            this._addListener(this._responseListeners, operationCode.toString(), callback);
+        };
+        /**
+            @summary Removes listener if exists for peer status change.
+            @method Photon.PhotonPeer#removePeerStatusListener
+            @param {string} statusCode One of PhotonPeer.StatusCodes to remove listener for.
+            @param {Function} callback Listener to remove.
+        */
+        PhotonPeer.prototype.removePeerStatusListener = function (statusCode, callback) {
+            this._removeListener(this._peerStatusListeners, statusCode, callback);
+        };
+        /**
+            @summary Removes listener if exists for custom event.
+            @method Photon.PhotonPeer#removeEventListener
+            @param {number} eventCode Event code to remove to remove listener for.
+            @param {Function} callback Listener to remove.
+        */
+        PhotonPeer.prototype.removeEventListener = function (eventCode, callback) {
+            this._removeListener(this._eventListeners, eventCode.toString(), callback);
+        };
+        /**
+            @summary Removes listener if exists for operation response.
+            @method Photon.PhotonPeer#removeResponseListener
+            @param {number} operationCode Operation code to remove listener for.
+            @param {Function} callback Listener to remove.
+        */
+        PhotonPeer.prototype.removeResponseListener = function (operationCode, callback) {
+            this._removeListener(this._responseListeners, operationCode.toString(), callback);
+        };
+        /**
+            @summary Removes all listeners for peer status change specified.
+            @method Photon.PhotonPeer#removePeerStatusListenersForCode
+            @param {string} statusCode One of PhotonPeer.StatusCodes to remove all listeners for.
+        */
+        PhotonPeer.prototype.removePeerStatusListenersForCode = function (statusCode) {
+            this._removeListenersForCode(this._peerStatusListeners, statusCode);
+        };
+        /**
+            @summary Removes all listeners for custom event specified.
+            @method Photon.PhotonPeer#removeEventListenersForCode
+            @param {number} eventCode Event code to remove all listeners for.
+        */
+        PhotonPeer.prototype.removeEventListenersForCode = function (eventCode) {
+            this._removeListenersForCode(this._eventListeners, eventCode.toString());
+        };
+        /**
+            @summary Removes all listeners for operation response specified.
+            @method Photon.PhotonPeer#removeResponseListenersForCode
+            @param {number} operationCode Operation code to remove all listeners for.
+        */
+        PhotonPeer.prototype.removeResponseListenersForCode = function (operationCode) {
+            this._removeListenersForCode(this._responseListeners, operationCode.toString());
+        };
+        /**
+            @summary Sets peer logger level.
+            @method Photon.PhotonPeer#setLogLevel
+            @param {Exitgames.Common.Logger.Level} level Logging level.
+        */
+        PhotonPeer.prototype.setLogLevel = function (level) {
+            this._logger.setLevel(level);
+        };
+        /**
+            @summary Called if no listener found for received custom event.
+            Override to relay unknown event to user's code or handle known events without listener registration.
+            @method Photon.PhotonPeer#onUnhandledEvent
+            @param {number} eventCode Code of received event.
+            @param {object} [args] Content of received event or empty object.
+        */
+        PhotonPeer.prototype.onUnhandledEvent = function (eventCode, args) {
+            this._logger.warn('PhotonPeer: No handler for event', eventCode, 'registered.');
+        };
+        /**
+            @summary Called if no listener found for received operation response event.
+            Override to relay unknown response to user's code or handle known responses without listener registration.
+            @method Photon.PhotonPeer#onUnhandledEvent
+            @param {number} operationCode Code of received response.
+            @param {object} [args] Content of received response or empty object.
+        */
+        PhotonPeer.prototype.onUnhandledResponse = function (operationCode, args) {
+            this._logger.warn('PhotonPeer: No handler for response', operationCode, 'registered.');
+        };
+        // TODO: lite calls this
+        // protected
+        PhotonPeer.prototype._dispatchEvent = function (code, args) {
+            if (!this._dispatch(this._eventListeners, code.toString(), args, "event")) {
+                this.onUnhandledEvent(code, args);
+            }
+        };
+        // TODO: lite calls this
+        // protected
+        PhotonPeer.prototype._dispatchResponse = function (code, args) {
+            if (!this._dispatch(this._responseListeners, code.toString(), args, "response")) {
+                this.onUnhandledResponse(code, args);
+            }
+        };
+        PhotonPeer.prototype._stringify = function (message) {
+            if (Object.prototype.toString.call(message) == "[object Object]") {
+                if (!JSON) {
+                    this._logger.exception(202, "PhotonPeer[_stringify] - Trying to encode as JSON, but JSON.stringify is missing.");
+                }
+                return "~j~" + JSON.stringify(message);
+            }
+            else {
+                return String(message);
+            }
+        };
+        PhotonPeer.prototype._encode = function (messages) {
+            var ret = "", message, messages = Exitgames.Common.Util.isArray(messages) ? messages : [messages];
+            for (var i = 0, l = messages.length; i < l; i++) {
+                message = messages[i] === null || messages[i] === undefined ? "" : this._stringify(messages[i]);
+                ret += this._frame + message.length + this._frame + message;
+            }
+            return ret;
+        };
+        PhotonPeer.prototype._decode = function (data) {
+            var messages = [], number, n, newdata = data;
+            var nulIndex = data.indexOf("\x00");
+            if (nulIndex !== -1) {
+                newdata = data.replace(/[\0]/g, "");
+            }
+            data = newdata;
+            do {
+                if (data.substr(0, 3) !== this._frame) {
+                    return messages;
+                }
+                data = data.substr(3);
+                number = "", n = "";
+                for (var i = 0, l = data.length; i < l; i++) {
+                    n = Number(data.substr(i, 1));
+                    if (data.substr(i, 1) == n) {
+                        number += n;
+                    }
+                    else {
+                        data = data.substr(number.length + this._frame.length);
+                        number = Number(number);
+                        break;
+                    }
+                }
+                messages.push(data.substr(0, number));
+                data = data.substr(number);
+            } while (data !== "");
+            return messages;
+        };
+        PhotonPeer.prototype._onMessage = function (message) {
+            if (message.substr(0, 3) == "~j~") {
+                this._onMessageReceived(JSON.parse(message.substr(3)));
+            }
+            else {
+                if (!this._sessionid) {
+                    this._sessionid = message;
+                    this._onConnect();
+                }
+                else {
+                    this._onMessageReceived(message);
+                }
+            }
+        };
+        PhotonPeer.prototype.resetKeepAlive = function () {
+            var _this = this;
+            //this._logger.debug("reset kep alive: ", Date.now());
+            clearTimeout(this.keepAliveTimer);
+            if (this.keepAliveTimeoutMs >= 1000) {
+                this.keepAliveTimer = setTimeout(function () {
+                    var _a;
+                    // send time from peer creation to avoid timestamp overflow on server side
+                    _this._send((_a = {}, _a["irq"] = 1, _a["vals"] = [1, Date.now() - _this.initTimestamp], _a), true);
+                }, this.keepAliveTimeoutMs);
+            }
+        };
+        PhotonPeer.prototype._send = function (data, checkConnected) {
+            if (checkConnected === void 0) { checkConnected = false; }
+            var message = this._encode(data);
+            if (this._socket && this._isConnected && !this._isClosing) {
+                this.resetKeepAlive();
+                //this._logger.debug("_send:", message);
+                this._socket.send(message);
+            }
+            else {
+                if (!checkConnected) {
+                    this._logger.exception(203, 'PhotonPeer[_send] - Operation', data.req, '- failed, "isConnected" is', this._isConnected, ', "isClosing" is', this._isClosing, "!");
+                }
+            }
+        };
+        PhotonPeer.prototype._onMessageReceived = function (message) {
+            if (typeof message === "object") {
+                this._logger.debug("PhotonPeer[_onMessageReceived] - Socket received message:", message);
+                // copy protocol 'message' protocol object to runtime object: the latter's properties can be renamed by minifier.
+                var msgJSON = { err: message["err"], msg: message["msg"], vals: message["vals"], res: message["res"], evt: message["evt"], irs: message["irs"] };
+                var msgErr = msgJSON.err ? msgJSON.err : 0;
+                msgJSON.vals = msgJSON.vals !== undefined ? msgJSON.vals : [];
+                if (msgJSON.vals.length > 0) {
+                    msgJSON.vals = this._parseMessageValuesArrayToJSON(msgJSON.vals);
+                }
+                if (msgJSON.res !== undefined) {
+                    var code = parseInt(msgJSON.res);
+                    this._parseResponse(code, msgJSON);
+                }
+                else {
+                    if (msgJSON.evt !== undefined) {
+                        var code = parseInt(msgJSON.evt);
+                        this._parseEvent(code, msgJSON);
+                    }
+                    else {
+                        if (msgJSON.irs !== undefined) {
+                            var code = parseInt(msgJSON.irs);
+                            this._parseInternalResponse(code, msgJSON);
+                        }
+                        else {
+                            this._logger.exception(204, "PhotonPeer[_onMessageReceived] - Received undefined message type:", msgJSON);
+                        }
+                    }
+                }
+            }
+        };
+        PhotonPeer.prototype._parseMessageValuesArrayToJSON = function (vals) {
+            var parsedJSON = {};
+            if (Exitgames.Common.Util.isArray(vals)) {
+                if (vals.length % 2 == 0) {
+                    var toParse = vals, key, value;
+                    while (toParse.length > 0) {
+                        key = toParse.shift() + "";
+                        value = toParse.shift();
+                        parsedJSON[key] = value;
+                    }
+                }
+                else {
+                    this._logger.exception(205, "PhotonPeer[_parseMessageValuesToJSON] - Received invalid values array:", vals);
+                }
+            }
+            return parsedJSON;
+        };
+        PhotonPeer.prototype._parseEvent = function (code, event) {
+            switch (code) {
+                default:
+                    this._dispatchEvent(code, { vals: event.vals });
+                    break;
+            }
+        };
+        PhotonPeer.prototype._parseResponse = function (code, response) {
+            switch (code) {
+                default:
+                    this._dispatchResponse(code, { errCode: response.err, errMsg: response.msg, vals: response.vals });
+                    break;
+            }
+        };
+        PhotonPeer.prototype._parseInternalResponse = function (code, response) {
+            this.lastRtt = Date.now() - this.initTimestamp - response.vals[1];
+            this._logger.debug("internal response:", response);
+        };
+        PhotonPeer.prototype._onConnecting = function () {
+            this._logger.debug("PhotonPeer[_onConnecting] - Starts connecting", this.url, '..., raising "connecting" event ...');
+            this._isConnecting = true;
+            this._dispatchPeerStatus(PhotonPeer.StatusCodes.connecting);
+            this.resetKeepAlive();
+        };
+        PhotonPeer.prototype._onConnect = function () {
+            this._logger.debug('PhotonPeer[_onConnect] - Connected successfully! Raising "connect" event ...');
+            this._isConnecting = false;
+            this._isConnected = true;
+            this._dispatchPeerStatus(PhotonPeer.StatusCodes.connect);
+            this.resetKeepAlive();
+        };
+        PhotonPeer.prototype._onConnectFailed = function (ev) {
+            this._logger.error('PhotonPeer[_onConnectFailed] - Socket connection could not be created:', this.url, this.subprotocol, 'Wrong host or port?\n Raising "connectFailed event ...');
+            this._isConnecting = this._isConnected = false;
+            this._dispatchPeerStatus(PhotonPeer.StatusCodes.connectFailed);
+        };
+        PhotonPeer.prototype._onDisconnect = function () {
+            var wasConnected = this._isConnected;
+            var wasClosing = this._isClosing;
+            this._logger.debug('PhotonPeer[_onDisconnect] - Socket closed, raising "disconnect" event ...');
+            this._isClosing = this._isConnected = this._isConnecting = false;
+            if (wasConnected) {
+                if (wasClosing) {
+                    this._dispatchPeerStatus(PhotonPeer.StatusCodes.disconnect);
+                }
+                else {
+                    this._dispatchPeerStatus(PhotonPeer.StatusCodes.connectClosed);
+                }
+            }
+        };
+        PhotonPeer.prototype._onTimeout = function () {
+            this._logger.debug('PhotonPeer[_onTimeout] - Client timed out! Raising "timeout" event ...');
+            this._dispatchPeerStatus(PhotonPeer.StatusCodes.timeout);
+        };
+        PhotonPeer.prototype._onError = function (ev) {
+            this._logger.error("PhotonPeer[_onError] - Connection error:", arguments[0]);
+            this._isConnecting = this._isConnected = this._isClosing = false;
+            this._dispatchPeerStatus(PhotonPeer.StatusCodes.error);
+        };
+        PhotonPeer.prototype._addListener = function (listeners, code, callback) {
+            if (!(code in listeners)) {
+                listeners[code] = [];
+            }
+            if (callback && typeof callback === "function") {
+                this._logger.debug('PhotonPeer[_addListener] - Adding listener for event', code);
+                listeners[code].push(callback);
+            }
+            else {
+                this._logger.error('PhotonPeer[_addListener] - Listener', code, 'is not a function but of type', typeof callback, '. No listener added!');
+            }
+            return this;
+        };
+        PhotonPeer.prototype._dispatch = function (listeners, code, args, debugType) {
+            if (code in listeners) {
+                var events = listeners[code];
+                for (var i = 0, l = events.length; i < l; i++) {
+                    if (!Exitgames.Common.Util.isArray(args)) {
+                        args = [args];
+                    }
+                    events[i].apply(this, args === undefined ? [] : args);
+                }
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+        PhotonPeer.prototype._dispatchPeerStatus = function (code) {
+            if (!this._dispatch(this._peerStatusListeners, code, undefined, "peerStatus")) {
+                this._logger.warn('PhotonPeer[_dispatchPeerStatus] - No handler for ', code, 'registered.');
+            }
+        };
+        PhotonPeer.prototype._removeListener = function (listeners, code, callback) {
+            if ((code in listeners)) {
+                var prevLenght = listeners[code].length;
+                listeners[code] = listeners[code].filter(function (x) { return x != callback; });
+                this._logger.debug('PhotonPeer[_removeListener] - Removing listener for event', code, "removed:", prevLenght - listeners[code].length);
+            }
+            return this;
+        };
+        PhotonPeer.prototype._removeListenersForCode = function (listeners, code) {
+            this._logger.debug('PhotonPeer[_removeListenersForCode] - Removing all listeners for event', code);
+            if (code in listeners) {
+                listeners[code] = [];
+            }
+            return this;
+        };
+        /**
+            @summary Enum for peer status codes.
+            Use to subscribe to status changes.
+            @member Photon.PhotonPeer.StatusCodes
+            @readonly
+            @property {string} connecting Is connecting to server.
+            @property {string} connect Connected to server.
+            @property {string} connectFailed Connection to server failed.
+            @property {string} disconnect Disconnected from server.
+            @property {string} connectClosed Connection closed by server.
+            @property {string} error General connection error.
+            @property {string} timeout Disconnected from server for timeout.
+        */
+        PhotonPeer.StatusCodes = {
+            connecting: "connecting",
+            connect: "connect",
+            connectFailed: "connectFailed",
+            disconnect: "disconnect",
+            connectClosed: "connectClosed",
+            error: "error",
+            timeout: "timeout"
+        };
+        return PhotonPeer;
+    }());
+    Photon.PhotonPeer = PhotonPeer;
+})(Photon || (Photon = {}));
+/**
+    Photon Load Balancing API
+    @namespace Photon.LoadBalancing
+*/
+var Photon;
+(function (Photon) {
+    var LoadBalancing;
+    (function (LoadBalancing) {
+        var _a;
+        var WebFlags = {
+            HttpForward: 0x01,
+            SendAuthCookie: 0x02,
+            SendSync: 0x04,
+            SendState: 0x08
+        };
+        var Actor = /** @class */ (function () {
+            /**
+                @classdesc Summarizes a "player" within a room, identified (in that room) by ID (or "actorNr"). Extend to implement custom logic.
+                @constructor Photon.LoadBalancing.Actor
+                @param {string} name Actor name.
+                @param {number} actorNr Actor ID.
+                @param {boolean} isLocal Actor is local.
+            */
+            function Actor(name, actorNr, isLocal) {
+                this.name = name;
+                this.actorNr = actorNr;
+                this.isLocal = isLocal;
+                this.userId = "";
+                this.customProperties = {};
+                this.suspended = false;
+            }
+            // public getLoadBalancingClient() { return this.loadBalancingClient; }
+            /**
+                @summary Actor's room: the room initialized by client for create room operation or room client connected to.
+                @method Photon.LoadBalancing.Actor#getRoom
+                @returns {Photon.LoadBalancing.Room} Actor's room.
+            */
+            Actor.prototype.getRoom = function () { return this.loadBalancingClient ? this.loadBalancingClient.myRoom() : null; };
+            /**
+                @summary Raises game custom event.
+                @method Photon.LoadBalancing.Actor#raiseEvent
+                @param {number} eventCode Identifies this type of event (and the content). Your game's event codes can start with 0.
+                @param {object} [data] Custom data you want to send along (use null, if none).
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {number} [options.interestGroup] The ID of the interest group this event goes to (exclusively).
+                @property {Photon.LoadBalancing.Constants.EventCaching} [options.cache=EventCaching.DoNotCache] Events can be cached (merged and removed) for players joining later on.
+                @property {Photon.LoadBalancing.Constants.ReceiverGroup} [options.receivers=ReceiverGroup.Others] Defines to which group of players the event is passed on.
+                @property {number[]} [options.targetActors] Defines the target players who should receive the event (use only for small target groups).
+                @property {boolean} [options.webForward=false] Forward to web hook.
+            */
+            Actor.prototype.raiseEvent = function (eventCode, data, options) {
+                if (this.loadBalancingClient) {
+                    this.loadBalancingClient.raiseEvent(eventCode, data, options);
+                }
+            };
+            // returns true if local prop can be immediately set: client is not in a room or expected properties are set
+            Actor.prototype.setProp = function (name, value, expected) {
+                if (expected === void 0) { expected = undefined; }
+                if (this.loadBalancingClient && this.loadBalancingClient.isJoinedToRoom()) {
+                    var props = {};
+                    props[name] = value;
+                    var expProps = {};
+                    expProps[name] = expected;
+                    this.loadBalancingClient._setPropertiesOfActor(this.actorNr, props, false, expProps);
+                    return expected == undefined;
+                }
+                return true;
+            };
+            /**
+                @summary Sets actor name.
+                @method Photon.LoadBalancing.Actor#setName
+                @param {string} name Actor name.
+            */
+            Actor.prototype.setName = function (name) {
+                if (this.name != name) {
+                    this.name = name;
+                    this.setProp(LoadBalancing.Constants.ActorProperties.PlayerName, name);
+                }
+            };
+            // properties methods
+            /**
+                @summary Called on every actor properties update: properties set by client, poperties update from server.
+                Override to update custom room state.
+                @method Photon.LoadBalancing.Actor#onPropertiesChange
+                @param {object} changedCustomProps Key-value map of changed properties.
+                @param {boolean} [byClient] true if properties set by client.
+            */
+            Actor.prototype.onPropertiesChange = function (changedCustomProps, byClient) { };
+            /**
+                @summary Returns custom property by name.
+                @method Photon.LoadBalancing.Actor#getCustomProperty
+                @param {string} name Name of the property.
+                @returns {object} Property or undefined if property not found.
+            */
+            Actor.prototype.getCustomProperty = function (name) { return this.customProperties[name]; };
+            /**
+                @summary Returns custom property by name or default value.
+                @method Photon.LoadBalancing.Actor#getCustomPropertyOrElse
+                @param {string} name Name of the property.
+                @param {object} defaultValue Default property value.
+                @returns {object} Property or default value if property not found.
+            */
+            Actor.prototype.getCustomPropertyOrElse = function (name, defaultValue) { return Exitgames.Common.Util.getPropertyOrElse(this.customProperties, name, defaultValue); };
+            /**
+                @summary Sets custom property.
+                @method Photon.LoadBalancing.Actor#setCustomProperty
+                @param {string} name Name of the property.
+                @param {object} value Property value.
+                @param {boolean} [webForward=false] Forward to web hook.
+                @param {object} [expectedValue] Property value expected when update occurs. (CAS : "Check And Swap")
+            */
+            Actor.prototype.setCustomProperty = function (name, value, webForward, expectedValue) {
+                var _a;
+                if (webForward === void 0) { webForward = false; }
+                this.customProperties[name] = value;
+                var props = {};
+                props[name] = value;
+                var expectedProps;
+                if (expectedValue != undefined) {
+                    expectedProps = (_a = {}, _a[name] = expectedValue, _a);
+                }
+                if (this.loadBalancingClient && this.loadBalancingClient.isJoinedToRoom()) {
+                    this.loadBalancingClient._setPropertiesOfActor(this.actorNr, props, webForward, expectedProps);
+                }
+                this.onPropertiesChange(props, true);
+            };
+            /**
+                @summary Sets custom properties.
+                @method Photon.LoadBalancing.Actor#setCustomProperties
+                @param {object} properties Table of properties to set.
+                @param {boolean} [webForward=false] Forward to web hook.
+                @param {object} [expectedProperties] Table of properties expected when update occurs. (CAS : "Check And Swap")
+            */
+            Actor.prototype.setCustomProperties = function (properties, webForward, expectedProperties) {
+                if (webForward === void 0) { webForward = false; }
+                var props = {};
+                for (var name in properties) {
+                    this.customProperties[name] = properties[name];
+                    props[name] = properties[name];
+                }
+                if (this.loadBalancingClient && this.loadBalancingClient.isJoinedToRoom()) {
+                    this.loadBalancingClient._setPropertiesOfActor(this.actorNr, props, webForward, expectedProperties);
+                }
+                this.onPropertiesChange(props, true);
+            };
+            /**
+                @summary Returns true if actor is in suspended state.
+                @method Photon.LoadBalancing.Actor#isSuspended
+                @returns {boolean} Actor suspend state.
+            **/
+            Actor.prototype.isSuspended = function () {
+                return this.suspended;
+            };
+            Actor.prototype._getAllProperties = function () {
+                var p = {};
+                p[LoadBalancing.Constants.ActorProperties.PlayerName] = this.name;
+                for (var k in this.customProperties) {
+                    p[k] = this.customProperties[k];
+                }
+                return p;
+            };
+            Actor.prototype._setLBC = function (lbc) { this.loadBalancingClient = lbc; };
+            /**
+                @summary Returns custom properties.
+                @method Photon.LoadBalancing.Actor#getCustomProperties
+                @returns {object} Custom properties.
+            **/
+            Actor.prototype.getCustomProperties = function () {
+                var p = {};
+                for (var k in this.customProperties) {
+                    p[k] = this.customProperties[k];
+                }
+                return p;
+            };
+            Actor.prototype._updateFromResponse = function (vals) {
+                this.actorNr = vals[LoadBalancing.Constants.ParameterCode.ActorNr];
+                var props = vals[LoadBalancing.Constants.ParameterCode.PlayerProperties];
+                if (props !== undefined) {
+                    var name = props[LoadBalancing.Constants.ActorProperties.PlayerName];
+                    if (name !== undefined) {
+                        this.name = name;
+                    }
+                    var userId = props[LoadBalancing.Constants.ActorProperties.UserId];
+                    if (userId !== undefined) {
+                        this.userId = userId;
+                    }
+                    this._updateFromProps(props);
+                }
+            };
+            Actor.prototype._updateMyActorFromResponse = function (vals) {
+                this.actorNr = vals[LoadBalancing.Constants.ParameterCode.ActorNr];
+            };
+            Actor.prototype.updateIfExists = function (prevValue, code, props) {
+                if (props.hasOwnProperty(code)) {
+                    return props[code];
+                }
+                else {
+                    return prevValue;
+                }
+            };
+            Actor.prototype._updateFromProps = function (props) {
+                if (props) {
+                    this.name = this.updateIfExists(this.name, LoadBalancing.Constants.ActorProperties.PlayerName, props);
+                    var changedProps = {};
+                    for (var k in props) {
+                        if (parseInt(k).toString() != k) { // if key is not a number
+                            if (this.customProperties[k] !== props[k]) {
+                                this.customProperties[k] = props[k];
+                                changedProps[k] = props[k];
+                            }
+                        }
+                    }
+                    this.onPropertiesChange(changedProps, false);
+                }
+            };
+            Actor.prototype._setSuspended = function (s) {
+                this.suspended = s;
+            };
+            Actor._getActorNrFromResponse = function (vals) {
+                return vals[LoadBalancing.Constants.ParameterCode.ActorNr];
+            };
+            return Actor;
+        }());
+        LoadBalancing.Actor = Actor;
+        // readonly room info from server
+        var RoomInfo = /** @class */ (function () {
+            /**
+                @classdesc Used for Room listings of the lobby (not yet joining). Offers the basic info about a room: name, player counts, properties, etc.
+                @constructor Photon.LoadBalancing.RoomInfo
+                @param {string} name Room name.
+            */
+            function RoomInfo(name) {
+                // standard room properties
+                // TODO: access via getters
+                /**
+                    @summary Room name.
+                    @member Photon.LoadBalancing.RoomInfo#name
+                    @type {string}
+                    @readonly
+                */
+                this.name = "";
+                /**
+                    @summary Joined room Game server address.
+                    @member Photon.LoadBalancing.RoomInfo#address
+                    @type {string}
+                    @readonly
+                */
+                this.address = "";
+                /**
+                    @summary Max players before room is considered full.
+                    @member Photon.LoadBalancing.RoomInfo#maxPlayers
+                    @type {number}
+                    @readonly
+                */
+                this.maxPlayers = 0;
+                /**
+                    @summary Shows the room in the lobby's room list. Makes sense only for local room.
+                    @member Photon.LoadBalancing.RoomInfo#isVisible
+                    @type {boolean}
+                    @readonly
+                */
+                this.isVisible = true;
+                /**
+                    @summary Defines if this room can be joined.
+                    @member Photon.LoadBalancing.RoomInfo#isOpen
+                    @type {boolean}
+                    @readonly
+                */
+                this.isOpen = true;
+                /**
+                    @summary Count of player currently in room.
+                    @member Photon.LoadBalancing.RoomInfo#playerCount
+                    @type {number}
+                    @readonly
+                */
+                this.playerCount = 0;
+                /**
+                    @summary Time in ms indicating how long the room instance will be keeped alive in the server room cache after all clients have left the room.
+                    @member Photon.LoadBalancing.RoomInfo#emptyRoomLiveTime
+                    @type {number}
+                    @readonly
+                */
+                this.emptyRoomLiveTime = 0;
+                /**
+                    @summary Time in ms indicating how long suspended player will be kept in the room.
+                    @member Photon.LoadBalancing.RoomInfo#suspendedPlayerLiveTime
+                    @type {number}
+                    @readonly
+                **/
+                this.suspendedPlayerLiveTime = 0;
+                /**
+                    @summary Expected users.
+                    @member Photon.LoadBalancing.RoomInfo#expectedUsers
+                    @type {number}
+                    @readonly
+                **/
+                this.expectedUsers = [];
+                /**
+                    @summary Expected server plugins.
+                    @member Photon.LoadBalancing.RoomInfo#plugins
+                    @type {string[]}
+                    @readonly
+                **/
+                this.plugins = [];
+                /**
+                    @summary Room removed (in room list updates).
+                    @member Photon.LoadBalancing.RoomInfo#removed
+                    @type {boolean}
+                    @readonly
+                */
+                this.removed = false;
+                // TODO: does end user need this?
+                this.cleanupCacheOnLeave = false;
+                /**
+                    @summary Master client set by game server. Note: Not all servers support this currently. If the value of the property is 0, use lowest actorid instead.
+                    @member Photon.LoadBalancing.RoomInfo#masterClientId
+                    @type { number }
+                    @readonly
+                */
+                this.masterClientId = 0;
+                // custom properties
+                this._customProperties = {};
+                this._propsListedInLobby = [];
+                this.name = name;
+            }
+            /**
+                @summary Returns custom properties.
+                @method Photon.LoadBalancing.RoomInfo#getCustomProperties
+                @returns {object} Custom properties.
+            **/
+            RoomInfo.prototype.getCustomProperties = function () {
+                var p = {};
+                for (var k in this._customProperties) {
+                    p[k] = this._customProperties[k];
+                }
+                return p;
+            };
+            /**
+                @summary Returns properties listed in lobby.
+                @method Photon.LoadBalancing.RoomInfo#getPropsListedInLobby
+                @returns {object} Properties listed in lobby.
+            **/
+            RoomInfo.prototype.getPropsListedInLobby = function () {
+                var p = [];
+                for (var k in this._propsListedInLobby) {
+                    p[k] = this._propsListedInLobby[k];
+                }
+                return p;
+            };
+            /**
+                @summary Called on every room properties update: room creation, properties set by client, poperties update from server.
+                Override to update custom room state.
+                @method Photon.LoadBalancing.RoomInfo#onPropertiesChange
+                @param {object} changedCustomProps Key-value map of changed properties.
+                @param {boolean} [byClient] true if called on room creation or properties set by client.
+            */
+            RoomInfo.prototype.onPropertiesChange = function (changedCustomProps, byClient) { };
+            /**
+                @summary Returns custom property by name.
+                @method Photon.LoadBalancing.RoomInfo#getCustomProperty
+                @param {string} name Name of the property.
+                @returns {object} Property or undefined if property not found.
+            */
+            RoomInfo.prototype.getCustomProperty = function (prop) { return this._customProperties[prop]; };
+            /**
+                @summary Returns custom property by name or default value.
+                @method Photon.LoadBalancing.RoomInfo#getCustomPropertyOrElse
+                @param {string} name Name of the property.
+                @param {object} defaultValue Default property value.
+                @returns {object} Property or default value if property not found.
+            */
+            RoomInfo.prototype.getCustomPropertyOrElse = function (prop, defaultValue) { return Exitgames.Common.Util.getPropertyOrElse(this._customProperties, prop, defaultValue); };
+            RoomInfo.prototype._updateFromMasterResponse = function (vals) {
+                this.address = vals[LoadBalancing.Constants.ParameterCode.Address];
+                var name = vals[LoadBalancing.Constants.ParameterCode.RoomName];
+                if (name) {
+                    this.name = name;
+                }
+            };
+            RoomInfo.prototype._updateFromProps = function (props) {
+                if (props) {
+                    this.maxPlayers = this.updateIfExists(this.maxPlayers, LoadBalancing.Constants.GameProperties.MaxPlayers, props);
+                    this.isVisible = this.updateIfExists(this.isVisible, LoadBalancing.Constants.GameProperties.IsVisible, props);
+                    this.isOpen = this.updateIfExists(this.isOpen, LoadBalancing.Constants.GameProperties.IsOpen, props);
+                    this.playerCount = this.updateIfExists(this.playerCount, LoadBalancing.Constants.GameProperties.PlayerCount, props);
+                    this.removed = this.updateIfExists(this.removed, LoadBalancing.Constants.GameProperties.Removed, props);
+                    this._propsListedInLobby = this.updateIfExists(this._propsListedInLobby, LoadBalancing.Constants.GameProperties.PropsListedInLobby, props);
+                    this.cleanupCacheOnLeave = this.updateIfExists(this.cleanupCacheOnLeave, LoadBalancing.Constants.GameProperties.CleanupCacheOnLeave, props);
+                    this.masterClientId = this.updateIfExists(this.masterClientId, LoadBalancing.Constants.GameProperties.MasterClientId, props);
+                    this.emptyRoomLiveTime = this.updateIfExists(this.emptyRoomLiveTime, LoadBalancing.Constants.GameProperties.EmptyRoomTtl, props);
+                    this.suspendedPlayerLiveTime = this.updateIfExists(this.suspendedPlayerLiveTime, LoadBalancing.Constants.GameProperties.PlayerTtl, props);
+                    this.expectedUsers = this.updateIfExists(this.suspendedPlayerLiveTime, LoadBalancing.Constants.GameProperties.ExpectedUsers, props);
+                    var changedProps = {};
+                    for (var k in props) {
+                        if (parseInt(k).toString() != k) { // if key is not a number
+                            if (this._customProperties[k] !== props[k]) {
+                                this._customProperties[k] = props[k];
+                                changedProps[k] = props[k];
+                            }
+                        }
+                    }
+                    this.onPropertiesChange(changedProps, false);
+                }
+            };
+            RoomInfo.prototype._updateFromEvent = function (payload) {
+                if (payload) {
+                    this.masterClientId = this.updateIfExists(this.masterClientId, LoadBalancing.Constants.ParameterCode.MasterClientId, payload);
+                }
+            };
+            RoomInfo.prototype.updateIfExists = function (prevValue, code, props) {
+                if (props.hasOwnProperty(code)) {
+                    return props[code];
+                }
+                else {
+                    return prevValue;
+                }
+            };
+            return RoomInfo;
+        }());
+        LoadBalancing.RoomInfo = RoomInfo;
+        // joined room with writable properties
+        var Room = /** @class */ (function (_super) {
+            __extends(Room, _super);
+            /**
+                @classdesc Represents a room client joins or is joined to. Extend to implement custom logic. Custom properties can be set via setCustomProperty() while being in the room.
+                @mixes Photon.LoadBalancing.RoomInfo
+                @constructor Photon.LoadBalancing.Room
+                @param {string} name Room name.
+            */
+            function Room(name) {
+                return _super.call(this, name) || this;
+            }
+            // room created from client via factory always has this field set
+            //public getLoadBalancingClient() { return this.loadBalancingClient; }
+            /**
+                @summary Sets custom property
+                @method Photon.LoadBalancing.Room#setCustomProperty
+                @param {string} name Name of the property.
+                @param {object} value Property value.
+                @param {boolean} [webForward=false] Forward to web hook.
+                @param {object} [expectedValue] Property value expected when update occurs. (CAS : "Check And Swap")
+            */
+            Room.prototype.setCustomProperty = function (name, value, webForward, expectedValue) {
+                var _a;
+                if (webForward === void 0) { webForward = false; }
+                this._customProperties[name] = value;
+                var props = {};
+                props[name] = value;
+                var expectedProps;
+                if (expectedValue != undefined) {
+                    expectedProps = (_a = {}, _a[name] = expectedValue, _a);
+                }
+                if (this.loadBalancingClient && this.loadBalancingClient.isJoinedToRoom()) {
+                    this.loadBalancingClient._setPropertiesOfRoom(props, webForward, expectedProps);
+                }
+                this.onPropertiesChange(props, true);
+            };
+            /**
+                @summary Sets custom property
+                @method Photon.LoadBalancing.Room#setCustomProperties
+                @param {object} properties Table of properties to set.
+                @param {boolean} [webForward=false] Forward to web hook.
+                @param {object} [expectedProperties] Table of properties expected when update occurs. (CAS : "Check And Swap")
+            */
+            Room.prototype.setCustomProperties = function (properties, webForward, expectedProperties) {
+                if (webForward === void 0) { webForward = false; }
+                var props = {};
+                for (var name in properties) {
+                    this._customProperties[name] = properties[name];
+                    props[name] = properties[name];
+                }
+                if (this.loadBalancingClient && this.loadBalancingClient.isJoinedToRoom()) {
+                    this.loadBalancingClient._setPropertiesOfRoom(props, webForward, expectedProperties);
+                }
+                this.onPropertiesChange(props, true);
+            };
+            // returns true if local prop can be immediately set: client is not in a room or expected properties are set
+            Room.prototype.setProp = function (name, value, expected) {
+                if (expected === void 0) { expected = undefined; }
+                if (this.loadBalancingClient && this.loadBalancingClient.isJoinedToRoom()) {
+                    var props = {};
+                    props[name] = value;
+                    var expProps = {};
+                    expProps[name] = expected;
+                    this.loadBalancingClient._setPropertiesOfRoom(props, false, expProps);
+                    return expected == undefined;
+                }
+                return true;
+            };
+            /**
+             * @summary Sets rooms visibility in the lobby's room list.
+             * @method Photon.LoadBalancing.Room#setIsVisible
+             * @param {boolean} isVisible New visibility value.
+            */
+            Room.prototype.setIsVisible = function (isVisible) {
+                if (this.isVisible != isVisible) {
+                    this.isVisible = isVisible;
+                    this.setProp(LoadBalancing.Constants.GameProperties.IsVisible, isVisible);
+                }
+            };
+            /**
+             * @summary Sets if this room can be joined.
+             * @method Photon.LoadBalancing.Room#setIsOpen
+             * @param {boolean} isOpen New property value.
+            */
+            Room.prototype.setIsOpen = function (isOpen) {
+                if (this.isOpen != isOpen) {
+                    this.isOpen = isOpen;
+                    this.setProp(LoadBalancing.Constants.GameProperties.IsOpen, isOpen);
+                }
+            };
+            /**
+             * @summary Sets max players before room is considered full.
+             * @method Photon.LoadBalancing.Room#setMaxPlayers
+             * @param {number} maxPlayers New max players value.
+            */
+            Room.prototype.setMaxPlayers = function (maxPlayers) {
+                if (this.maxPlayers != maxPlayers) {
+                    this.maxPlayers = maxPlayers;
+                    this.setProp(LoadBalancing.Constants.GameProperties.MaxPlayers, maxPlayers);
+                }
+            };
+            /**
+             * @summary Sets room live time in the server room cache after all clients have left the room.
+             * @method Photon.LoadBalancing.Room#setEmptyRoomLiveTime
+             * @param {number} emptyRoomLiveTime New live time value in ms.
+            */
+            Room.prototype.setEmptyRoomLiveTime = function (emptyRoomLiveTime) {
+                if (this.emptyRoomLiveTime != emptyRoomLiveTime) {
+                    this.emptyRoomLiveTime = emptyRoomLiveTime;
+                    this.setProp(LoadBalancing.Constants.GameProperties.EmptyRoomTtl, emptyRoomLiveTime);
+                }
+            };
+            /**
+             * @summary Sets time in ms indicating how long suspended player will be kept in the room.
+             * @method Photon.LoadBalancing.Room#setSuspendedPlayerLiveTime
+             * @param {number} suspendedPlayerLiveTime New live time value in ms.
+            */
+            Room.prototype.setSuspendedPlayerLiveTime = function (suspendedPlayerLiveTime) {
+                if (this.suspendedPlayerLiveTime != suspendedPlayerLiveTime) {
+                    this.suspendedPlayerLiveTime = suspendedPlayerLiveTime;
+                    this.setProp(LoadBalancing.Constants.GameProperties.PlayerTtl, suspendedPlayerLiveTime);
+                }
+            };
+            /**
+             * @summary Sets expected server plugins.
+             * @method Photon.LoadBalancing.Room#setPlugins
+             * @param {string[]} plugins New plugins list.
+            */
+            Room.prototype.setPlugins = function (plugins) {
+                this.plugins = plugins;
+            };
+            /**
+                @summary Sets list of the room properties to pass to the RoomInfo list in a lobby.
+                @method Photon.LoadBalancing.Room#setPropsListedInLobby
+                @param {string[]} props Array of properties names.
+            */
+            Room.prototype.setPropsListedInLobby = function (props) {
+                this._propsListedInLobby = props;
+            };
+            /**
+                @summary Sets list of the room properties to pass to the RoomInfo list in a lobby.
+                @method Photon.LoadBalancing.Room#setPropsListedInLobby
+                @param {string[]} props Array of properties names.
+            */
+            Room.prototype.setExpectedUsers = function (props) {
+                if (this.setProp(LoadBalancing.Constants.GameProperties.ExpectedUsers, props, this.expectedUsers))
+                    this.expectedUsers = props;
+            };
+            /**
+                @summary Attempts to remove all current expected users from the server's Slot Reservation list.
+                Note that this operation can conflict with new/other users joining. They might be
+                adding users to the list of expected users before or after this client called ClearExpectedUsers.
+                This room's expectedUsers value will update, when the server sends a successful update.
+                Internals: This methods wraps up setting the ExpectedUsers property of a room.
+                @method Photon.LoadBalancing.Room#clearExpectedUsers
+            */
+            Room.prototype.clearExpectedUsers = function () {
+                var empty = [];
+                if (this.setProp(LoadBalancing.Constants.GameProperties.ExpectedUsers, empty, this.expectedUsers))
+                    this.expectedUsers = empty;
+            };
+            /**
+                @summary Asks the server to assign another player as Master Client of your current room.
+                This method calls an operation on the server to set a new Master Client, which takes a roundtrip.
+                In case of success, this client and the others get the new Master Client from the server.
+                @method Photon.LoadBalancing.Room#setMasterClient
+                @param {number} actorNr New Master Client actor ID.
+            */
+            Room.prototype.setMasterClient = function (actorNr) {
+                this.setProp(LoadBalancing.Constants.GameProperties.MasterClientId, actorNr /*, this.masterClientId */); // 
+            };
+            Room.prototype._setLBC = function (lbc) { this.loadBalancingClient = lbc; };
+            return Room;
+        }(RoomInfo));
+        LoadBalancing.Room = Room;
+        var LoadBalancingClient = /** @class */ (function () {
+            /**
+                @classdesc Implements the Photon LoadBalancing workflow. This class should be extended to handle system or custom events and operation responses.
+                @constructor Photon.LoadBalancing.LoadBalancingClient
+                @param {Photon.ConnectionProtocol} protocol Connecton protocol.
+                @param {string} appId Cloud application ID.
+                @param {string} appVersion Cloud application version.
+            */
+            function LoadBalancingClient(protocol, appId, appVersion) {
+                this.appId = appId;
+                this.appVersion = appVersion;
+                //------------------------
+                this.connectionProtocol = 0; // protocol set in constructor, can be overriden by prefix in server address string
+                this.masterServerAddress = "";
+                this.nameServerAddress = "";
+                // if true, do not treat disconnection by server as error (when leaving a room)
+                this.gamePeerWaitingForDisconnect = false;
+                // protected
+                this.autoJoinLobby = true; // hardcoded behaviour; inheritor class can override this
+                // options mainly keep state between servers
+                // set / cleared in connectToNameServer()(connectToRegionMaster()), connect()
+                // lobbyName and lobbyType passed to JoinLobby operation (we don't have separate JoinLobby operation and set them in connect())
+                this.connectOptions = {};
+                // shares lobby info between Master and Game CreateGame calls (createRoomInternal)
+                this.createRoomOptions = {};
+                // shares options between Master and Game JoinGame operations
+                this.joinRoomOptions = {};
+                this.roomInfos = new Array();
+                this.roomInfosDict = {}; // 'by name' access support
+                this.actors = {};
+                this.actorsArray = []; // actors 'at index' access support (Scirra/Costruct 2)
+                this.lowestActorId = 0; // master client support
+                this.userId = "";
+                this.userAuthType = LoadBalancing.Constants.CustomAuthenticationType.None;
+                this.userAuthParameters = "";
+                this.userAuthData = "";
+                this.findFriendsRequestList = [];
+                this.lobbyStatsRequestList = new Array();
+                // protected
+                this.state = LoadBalancingClient.State.Uninitialized;
+                this.logger = new Exitgames.Common.Logger("Client:");
+                this.validNextState = {};
+                var serverAddress = "";
+                if (typeof (protocol) == "number") {
+                    this.connectionProtocol = protocol;
+                    switch (protocol) {
+                        case Photon.ConnectionProtocol["Ws"]:
+                            this.masterServerAddress = "ws://app-eu.exitgamescloud.com:9090";
+                            this.nameServerAddress = "ws://ns.exitgames.com:9093";
+                            break;
+                        case Photon.ConnectionProtocol["Wss"]:
+                            this.masterServerAddress = "wss://app-eu.exitgamescloud.com:19090";
+                            this.nameServerAddress = "wss://ns.exitgames.com:19093";
+                            break;
+                        default:
+                            var s0 = "wrong_protocol_error";
+                            this.masterServerAddress = s0;
+                            this.nameServerAddress = s0;
+                            this.logger.error("Wrong protocol: ", protocol);
+                            break;
+                    }
+                }
+                else if (typeof (protocol) == "string") { // compatibility with previous constructor version
+                    this.connectionProtocol = Photon.ConnectionProtocol.Ws;
+                    var s = protocol;
+                    this.masterServerAddress = s;
+                    this.nameServerAddress = s;
+                }
+                else {
+                    this.connectionProtocol = Photon.ConnectionProtocol.Ws;
+                    var s1 = "wrong_protocol_type_error";
+                    this.masterServerAddress = s1;
+                    this.nameServerAddress = s1;
+                    this.logger.error("Wrong protocol type: ", typeof (protocol));
+                }
+                this.initValidNextState();
+                this.currentRoom = this.roomFactoryInternal("");
+                this._myActor = this.actorFactoryInternal("", -1, true);
+                this.addActor(this._myActor);
+            }
+            // override to handle system events:
+            /**
+                @summary Called on client state change. Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onStateChange
+                @param {Photon.LoadBalancing.LoadBalancingClient.State} state New client state.
+            */
+            LoadBalancingClient.prototype.onStateChange = function (state) { };
+            /**
+                @summary Called if client error occures. Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onError
+                @param {Photon.LoadBalancing.LoadBalancingClient.PeerErrorCode} errorCode Client error code.
+                @param {string} errorMsg Error message.
+            */
+            LoadBalancingClient.prototype.onError = function (errorCode, errorMsg) { };
+            /**
+                @summary Called on operation response. Override if need custom workflow or response error handling.
+                @method Photon.LoadBalancing.LoadBalancingClient#onOperationResponse
+                @param {number} errorCode Server error code.
+                @param {string} errorMsg Error message.
+                @param {number} code Operation code.
+                @param {object} content Operation response content.
+            */
+            LoadBalancingClient.prototype.onOperationResponse = function (errorCode, errorMsg, code, content) { };
+            /**
+                @summary Called on custom event. Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onEvent
+                @param {number} code Event code.
+                @param {object} content Event content.
+                @param {number} actorNr Actor ID event raised by.
+            */
+            LoadBalancingClient.prototype.onEvent = function (code, content, actorNr) { };
+            /**
+                @summary Called on room list received from Master server (on connection). Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onRoomList
+                @param {{@link Photon.LoadBalancing.RoomInfo}[]} rooms Room list.
+            */
+            LoadBalancingClient.prototype.onRoomList = function (rooms) { };
+            /**
+                @summary Called on room list updates received from Master server. Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onRoomListUpdate
+                @param {{@link Photon.LoadBalancing.RoomInfo}[]} rooms Updated room list.
+                @param {{@link Photon.LoadBalancing.RoomInfo}[]} roomsUpdated Rooms whose properties were changed.
+                @param {{@link Photon.LoadBalancing.RoomInfo}[]} roomsAdded New rooms in list.
+                @param {{@link Photon.LoadBalancing.RoomInfo}[]} roomsRemoved Rooms removed from list.
+            */
+            LoadBalancingClient.prototype.onRoomListUpdate = function (rooms, roomsUpdated, roomsAdded, roomsRemoved) { };
+            // TODO: move to Room? Or remove and use Room.onPropertiesChange only?
+            /**
+                @summary Called on joined room properties changed event. Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onMyRoomPropertiesChange
+            */
+            LoadBalancingClient.prototype.onMyRoomPropertiesChange = function () { };
+            /**
+                @summary Called on actor properties changed event. Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onActorPropertiesChange
+                @param {Photon.LoadBalancing.Actor} actor Actor whose properties were changed.
+            */
+            LoadBalancingClient.prototype.onActorPropertiesChange = function (actor) { };
+            /**
+                @summary Called when client joins room. Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onJoinRoom
+                @param {boolean} createdByMe True if room is created by client.
+            */
+            LoadBalancingClient.prototype.onJoinRoom = function (createdByMe) { };
+            /**
+                @summary Called when new actor joins the room client joined to. Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onActorJoin
+                @param {Photon.LoadBalancing.Actor} actor New actor.
+            */
+            LoadBalancingClient.prototype.onActorJoin = function (actor) { };
+            /**
+                @summary Called when actor leaves the room client joined to. Also called for every actor during room cleanup. Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onActorLeave
+                @param {Photon.LoadBalancing.Actor} actor Actor left the room.
+                @param {boolean} cleanup True if called during room cleanup (e.g. on disconnect).
+            */
+            LoadBalancingClient.prototype.onActorLeave = function (actor, cleanup) { };
+            /**
+                @summary Called when actor suspended in the room client joined to.Override to handle it.
+                @method Photon.LoadBalancing.LoadBalancingClient#onActorSuspend
+                @param {Photon.LoadBalancing.Actor} actor Actor suspended in the room.
+            */
+            LoadBalancingClient.prototype.onActorSuspend = function (actor) { };
+            /**
+                @summary Called when {@link Photon.LoadBalancing.LoadBalancingClient#findFriends findFriends} request completed. <br/>
+                Override to handle request results.
+                @method Photon.LoadBalancing.LoadBalancingClient#onFindFriendsResult
+                @param {number} errorCode Result error code. 0 if request is successful.
+                @param {string} errorMsg Error message.
+                @param {object} friends Table with actors names as keys and friend statuses as values: {name1: friendStatus1, name2: friendStatus2, ... }.
+                @property {object} friendStatus Friend status.
+                @property {boolean} friendStatus.online Online status.
+                @property {string} friendStatus.roomId Joined room.
+            */
+            LoadBalancingClient.prototype.onFindFriendsResult = function (errorCode, errorMsg, friends) { };
+            /**
+                @summary Called when lobbies statistics update received. <br/>
+                Update can be automated by set up during {@link Photon.LoadBalancing.LoadBalancingClient#connect connect} or requested explicitly by {@link Photon.LoadBalancing.LoadBalancingClient#requestLobbyStats requestLobbyStats}. <br/>
+                Override to handle request results.
+                @method Photon.LoadBalancing.LoadBalancingClient#onLobbyStats
+                @param {number} errorCode Result error code. 0 if request is successful. For automated updates is always 0.
+                @param {string} errorMsg Error message. For automated updates is always empty.
+                @param {object[]} lobbies Array of lobbies statistics: [lobbyStats1, lobbyStats1, ... ].
+                @property {object} lobbyStats Lobby statistics.
+                @property {string} lobbyStats.lobbyName Lobby name.
+                @property {number} lobbyStats.lobbyType Lobby type.
+                @property {number} lobbyStats.peerCount The number of players in the lobby (on Master, not playing).
+                @property {number} lobbyStats.gameCount The number of games in the lobby.
+            */
+            LoadBalancingClient.prototype.onLobbyStats = function (errorCode, errorMsg, lobbies) { };
+            /**
+                @summary Called when application statistics update received. <br/>
+                Override to handle request results.
+                @method Photon.LoadBalancing.LoadBalancingClient#onAppStats
+                @param {number} errorCode Result error code. Currently is always 0.
+                @param {string} errorMsg Error message. Currently is always empty.
+                @param {object} stats Application statistics.
+                @property {object} stats Application statistics.
+                @property {number} stats.peerCount Count of players currently online on Game servers.
+                @property {number} stats.masterPeerCount Count of players on Master server (looking for game).
+                @property {number} stats.gameCount Count of games currently in use (includes invisible and full rooms, so it doesn't match lobby list).
+            */
+            LoadBalancingClient.prototype.onAppStats = function (errorCode, errorMsg, stats) { };
+            /**
+                @summary Called when {@link Photon.LoadBalancing.LoadBalancingClient#getRegions getRegions} request completed.<br/>
+                Override to handle request results.
+                @param {number} errorCode Result error code. 0 if request is successful.
+                @param {string} errorMsg Error message.
+                @param {object} regions Object with region codes as keys and Master servers addresses as values.
+            */
+            LoadBalancingClient.prototype.onGetRegionsResult = function (errorCode, errorMsg, regions) { };
+            /**
+                @summary Called when {@link Photon.LoadBalancing.LoadBalancingClient#webRpc webRpc} request completed.<br/>
+                Override to handle request results.
+                @param {number} errorCode Result error code. 0 if request is successful.
+                @param {string} message Error message if errorCode ~ = 0 or optional message returned by remote procedure.
+                @param {string} uriPath Request path.
+                @param {number} resultCode Result code returned by remote procedure.
+                @param {object} data Data returned by remote procedure.
+            */
+            LoadBalancingClient.prototype.onWebRpcResult = function (errorCode, message, uriPath, resultCode, data) { };
+            /**
+                @summary Override with creation of custom room (extended from Room): { return new CustomRoom(...); }
+                @method Photon.LoadBalancing.LoadBalancingClient#roomFactory
+                @param {string} name Room name. Pass to super() in custom actor constructor.
+            */
+            LoadBalancingClient.prototype.roomFactory = function (name) { return new Room(name); };
+            /**
+                @summary Override with creation of custom actor (extended from Actor): { return new CustomActor(...); }
+                @method Photon.LoadBalancing.LoadBalancingClient#actorFactory
+                @param {string} name Actor name. Pass to super() in custom room constructor.
+                @param {number} actorNr Actor ID. Pass to super() in custom room constructor.
+                @param {boolean} isLocal Actor is local. Pass to super() in custom room constructor.
+            */
+            LoadBalancingClient.prototype.actorFactory = function (name, actorNr, isLocal) { return new Actor(name, actorNr, isLocal); };
+            //------------------------
+            /**
+                @summary Returns local actor.
+                Client always has local actor even if not joined.
+                @method Photon.LoadBalancing.LoadBalancingClient#myActor
+                @returns {Photon.LoadBalancing.Actor} Local actor.
+            */
+            LoadBalancingClient.prototype.myActor = function () { return this._myActor; };
+            /**
+                @summary Returns client's room.
+                Client always has it's room even if not joined. It's used for room creation operation.
+                @method Photon.LoadBalancing.LoadBalancingClient#myRoom
+                @returns {Photon.LoadBalancing.Room} Current room.
+            */
+            LoadBalancingClient.prototype.myRoom = function () { return this.currentRoom; };
+            /**
+                @summary Returns actors in room client currently joined including local actor.
+                @method Photon.LoadBalancing.LoadBalancingClient#myRoomActors
+                @returns {object} actorNr -> {@link Photon.LoadBalancing.Actor} map of actors in room.
+            */
+            LoadBalancingClient.prototype.myRoomActors = function () { return this.actors; };
+            /**
+                @summary Returns numer of actors in room client currently joined including local actor.
+                @method Photon.LoadBalancing.LoadBalancingClient#myRoomActorCount
+                @returns {number} Number of actors.
+            */
+            LoadBalancingClient.prototype.myRoomActorCount = function () { return this.actorsArray.length; };
+            LoadBalancingClient.prototype.myRoomActorsArray = function () { return this.actorsArray; }; // actors 'at index' access support (Scirra/Costruct 2)                
+            /**
+                @summary Actor number of the player who's the master of this Room. Note: This changes when the current master leaves the room.
+                @method Photon.LoadBalancing.LoadBalancingClient#myRoomMasterActorNr
+                @type {number}
+                @readonly
+            */
+            LoadBalancingClient.prototype.myRoomMasterActorNr = function () {
+                if (this.myRoom().masterClientId) {
+                    return this.myRoom().masterClientId;
+                }
+                else {
+                    return this.lowestActorId;
+                }
+            };
+            LoadBalancingClient.prototype.lastRtt = function () {
+                return this.gamePeer ? this.gamePeer.getLastRtt() : 0;
+            };
+            LoadBalancingClient.prototype.roomFactoryInternal = function (name) {
+                if (name === void 0) { name = ""; }
+                var r = this.roomFactory(name);
+                r._setLBC(this);
+                return r;
+            };
+            LoadBalancingClient.prototype.actorFactoryInternal = function (name, actorNr, isLocal) {
+                if (name === void 0) { name = ""; }
+                if (actorNr === void 0) { actorNr = -1; }
+                if (isLocal === void 0) { isLocal = false; }
+                var a = this.actorFactory(name, actorNr, isLocal);
+                a._setLBC(this);
+                return a;
+            };
+            /**
+                @summary Changes default NameServer address and port before connecting to NameServer.
+                @method Photon.LoadBalancing.LoadBalancingClient#setNameServerAddress
+                @param {string} address New address and port.
+            */
+            LoadBalancingClient.prototype.setNameServerAddress = function (address) {
+                this.nameServerAddress = address;
+            };
+            /**
+                @summary Returns current NameServer address.
+                @method Photon.LoadBalancing.LoadBalancingClient#getNameServerAddress
+                @returns {string} NameServer address address.
+            */
+            LoadBalancingClient.prototype.getNameServerAddress = function () {
+                return this.nameServerAddress;
+            };
+            /**
+                @summary Changes default Master server address and port before connecting to Master server.
+                @method Photon.LoadBalancing.LoadBalancingClient#setMasterServerAddress
+                @param {string} address New address and port.
+            */
+            LoadBalancingClient.prototype.setMasterServerAddress = function (address) {
+                this.masterServerAddress = address;
+            };
+            /**
+                @summary Returns current Master server address.
+                @method Photon.LoadBalancing.LoadBalancingClient#getMasterServerAddress
+                @returns {string} Master server address.
+            */
+            LoadBalancingClient.prototype.getMasterServerAddress = function () {
+                return this.nameServerAddress;
+            };
+            /**
+                @summary Sets user ID required for authentication and FindFriends service. The value will be used the next time you connect. Set this ID before you connect, not while being connected.
+                @method Photon.LoadBalancing.LoadBalancingClient#setUserId
+                @param {string} userId New user id.
+            */
+            LoadBalancingClient.prototype.setUserId = function (userId) {
+                this.userId = userId;
+            };
+            /**
+                @summary Returns previously set user id.
+                @method Photon.LoadBalancing.LoadBalancingClient#getUserId
+                @returns {string} User id.
+            */
+            LoadBalancingClient.prototype.getUserId = function () {
+                return this.userId;
+            };
+            /**
+                @summary Enables custom authentication and sets it's parameters.
+                @method Photon.LoadBalancing.LoadBalancingClient#setCustomAuthentication
+                @param {string} authParameters This string must contain any (http get) parameters expected by the used authentication service.
+                @param {Photon.LoadBalancing.Constants.CustomAuthenticationType} [authType=Photon.LoadBalancing.Constants.CustomAuthenticationType.Custom] The type of custom authentication provider that should be used.
+                @param {any} [authData] The data to be passed-on to the auth service via POST. String passed as is, objects as application/json
+            */
+            LoadBalancingClient.prototype.setCustomAuthentication = function (authParameters, authType, authData) {
+                if (authType === void 0) { authType = Photon.LoadBalancing.Constants.CustomAuthenticationType.Custom; }
+                this.userAuthType = authType;
+                this.userAuthParameters = authParameters;
+                this.userAuthData = authData;
+            };
+            // TODO: remove backward compatibility (deprecated)
+            // when used internally, more fields may be passed in options
+            /**
+                @summary Starts connection to Master server.
+                @method Photon.LoadBalancing.LoadBalancingClient#connect
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {boolean} [options.keepMasterConnection=false] Don't disconnect from Master server after joining room.
+                @property {string} [options.lobbyName] Name of the lobby connect to.
+                @property {Photon.LoadBalancing.Constants.LobbyType} [options.lobbyType=LobbyType.Default] Type of the lobby.
+                @property {boolean} [options.lobbyStats=false] If true, Master server will be sending lobbies statistics periodically.<br/> Override {@link Photon.LoadBalancing.LoadBalancingClient#onLobbyStats onLobbyStats} to handle request results.<br/>Alternatively, {@link Photon.LoadBalancing.LoadBalancingClient#requestLobbyStats requestLobbyStats} can be used.
+                @returns {boolean} True if current client state allows connection.
+            */
+            LoadBalancingClient.prototype.connect = function (options) {
+                // backward compatibility
+                if (typeof (options) === "boolean") {
+                    if (options) {
+                        options = { keepMasterConnection: true };
+                    }
+                    else {
+                        options = { keepMasterConnection: false };
+                    }
+                }
+                //
+                if (!options) {
+                    options = {};
+                }
+                if (this.checkNextState(LoadBalancingClient.State.ConnectingToMasterserver, true)) {
+                    this.changeState(LoadBalancingClient.State.ConnectingToMasterserver);
+                    this.logger.info("Connecting to Master", this.masterServerAddress);
+                    // make options copy to protect
+                    this.connectOptions = {};
+                    for (var k in options)
+                        this.connectOptions[k] = options[k];
+                    if (this.masterPeer)
+                        this.masterPeer.Destroy();
+                    this.masterPeer = new MasterPeer(this, this.connectionProtocol, this.masterServerAddress, "");
+                    this.initMasterPeer(this.masterPeer);
+                    this.masterPeer.connect(this.appId);
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            };
+            /**
+                @summary Starts connection to NameServer.
+                @method Photon.LoadBalancing.LoadBalancingClient#connectToNameServer
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {string} [options.region] If specified, Connect ro region master after succesfull connection to name server
+                @property {string} [options.lobbyName] Name of the lobby connect to.
+                @property {Photon.LoadBalancing.Constants.LobbyType} [options.lobbyType=LobbyType.Default] Type of the lobby.
+                @property {boolean} [options.lobbyStats=false] If true, Master server will be sending lobbies statistics periodically.<br/> Override {@link Photon.LoadBalancing.LoadBalancingClient#onLobbyStats onLobbyStats} to handle request results.<br/>Alternatively, {@link Photon.LoadBalancing.LoadBalancingClient#requestLobbyStats requestLobbyStats} can be used.
+                @property {boolean} [options.keepMasterConnection=false] Don't disconnect from Master server after joining room.
+                @returns {boolean} True if current client state allows connection.
+            */
+            LoadBalancingClient.prototype.connectToNameServer = function (options) {
+                if (!options) {
+                    options = {};
+                }
+                if (this.checkNextState(LoadBalancingClient.State.ConnectingToNameServer, true)) {
+                    this.changeState(LoadBalancingClient.State.ConnectingToNameServer);
+                    this.logger.info("Connecting to NameServer", this.nameServerAddress);
+                    // make options copy to protect
+                    this.connectOptions = {};
+                    //var k: keyof typeof options;
+                    for (var k in options)
+                        this.connectOptions[k] = options[k];
+                    if (this.nameServerPeer)
+                        this.nameServerPeer.Destroy();
+                    this.nameServerPeer = new NameServerPeer(this, this.connectionProtocol, this.nameServerAddress, "");
+                    this.initNameServerPeer(this.nameServerPeer);
+                    this.nameServerPeer.connect(this.appId);
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            };
+            LoadBalancingClient.prototype.fillCreateRoomOptions = function (op, options) {
+                options = options || {};
+                var gp = {};
+                if (options.isVisible !== undefined)
+                    gp[LoadBalancing.Constants.GameProperties.IsVisible] = options.isVisible;
+                if (options.isOpen !== undefined)
+                    gp[LoadBalancing.Constants.GameProperties.IsOpen] = options.isOpen;
+                if (options.maxPlayers !== undefined)
+                    gp[LoadBalancing.Constants.GameProperties.MaxPlayers] = options.maxPlayers;
+                if (options.propsListedInLobby !== undefined)
+                    gp[LoadBalancing.Constants.GameProperties.PropsListedInLobby] = Photon.TypeExt.String(options.propsListedInLobby);
+                if (options.customGameProperties !== undefined) {
+                    for (var p in options.customGameProperties) {
+                        gp[p] = options.customGameProperties[p];
+                    }
+                }
+                op.push(LoadBalancing.Constants.ParameterCode.GameProperties, gp);
+                op.push(LoadBalancing.Constants.ParameterCode.CleanupCacheOnLeave, true); //TODO: make this optional?
+                op.push(LoadBalancing.Constants.ParameterCode.Broadcast, true); //TODO: make this optional?
+                if (options.emptyRoomLiveTime !== undefined)
+                    op.push(LoadBalancing.Constants.ParameterCode.EmptyRoomTTL, Photon.TypeExt.Int(options.emptyRoomLiveTime));
+                if (options.suspendedPlayerLiveTime !== undefined)
+                    op.push(LoadBalancing.Constants.ParameterCode.PlayerTTL, Photon.TypeExt.Int(options.suspendedPlayerLiveTime));
+                if (options.plugins !== undefined)
+                    op.push(LoadBalancing.Constants.ParameterCode.Plugins, Photon.TypeExt.String(options.plugins));
+                // shold be always set to true by client
+                op.push(LoadBalancing.Constants.ParameterCode.CheckUserOnJoin, true);
+                op.push(LoadBalancing.Constants.ParameterCode.PublishUserId, true);
+                if (options.lobbyName) {
+                    op.push(LoadBalancing.Constants.ParameterCode.LobbyName);
+                    op.push(options.lobbyName);
+                    if (options.lobbyType != undefined) {
+                        op.push(LoadBalancing.Constants.ParameterCode.LobbyType);
+                        op.push(options.lobbyType);
+                    }
+                }
+                if (options.expectedUsers)
+                    op.push(LoadBalancing.Constants.ParameterCode.Add, options.expectedUsers);
+            };
+            /**
+                @summary Creates a new room on the server (or fails when the name is already taken). Takes parameters (except name) for new room from myRoom() object. Set them before call.
+                @method Photon.LoadBalancing.LoadBalancingClient#createRoomFromMy
+                @param {string} [roomName] New room name. Assigned automatically by server if empty or not specified.
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {string} [options.lobbyName] Name of the lobby to create room in.
+                @property {Photon.LoadBalancing.Constants.LobbyType} [options.lobbyType=LobbyType.Default] Type of the lobby.
+            */
+            LoadBalancingClient.prototype.createRoomFromMy = function (roomName, options) {
+                this.currentRoom.name = roomName ? roomName : "";
+                options = this.copyCreateOptionsFromMyRoom(options);
+                if (this.masterPeer) {
+                    this.createRoomInternal(this.masterPeer, options);
+                }
+            };
+            LoadBalancingClient.prototype.copyCreateOptionsFromMyRoom = function (options) {
+                options = options || {};
+                //retrieve options from my room
+                options.isVisible = this.currentRoom.isVisible;
+                options.isOpen = this.currentRoom.isOpen;
+                options.maxPlayers = this.currentRoom.maxPlayers;
+                options.customGameProperties = this.currentRoom.getCustomProperties();
+                options.propsListedInLobby = this.currentRoom.getPropsListedInLobby();
+                options.emptyRoomLiveTime = this.currentRoom.emptyRoomLiveTime;
+                options.suspendedPlayerLiveTime = this.currentRoom.suspendedPlayerLiveTime;
+                options.plugins = this.currentRoom.plugins;
+                options.expectedUsers = this.currentRoom.expectedUsers;
+                return options;
+            };
+            /**
+                @summary Creates a new room on the server (or fails when the name is already taken).
+                @method Photon.LoadBalancing.LoadBalancingClient#createRoom
+                @param {string} [roomName] The name to create a room with. Must be unique and not in use or can't be created. If not specified or null, the server will assign a GUID as name.
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {boolean} [options.isVisible=true] Shows the room in the lobby's room list.
+                @property {boolean} [options.isOpen=true] Keeps players from joining the room (or opens it to everyone).
+                @property {number} [options.maxPlayers=0] Max players before room is considered full (but still listed).
+                @property {object} [options.customGameProperties] Custom properties to apply to the room on creation (use string-typed keys but short ones).
+                @property {string[]} [options.propsListedInLobby] Defines the custom room properties that get listed in the lobby.
+                @property {number} [options.emptyRoomLiveTime=0] Room live time (ms) in the server room cache after all clients have left the room.
+                @property {number} [options.suspendedPlayerLiveTime=0] Player live time (ms) in the room after player suspended.
+                @property {string[]} [options.plugins] Expected server plugins.
+                @property {string} [options.lobbyName=""] Name of the lobby to create room in.
+                @property {Photon.LoadBalancing.Constants.LobbyType} [options.lobbyType=LobbyType.Default] Type of the lobby.
+                @property {string[]} [options.expectedUsers] Expected users.
+    
+            */
+            LoadBalancingClient.prototype.createRoom = function (roomName, options) {
+                this.currentRoom = this.roomFactoryInternal(roomName ? roomName : "");
+                if (this.masterPeer) {
+                    return this.createRoomInternal(this.masterPeer, options);
+                }
+            };
+            /**
+                @summary Joins a room by name and sets this player's properties.
+                @method Photon.LoadBalancing.LoadBalancingClient#joinRoom
+                @param {string} roomName The name of the room to join. Must be existing already, open and non-full or can't be joined.
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {boolean} [options.rejoin=false] Rejoin using current userId.
+                @property {boolean} [options.createIfNotExists=false] Create room if not exists.
+                @property {string[]} [options.expectedUsers] Expected users.
+                @param {object} [createOptions] Room options for creation
+                @property {object} createOptions Room options for creation
+                @property {boolean} [createOptions.isVisible=true] Shows the room in the lobby's room list.
+                @property {boolean} [createOptions.isOpen=true] Keeps players from joining the room (or opens it to everyone).
+                @property {number} [createOptions.maxPlayers=0] Max players before room is considered full (but still listed).
+                @property {object} [createOptions.customGameProperties] Custom properties to apply to the room on creation (use string-typed keys but short ones).
+                @property {string[]} [createOptions.propsListedInLobby] Defines the custom room properties that get listed in the lobby.
+                @property {number} [createOptions.emptyRoomLiveTime=0] Room live time (ms) in the server room cache after all clients have left the room.
+                @property {number} [createOptions.suspendedPlayerLiveTime=0] Player live time (ms) in the room after player suspended.
+                @property {string[]} [createOptions.plugins] Informs the server of the expected plugin setup.
+                @property {string} [createOptions.lobbyName=""] Name of the lobby to create room in.
+                @property {Photon.LoadBalancing.Constants.LobbyType} [createOptions.lobbyType=LobbyType.Default] Type of the lobby.
+    
+            */
+            LoadBalancingClient.prototype.joinRoom = function (roomName, options, createOptions) {
+                if (!this.masterPeer)
+                    return false;
+                var op = [];
+                if (options) {
+                    if (options.createIfNotExists) {
+                        op.push(LoadBalancing.Constants.ParameterCode.JoinMode, LoadBalancingClient.JoinMode.CreateIfNotExists);
+                        this.fillCreateRoomOptions(op, createOptions);
+                    }
+                    if (options.rejoin) {
+                        op.push(LoadBalancing.Constants.ParameterCode.JoinMode, LoadBalancingClient.JoinMode.RejoinOnly);
+                    }
+                    if (options.expectedUsers) {
+                        op.push(LoadBalancing.Constants.ParameterCode.Add, options.expectedUsers);
+                    }
+                }
+                this.currentRoom = this.roomFactoryInternal(roomName);
+                op.push(LoadBalancing.Constants.ParameterCode.RoomName, roomName);
+                this.joinRoomOptions = options || {};
+                this.createRoomOptions = createOptions || {};
+                this.logger.info("Join Room", roomName, options, createOptions, "...");
+                this.masterPeer.sendOperation(LoadBalancing.Constants.OperationCode.JoinGame, op);
+                return true;
+            };
+            /**
+                @summary Joins a random, available room.
+                This operation fails if all rooms are closed or full.
+                @method Photon.LoadBalancing.LoadBalancingClient#joinRandomRoom
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {object} [options.expectedCustomRoomProperties] If specified, a room will only be joined, if it matches these custom properties. Use null to accept rooms with any properties.
+                @property {number} [options.expectedMaxPlayers] If specified, filters for a particular maxPlayer setting. Use 0 to accept any maxPlayer value.
+                @property {Photon.LoadBalancing.Constants.MatchmakingMode} [options.matchmakingMode=MatchmakingMode.FillRoom] Selects one of the available matchmaking algorithms.
+                @property {string} [options.lobbyName] Name of the lobby to search rooms in.
+                @property {Photon.LoadBalancing.Constants.LobbyType} [options.lobbyType=LobbyType.Default] Type of the lobby.
+                @property {string} [options.sqlLobbyFilter] Basically the "where" clause of a sql statement. Examples: 'C0 = 1 AND C2 > 50'. 'C5 = "Map2" AND C2 > 10 AND C2 < 20'
+                @property {string[]} [options.expectedUsers] Expected users.
+            */
+            LoadBalancingClient.prototype.joinRandomRoom = function (options) {
+                if (!this.masterPeer)
+                    return false;
+                var op = [];
+                if (options) {
+                    if (options.matchingType != undefined && options.matchingType != LoadBalancing.Constants.MatchmakingMode.FillRoom) {
+                        op.push(LoadBalancing.Constants.ParameterCode.MatchMakingType);
+                        op.push(options.matchingType);
+                    }
+                    var expectedRoomProperties = {};
+                    var propNonEmpty = false;
+                    if (options.expectedCustomRoomProperties != undefined) {
+                        for (var k in options.expectedCustomRoomProperties) {
+                            expectedRoomProperties[k] = options.expectedCustomRoomProperties[k];
+                            propNonEmpty = true;
+                        }
+                    }
+                    if (options.expectedMaxPlayers != undefined && options.expectedMaxPlayers > 0) {
+                        expectedRoomProperties[LoadBalancing.Constants.GameProperties.MaxPlayers] = options.expectedMaxPlayers;
+                        propNonEmpty = true;
+                    }
+                    if (propNonEmpty) {
+                        op.push(LoadBalancing.Constants.ParameterCode.GameProperties);
+                        op.push(expectedRoomProperties);
+                    }
+                    if (options.lobbyName) {
+                        op.push(LoadBalancing.Constants.ParameterCode.LobbyName);
+                        op.push(options.lobbyName);
+                        if (options.lobbyType != undefined) {
+                            op.push(LoadBalancing.Constants.ParameterCode.LobbyType);
+                            op.push(options.lobbyType);
+                        }
+                    }
+                    if (options.sqlLobbyFilter) {
+                        op.push(LoadBalancing.Constants.ParameterCode.Data);
+                        op.push(options.sqlLobbyFilter);
+                    }
+                    if (options.expectedUsers) {
+                        op.push(LoadBalancing.Constants.ParameterCode.Add, options.expectedUsers);
+                    }
+                }
+                this.logger.info("Join Random Room", options && options.lobbyName, options && options.lobbyType, "...");
+                this.masterPeer.sendOperation(LoadBalancing.Constants.OperationCode.JoinRandomGame, op);
+                return true;
+            };
+            LoadBalancingClient.prototype._setPropertiesOfRoom = function (properties, webForward, expectedProperties) {
+                if (!this.gamePeer)
+                    return;
+                var op = [];
+                op.push(LoadBalancing.Constants.ParameterCode.Properties);
+                op.push(properties);
+                op.push(LoadBalancing.Constants.ParameterCode.Broadcast);
+                op.push(true);
+                if (webForward) {
+                    op.push(LoadBalancing.Constants.ParameterCode.WebFlags);
+                    op.push(Photon.TypeExt.Byte(WebFlags.HttpForward));
+                }
+                if (expectedProperties) {
+                    op.push(LoadBalancing.Constants.ParameterCode.ExpectedValues);
+                    op.push(expectedProperties);
+                }
+                this.gamePeer.sendOperation(LoadBalancing.Constants.OperationCode.SetProperties, op);
+            };
+            LoadBalancingClient.prototype._setPropertiesOfActor = function (actorNr, properties, webForward, expectedProperties) {
+                if (!this.gamePeer)
+                    return;
+                var op = [];
+                op.push(LoadBalancing.Constants.ParameterCode.ActorNr);
+                op.push(Photon.TypeExt.Int(actorNr));
+                op.push(LoadBalancing.Constants.ParameterCode.Properties);
+                op.push(properties);
+                op.push(LoadBalancing.Constants.ParameterCode.Broadcast);
+                op.push(true);
+                if (webForward) {
+                    op.push(LoadBalancing.Constants.ParameterCode.WebFlags);
+                    op.push(Photon.TypeExt.Byte(WebFlags.HttpForward));
+                }
+                if (expectedProperties) {
+                    op.push(LoadBalancing.Constants.ParameterCode.ExpectedValues);
+                    op.push(expectedProperties);
+                }
+                this.gamePeer.sendOperation(LoadBalancing.Constants.OperationCode.SetProperties, op);
+            };
+            /**
+                @summary Disconnects from all servers.
+                @method Photon.LoadBalancing.LoadBalancingClient#disconnect
+            */
+            LoadBalancingClient.prototype.disconnect = function () {
+                if (this.nameServerPeer) {
+                    this.nameServerPeer.disconnect();
+                }
+                this._cleanupNameServerPeerData();
+                if (this.masterPeer) {
+                    this.masterPeer.disconnect();
+                }
+                this._cleanupMasterPeerData();
+                if (this.gamePeer) {
+                    this.gamePeer.disconnect();
+                }
+                this._cleanupGamePeerData();
+                this.changeState(LoadBalancingClient.State.Disconnected);
+            };
+            /**
+                @summary Disconnects client from Game server keeping player in room (to rejoin later) and connects to Master server if not connected.
+                @method Photon.LoadBalancing.LoadBalancingClient#suspendRoom
+                @property {object} options Additional options
+                @property {boolean} [options.sendAuthCookie] Securely transmit the encrypted object AuthCookie to the web service in PathLeave webhook when available
+            */
+            LoadBalancingClient.prototype.suspendRoom = function (options) {
+                if (this.isJoinedToRoom()) {
+                    if (this.gamePeer) {
+                        var params = [];
+                        if (options) {
+                            if (options.sendAuthCookie) {
+                                params.push(LoadBalancing.Constants.ParameterCode.WebFlags, Photon.TypeExt.Byte(WebFlags.SendAuthCookie));
+                            }
+                        }
+                        params.push(LoadBalancing.Constants.ParameterCode.IsInactive, true);
+                        this.gamePeer.sendOperation(LoadBalancing.Constants.OperationCode.Leave, params);
+                        this.gamePeerWaitingForDisconnect = true;
+                    }
+                    this._cleanupGamePeerData();
+                    if (this.isConnectedToMaster()) {
+                        this.changeState(LoadBalancingClient.State.JoinedLobby);
+                    }
+                    else {
+                        this.changeState(LoadBalancingClient.State.Disconnected);
+                        this.connect(this.connectOptions);
+                    }
+                }
+            };
+            /**
+                @summary Leaves room and connects to Master server if not connected.
+                @method Photon.LoadBalancing.LoadBalancingClient#leaveRoom
+                @property {object} options Additional options
+                @property {boolean} [options.sendAuthCookie] Securely transmit the encrypted object AuthCookie to the web service in PathLeave webhook when available
+            */
+            LoadBalancingClient.prototype.leaveRoom = function (options) {
+                if (this.isJoinedToRoom()) {
+                    if (this.gamePeer) {
+                        var params = [];
+                        if (options) {
+                            if (options.sendAuthCookie) {
+                                params.push(LoadBalancing.Constants.ParameterCode.WebFlags, Photon.TypeExt.Byte(WebFlags.SendAuthCookie));
+                            }
+                        }
+                        this.gamePeer.sendOperation(LoadBalancing.Constants.OperationCode.Leave, params);
+                        this.gamePeerWaitingForDisconnect = true;
+                    }
+                    this._cleanupGamePeerData();
+                    if (this.isConnectedToMaster()) {
+                        this.changeState(LoadBalancingClient.State.JoinedLobby);
+                    }
+                    else {
+                        this.changeState(LoadBalancingClient.State.Disconnected);
+                        this.connect(this.connectOptions);
+                    }
+                }
+            };
+            /**
+                @summary Raises game custom event
+                @method Photon.LoadBalancing.LoadBalancingClient#raiseEvent
+                @param {number} eventCode Identifies this type of event (and the content). Your game's event codes can start with 0.
+                @param {object} [data] Custom data you want to send along (use null, if none).
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {number} [options.interestGroup] The ID of the interest group this event goes to (exclusively).
+                @property {Photon.LoadBalancing.Constants.EventCaching} [options.cache=EventCaching.DoNotCache] Events can be cached (merged and removed) for players joining later on.
+                @property {Photon.LoadBalancing.Constants.ReceiverGroup} [options.receivers=ReceiverGroup.Others] Defines to which group of players the event is passed on.
+                @property {number[]} [options.targetActors] Defines the target players who should receive the event (use only for small target groups).
+                @property {boolean} [options.webForward=false] Forward to web hook.
+            */
+            LoadBalancingClient.prototype.raiseEvent = function (eventCode, data, options) {
+                if (this.gamePeer && this.isJoinedToRoom()) {
+                    this.gamePeer.raiseEvent(eventCode, data, options);
+                }
+            };
+            /**
+                @summary Changes client's interest groups (for events in room).<br/>
+                Note the difference between passing null and []: null won't add/remove any groups, [] will add/remove all (existing) groups.<br/>
+                First, removing groups is executed. This way, you could leave all groups and join only the ones provided.
+                @method Photon.LoadBalancing.LoadBalancingClient#changeGroups
+                @param {number[]} groupsToRemove Groups to remove from interest. Null will not leave any. A [] will remove all.
+                @param {number[]} groupsToAdd Groups to add to interest. Null will not add any. A [] will add all current.
+            */
+            LoadBalancingClient.prototype.changeGroups = function (groupsToRemove, groupsToAdd) {
+                if (this.gamePeer && this.isJoinedToRoom()) {
+                    this.logger.debug("Group change:", groupsToRemove, groupsToAdd);
+                    this.gamePeer.changeGroups(groupsToRemove, groupsToAdd);
+                }
+            };
+            /**
+                @summary Requests Master server for actors online status and joined rooms.<br/>
+                Override {@link Photon.LoadBalancing.LoadBalancingClient#onFindFriendsResult onFindFriendsResult} to handle request results.
+                @method Photon.LoadBalancing.LoadBalancingClient#findFriends
+                @param {string[]} friendsToFind Actors names.
+            **/
+            LoadBalancingClient.prototype.findFriends = function (friendsToFind) {
+                if (this.masterPeer && this.isConnectedToMaster()) {
+                    if (friendsToFind && typeof (friendsToFind) == "object") {
+                        this.findFriendsRequestList = new Array();
+                        for (var i = 0; i < friendsToFind.length; ++i) {
+                            if (typeof (friendsToFind[i]) == "string") {
+                                this.findFriendsRequestList[i] = friendsToFind[i];
+                            }
+                            else {
+                                this.logger.error("FindFriends request error:", "Friend name is not a string", i);
+                                this.onFindFriendsResult(-1, "Friend name is not a string" + " " + i, {});
+                                return;
+                            }
+                        }
+                        this.logger.debug("Find friends:", friendsToFind);
+                        this.masterPeer.findFriends(this.findFriendsRequestList);
+                    }
+                    else {
+                        this.logger.error("FindFriends request error:", "Parameter is not an array");
+                        this.onFindFriendsResult(-1, "Parameter is not an array", {});
+                    }
+                }
+                else {
+                    this.logger.error("FindFriends request error:", "Not connected to Master");
+                    this.onFindFriendsResult(LoadBalancingClient.PeerErrorCode.MasterError, "Not connected to Master", {});
+                }
+            };
+            /**
+                @summary Requests Master server for lobbies statistics.<br/>
+                Override {@link Photon.LoadBalancing.LoadBalancingClient#onLobbyStats onLobbyStats} to handle request results.<br/>
+                Alternatively, automated updates can be set up during {@link Photon.LoadBalancing.LoadBalancingClient#connect connect}.
+                @method Photon.LoadBalancing.LoadBalancingClient#requestLobbyStats
+                @param {any[]} lobbiesToRequest Array of lobbies id pairs [ [lobbyName1, lobbyType1], [lobbyName2, lobbyType2], ... ]. If not specified or null, statistics for all lobbies requested.
+    
+            **/
+            LoadBalancingClient.prototype.requestLobbyStats = function (lobbiesToRequest) {
+                if (this.masterPeer && this.isConnectedToMaster()) {
+                    this.lobbyStatsRequestList = new Array();
+                    if (lobbiesToRequest) {
+                        if (typeof (lobbiesToRequest) == "object") {
+                            for (var i = 0; i < lobbiesToRequest.length; ++i) {
+                                var l = lobbiesToRequest[i];
+                                if (typeof (l) == "object") {
+                                    var n = l[0];
+                                    if (n) {
+                                        var t;
+                                        if (l[1] === undefined) {
+                                            t = LoadBalancing.Constants.LobbyType.Default;
+                                        }
+                                        else {
+                                            if (typeof (l[1]) == "number") {
+                                                t = l[1];
+                                            }
+                                            else {
+                                                this.requestLobbyStatsErr("Lobby type is invalid", i);
+                                                return;
+                                            }
+                                        }
+                                        this.lobbyStatsRequestList[i] = [n.toString(), t];
+                                    }
+                                    else {
+                                        this.requestLobbyStatsErr("Lobby name is empty", i);
+                                        return;
+                                    }
+                                }
+                                else {
+                                    this.requestLobbyStatsErr("Lobby id is not an array", i);
+                                    return;
+                                }
+                            }
+                        }
+                        else {
+                            this.requestLobbyStatsErr("Parameter is not an array");
+                            return;
+                        }
+                    }
+                    this.masterPeer.requestLobbyStats(this.lobbyStatsRequestList);
+                }
+                else {
+                    this.logger.error("LobbyState request error:", "Not connected to Master");
+                    this.onLobbyStats(LoadBalancingClient.PeerErrorCode.MasterError, "Not connected to Master", []);
+                }
+            };
+            LoadBalancingClient.prototype.requestLobbyStatsErr = function (m, other) {
+                if (other === void 0) { other = ""; }
+                this.logger.error("LobbyState request error:", m, other);
+                this.onLobbyStats(-1, m + " " + other, []);
+            };
+            /**
+                @summary Requests NameServer for regions list.<br/>
+                Override {@link Photon.LoadBalancing.LoadBalancingClient#onGetRegionsResult onGetRegionsResult} to handle request results.<br/>
+                @method Photon.LoadBalancing.LoadBalancingClient#getRegions
+            **/
+            LoadBalancingClient.prototype.getRegions = function () {
+                if (this.nameServerPeer && this.isConnectedToNameServer()) {
+                    this.logger.debug("GetRegions...");
+                    this.nameServerPeer.getRegions(this.appId);
+                }
+                else {
+                    this.logger.error("GetRegions request error:", "Not connected to NameServer");
+                    this.onGetRegionsResult(LoadBalancingClient.PeerErrorCode.NameServerError, "Not connected to NameServer", {});
+                }
+            };
+            /**
+                @summary Sends web rpc request to Master server.<br/ >
+                Override {@link Photon.LoadBalancing.LoadBalancingClient#onWebRpcResult onWebRpcResult} to handle request results.<br/>
+                @method Photon.LoadBalancing.LoadBalancingClient#webRpc
+                @param {string} uriPath Request path.
+                @param {object} parameters Request parameters.
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {boolean} [options.sendAuthCookie] Defines if the authentication cookie gets sent to a WebHook (if setup)
+            **/
+            LoadBalancingClient.prototype.webRpc = function (uriPath, parameters, options) {
+                if (this.masterPeer && this.isConnectedToMaster()) {
+                    this.logger.debug("WebRpc...");
+                    this.masterPeer.webRpc(uriPath, parameters, options);
+                }
+                else if (this.gamePeer && this.isJoinedToRoom()) {
+                    this.logger.debug("WebRpc...");
+                    this.gamePeer.webRpc(uriPath, parameters, options);
+                }
+                else {
+                    this.logger.error("WebRpc request error:", "Connected to neither Master nor Game server");
+                    this.onWebRpcResult(LoadBalancingClient.PeerErrorCode.MasterError, "Connected to neither Master nor Game server", uriPath, 0, {});
+                }
+            };
+            /**
+                @summary Connects to a specific region's Master server, using the NameServer to find the IP.
+                @method Photon.LoadBalancing.LoadBalancingClient#connectToRegionMaster
+                @param {string} region Region connect to Master server of.
+                @returns {boolean} True if current client state allows connection.
+            **/
+            LoadBalancingClient.prototype.connectToRegionMaster = function (region) {
+                if (this.nameServerPeer && this.isConnectedToNameServer()) {
+                    this.logger.debug("Connecting to Region Master", region, "...");
+                    this.nameServerPeer.opAuth(this.appId, this.appVersion, this.userAuthType, this.userAuthParameters, this.userAuthData, this.userId, region);
+                    return true;
+                }
+                else if (this.connectToNameServer({ region: region })) {
+                    return true;
+                }
+                else {
+                    this.logger.error("Connecting to Region Master error:", "Not connected to NameServer");
+                    return false;
+                }
+            };
+            /**
+                @summary Checks if client is connected to Master server (usually joined to lobby and receives room list updates).
+                @method Photon.LoadBalancing.LoadBalancingClient#isConnectedToMaster
+                @returns {boolean} True if client is connected to Master server.
+            */
+            LoadBalancingClient.prototype.isConnectedToMaster = function () {
+                return this.masterPeer && this.masterPeer.isConnected();
+            };
+            /**
+                @summary Checks if client is connected to NameServer server.
+                @method Photon.LoadBalancing.LoadBalancingClient#isConnectedToNameServer
+                @returns {boolean} True if client is connected to NameServer server.
+            */
+            LoadBalancingClient.prototype.isConnectedToNameServer = function () {
+                return this.nameServerPeer && this.nameServerPeer.isConnected();
+            };
+            /**
+                @summary Checks if client is in lobby and ready to join or create game.
+                @method Photon.LoadBalancing.LoadBalancingClient#isInLobby
+                @returns {boolean} True if client is in lobby.
+            */
+            LoadBalancingClient.prototype.isInLobby = function () {
+                return this.state == LoadBalancingClient.State.JoinedLobby;
+            };
+            /**
+                @summary Checks if client is joined to game.
+                @method Photon.LoadBalancing.LoadBalancingClient#isJoinedToRoom
+                @returns {boolean} True if client is joined to game.
+            */
+            LoadBalancingClient.prototype.isJoinedToRoom = function () {
+                return this.state == LoadBalancingClient.State.Joined;
+            };
+            /**
+                @deprecated Use isJoinedToRoom()
+            */
+            LoadBalancingClient.prototype.isConnectedToGame = function () {
+                return this.isJoinedToRoom();
+            };
+            /**
+                @summary Current room list from Master server.
+                @method Photon.LoadBalancing.LoadBalancingClient#availableRooms
+                @returns {{@link Photon.LoadBalancing.RoomInfo}[]} Current room list
+            */
+            LoadBalancingClient.prototype.availableRooms = function () { return this.roomInfos; };
+            /**
+                @summary Sets client logger level
+                @method Photon.LoadBalancing.LoadBalancingClient#setLogLevel
+                @param {Exitgames.Common.Logger.Level} level Logging level.
+            */
+            LoadBalancingClient.prototype.setLogLevel = function (level) {
+                this.logger.setLevel(level);
+                if (this.nameServerPeer) {
+                    this.nameServerPeer.setLogLevel(level);
+                }
+                if (this.masterPeer) {
+                    this.masterPeer.setLogLevel(level);
+                }
+                if (this.gamePeer) {
+                    this.gamePeer.setLogLevel(level);
+                }
+            };
+            LoadBalancingClient.prototype.addRoom = function (r) { this.roomInfos.push(r); this.roomInfosDict[r.name] = r; };
+            LoadBalancingClient.prototype.clearRooms = function () { this.roomInfos = new Array(); this.roomInfosDict = {}; };
+            LoadBalancingClient.prototype.purgeRemovedRooms = function () {
+                this.roomInfos = this.roomInfos.filter(function (x) { return !x.removed; });
+                for (var n in this.roomInfosDict) {
+                    if (this.roomInfosDict[n].removed) {
+                        delete this.roomInfosDict[n];
+                    }
+                }
+            };
+            LoadBalancingClient.prototype.addActor = function (a) {
+                this.actors[a.actorNr] = a;
+                this.actorsArray.push(a);
+                this.currentRoom.playerCount = this.actorsArray.length;
+                if (this.lowestActorId == 0 || this.lowestActorId > a.actorNr)
+                    this.lowestActorId = a.actorNr;
+            };
+            LoadBalancingClient.prototype.removeActor = function (actorNr) {
+                delete this.actors[actorNr];
+                this.actorsArray = this.actorsArray.filter(function (x) { return x.actorNr != actorNr; });
+                this.currentRoom.playerCount = this.actorsArray.length;
+                if (this.lowestActorId == actorNr) {
+                    if (this.actorsArray.length > 0)
+                        this.lowestActorId = this.actorsArray.reduce(function (prev, curr) { return prev.actorNr < curr.actorNr ? prev : curr; }).actorNr;
+                    else
+                        this.lowestActorId = 0;
+                }
+            };
+            LoadBalancingClient.prototype.clearActors = function () {
+                this.actors = {};
+                this.actorsArray = [];
+                this.currentRoom.playerCount = 0;
+                this.lowestActorId = 0;
+            };
+            LoadBalancingClient.prototype.changeState = function (nextState) {
+                this.logger.info("State:", LoadBalancingClient.StateToName(this.state), "->", LoadBalancingClient.StateToName(nextState));
+                this.state = nextState;
+                this.onStateChange(nextState);
+            };
+            LoadBalancingClient.prototype.createRoomInternal = function (peer, options) {
+                var op = [];
+                if (this.currentRoom.name)
+                    op.push(LoadBalancing.Constants.ParameterCode.RoomName, this.currentRoom.name);
+                this.fillCreateRoomOptions(op, options);
+                if (peer === this.masterPeer) {
+                    this.createRoomOptions = options;
+                }
+                if (peer === this.gamePeer) {
+                    op.push(LoadBalancing.Constants.ParameterCode.PlayerProperties);
+                    op.push(this._myActor._getAllProperties());
+                }
+                var log = peer == this.gamePeer ? this.gamePeer._logger : (this.masterPeer ? this.masterPeer._logger : null);
+                if (log) {
+                    log.info("Create Room", options && options.lobbyName, options && options.lobbyType, "...");
+                }
+                peer.sendOperation(LoadBalancing.Constants.OperationCode.CreateGame, op);
+            };
+            LoadBalancingClient.prototype.updateUserIdAndNickname = function (vals, logger) {
+                var userId = vals[LoadBalancing.Constants.ParameterCode.UserId];
+                if (userId != undefined) {
+                    this.setUserId(userId);
+                    logger.info("Setting userId sent by server:", userId);
+                }
+                var nickname = vals[LoadBalancing.Constants.ParameterCode.Nickname];
+                if (nickname != undefined) {
+                    this.myActor().setName(nickname);
+                    logger.info("Setting nickname sent by server:", nickname);
+                }
+            };
+            LoadBalancingClient.prototype.initNameServerPeer = function (np) {
+                var _this = this;
+                np.setLogLevel(this.logger.getLevel());
+                // errors
+                np.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.error, function () {
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.NameServerError, "NameServer peer error");
+                });
+                np.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connectFailed, function () {
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.NameServerConnectFailed, "NameServer peer connect failed. " + _this.nameServerAddress);
+                });
+                np.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.timeout, function () {
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.NameServerTimeout, "NameServer peer timeout");
+                });
+                np.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connecting, function () {
+                });
+                np.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connect, function () {
+                    np._logger.info("Connected");
+                    _this.changeState(LoadBalancingClient.State.ConnectedToNameServer);
+                    // connectToRegionMaster inited connection
+                    if (_this.connectOptions.region != undefined) {
+                        np.opAuth(_this.appId, _this.appVersion, _this.userAuthType, _this.userAuthParameters, _this.userAuthData, _this.userId, _this.connectOptions.region);
+                    }
+                });
+                np.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.disconnect, function () {
+                    if (np == _this.nameServerPeer) { // skip delayed disconnect response
+                        _this._cleanupNameServerPeerData();
+                        np._logger.info("Disconnected");
+                    }
+                });
+                np.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connectClosed, function () {
+                    np._logger.info("Server closed connection");
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.NameServerConnectClosed, "NameServer server closed connection");
+                });
+                // events
+                // responses - check operation result. data.errCode
+                np.addResponseListener(LoadBalancing.Constants.OperationCode.GetRegions, function (data) {
+                    np._logger.debug("resp GetRegions", data);
+                    var regions = {};
+                    if (data.errCode == 0) {
+                        var r = data.vals[LoadBalancing.Constants.ParameterCode.Region];
+                        var a = data.vals[LoadBalancing.Constants.ParameterCode.Address];
+                        for (var i in r) {
+                            regions[r[i]] = a[i];
+                        }
+                    }
+                    else {
+                        np._logger.error("GetRegions request error.", data.errCode);
+                    }
+                    _this.onGetRegionsResult(data.errCode, data.errMsg, regions);
+                });
+                np.addResponseListener(LoadBalancing.Constants.OperationCode.Authenticate, function (data) {
+                    np._logger.debug("resp Authenticate", data);
+                    if (data.errCode == 0) {
+                        np._logger.info("Authenticated");
+                        np.disconnect();
+                        _this.updateUserIdAndNickname(data.vals, np._logger);
+                        _this.masterServerAddress = data.vals[LoadBalancing.Constants.ParameterCode.Address];
+                        np._logger.info("Connecting to Master server", _this.masterServerAddress, "...");
+                        _this.connectOptions.userAuthSecret = data.vals[LoadBalancing.Constants.ParameterCode.Secret];
+                        _this.connect(_this.connectOptions);
+                    }
+                    else {
+                        _this.changeState(LoadBalancingClient.State.Error);
+                        _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.NameServerAuthenticationFailed, "NameServer authentication failed: " + data.errCode + " " + data.errMsg);
+                    }
+                });
+            };
+            // protected
+            LoadBalancingClient.prototype.initMasterPeer = function (mp) {
+                var _this = this;
+                mp.setLogLevel(this.logger.getLevel());
+                // errors
+                mp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.error, function () {
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.MasterError, "Master peer error");
+                });
+                mp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connectFailed, function () {
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.MasterConnectFailed, "Master peer connect failed: " + _this.masterServerAddress);
+                });
+                mp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.timeout, function () {
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.MasterTimeout, "Master peer error timeout");
+                });
+                mp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connecting, function () {
+                });
+                // status
+                mp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connect, function () {
+                    //TODO: encryption phase
+                    mp._logger.info("Connected");
+                    var op = [];
+                    // if NameSever gave us secret
+                    if (_this.connectOptions.userAuthSecret) {
+                        op.push(LoadBalancing.Constants.ParameterCode.Secret, _this.connectOptions.userAuthSecret);
+                        mp.sendOperation(LoadBalancing.Constants.OperationCode.Authenticate, op);
+                        mp._logger.info("Authenticate with secret...");
+                    }
+                    else {
+                        op.push(LoadBalancing.Constants.ParameterCode.ApplicationId);
+                        op.push(_this.appId);
+                        op.push(LoadBalancing.Constants.ParameterCode.AppVersion);
+                        op.push(_this.appVersion);
+                        if (_this.userAuthType != LoadBalancing.Constants.CustomAuthenticationType.None) {
+                            op.push(LoadBalancing.Constants.ParameterCode.ClientAuthenticationType, Photon.TypeExt.Byte(_this.userAuthType));
+                            op.push(LoadBalancing.Constants.ParameterCode.ClientAuthenticationParams, _this.userAuthParameters);
+                            if (_this.userAuthData) {
+                                op.push(LoadBalancing.Constants.ParameterCode.ClientAuthenticationData, _this.userAuthData);
+                            }
+                        }
+                        if (_this.userId) {
+                            op.push(LoadBalancing.Constants.ParameterCode.UserId, _this.userId);
+                        }
+                        if (_this.connectOptions.lobbyStats) {
+                            op.push(LoadBalancing.Constants.ParameterCode.LobbyStats, true);
+                        }
+                        mp.sendOperation(LoadBalancing.Constants.OperationCode.Authenticate, op);
+                        mp._logger.info("Authenticate...");
+                    }
+                });
+                mp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.disconnect, function () {
+                    if (mp == _this.masterPeer) { // skip delayed disconnect response
+                        _this._cleanupMasterPeerData();
+                        mp._logger.info("Disconnected");
+                    }
+                });
+                mp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connectClosed, function () {
+                    mp._logger.info("Server closed connection");
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.MasterConnectClosed, "Master server closed connection");
+                });
+                //events
+                mp.addEventListener(LoadBalancing.Constants.EventCode.GameList, function (data) {
+                    var gameList = data.vals[LoadBalancing.Constants.ParameterCode.GameList];
+                    _this.clearRooms();
+                    for (var g in gameList) {
+                        var r = new RoomInfo(g);
+                        r._updateFromProps(gameList[g]);
+                        _this.addRoom(r);
+                    }
+                    _this.onRoomList(_this.roomInfos);
+                    mp._logger.debug("ev GameList", _this.roomInfos, gameList);
+                });
+                mp.addEventListener(LoadBalancing.Constants.EventCode.GameListUpdate, function (data) {
+                    var gameList = data.vals[LoadBalancing.Constants.ParameterCode.GameList];
+                    var roomsUpdated = new Array();
+                    var roomsAdded = new Array();
+                    var roomsRemoved = new Array();
+                    for (var g in gameList) {
+                        var exist = _this.roomInfos.filter(function (x) { return x.name == g; });
+                        if (exist.length > 0) {
+                            var r = exist[0];
+                            r._updateFromProps(gameList[g]);
+                            if (r.removed) {
+                                roomsRemoved.push(r);
+                            }
+                            else {
+                                roomsUpdated.push(r);
+                            }
+                        }
+                        else {
+                            var ri = new RoomInfo(g);
+                            ri._updateFromProps(gameList[g]);
+                            _this.addRoom(ri);
+                            roomsAdded.push(ri);
+                        }
+                    }
+                    _this.purgeRemovedRooms();
+                    _this.onRoomListUpdate(_this.roomInfos, roomsUpdated, roomsAdded, roomsRemoved);
+                    mp._logger.debug("ev GameListUpdate:", _this.roomInfos, "u:", roomsUpdated, "a:", roomsAdded, "r:", roomsRemoved, gameList);
+                });
+                // responses - check operation result: data.errCode
+                mp.addResponseListener(LoadBalancing.Constants.OperationCode.Authenticate, function (data) {
+                    mp._logger.debug("resp Authenticate", data);
+                    if (!data.errCode) {
+                        mp._logger.info("Authenticated");
+                        _this.updateUserIdAndNickname(data.vals, mp._logger);
+                        if (data.vals[LoadBalancing.Constants.ParameterCode.Secret] != undefined) {
+                            _this.connectOptions.userAuthSecret = data.vals[LoadBalancing.Constants.ParameterCode.Secret];
+                        }
+                        _this.changeState(LoadBalancingClient.State.ConnectedToMaster);
+                        var op = [];
+                        if (_this.connectOptions.lobbyName) {
+                            op.push(LoadBalancing.Constants.ParameterCode.LobbyName);
+                            op.push(_this.connectOptions.lobbyName);
+                            if (_this.connectOptions.lobbyType != undefined) {
+                                op.push(LoadBalancing.Constants.ParameterCode.LobbyType);
+                                op.push(_this.connectOptions.lobbyType);
+                            }
+                        }
+                        if (_this.autoJoinLobby) {
+                            mp.sendOperation(LoadBalancing.Constants.OperationCode.JoinLobby, op);
+                            mp._logger.info("Join Lobby", _this.connectOptions.lobbyName, _this.connectOptions.lobbyType, "...");
+                        }
+                    }
+                    else {
+                        _this.changeState(LoadBalancingClient.State.Error);
+                        _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.MasterAuthenticationFailed, "Master authentication failed: " + data.errCode + " " + data.errMsg);
+                    }
+                });
+                mp.addResponseListener(LoadBalancing.Constants.OperationCode.JoinLobby, function (data) {
+                    mp._logger.debug("resp JoinLobby", data);
+                    if (!data.errCode) {
+                        mp._logger.info("Joined to Lobby");
+                        _this.changeState(LoadBalancingClient.State.JoinedLobby);
+                    }
+                    _this._onOperationResponseInternal2(LoadBalancing.Constants.OperationCode.JoinLobby, data);
+                });
+                mp.addResponseListener(LoadBalancing.Constants.OperationCode.CreateGame, function (data) {
+                    mp._logger.debug("resp CreateGame", data);
+                    if (!data.errCode) {
+                        _this.currentRoom._updateFromMasterResponse(data.vals);
+                        mp._logger.debug("Created/Joined " + _this.currentRoom.name);
+                        _this.connectToGameServer(LoadBalancing.Constants.OperationCode.CreateGame);
+                    }
+                    _this._onOperationResponseInternal2(LoadBalancing.Constants.OperationCode.CreateGame, data);
+                });
+                mp.addResponseListener(LoadBalancing.Constants.OperationCode.JoinGame, function (data) {
+                    mp._logger.debug("resp JoinGame", data);
+                    if (!data.errCode) {
+                        _this.currentRoom._updateFromMasterResponse(data.vals);
+                        mp._logger.debug("Joined " + _this.currentRoom.name);
+                        _this.connectToGameServer(LoadBalancing.Constants.OperationCode.JoinGame);
+                    }
+                    _this._onOperationResponseInternal2(LoadBalancing.Constants.OperationCode.JoinGame, data);
+                });
+                mp.addResponseListener(LoadBalancing.Constants.OperationCode.JoinRandomGame, function (data) {
+                    mp._logger.debug("resp JoinRandomGame", data);
+                    if (!data.errCode) {
+                        _this.currentRoom._updateFromMasterResponse(data.vals);
+                        mp._logger.debug("Joined " + _this.currentRoom.name);
+                        _this.connectToGameServer(LoadBalancing.Constants.OperationCode.JoinRandomGame);
+                    }
+                    _this._onOperationResponseInternal2(LoadBalancing.Constants.OperationCode.JoinRandomGame, data);
+                });
+                mp.addResponseListener(LoadBalancing.Constants.OperationCode.FindFriends, function (data) {
+                    mp._logger.debug("resp FindFriends", data);
+                    var res = {};
+                    if (!data.errCode) {
+                        var onlines = data.vals[LoadBalancing.Constants.ParameterCode.FindFriendsResponseOnlineList] || {};
+                        var roomIds = data.vals[LoadBalancing.Constants.ParameterCode.FindFriendsResponseRoomIdList] || {};
+                        for (var i = 0; i < _this.findFriendsRequestList.length; ++i) {
+                            var name = _this.findFriendsRequestList[i];
+                            if (name) {
+                                res[name] = { online: onlines[i], roomId: roomIds[i] };
+                            }
+                        }
+                    }
+                    else {
+                        mp._logger.error("FindFriends request error:", data.errCode);
+                    }
+                    _this.onFindFriendsResult(data.errCode, data.errMsg, res);
+                });
+                mp.addResponseListener(LoadBalancing.Constants.OperationCode.LobbyStats, function (data) {
+                    mp._logger.debug("resp LobbyStats", data);
+                    var res = new Array();
+                    if (!data.errCode) {
+                        var names = data.vals[LoadBalancing.Constants.ParameterCode.LobbyName]; // not inited intentionally
+                        var types = data.vals[LoadBalancing.Constants.ParameterCode.LobbyType] || {};
+                        var peers = data.vals[LoadBalancing.Constants.ParameterCode.PeerCount] || {};
+                        var games = data.vals[LoadBalancing.Constants.ParameterCode.GameCount] || {};
+                        if (names) {
+                            for (var i = 0; i < names.length; ++i) {
+                                res[i] = { lobbyName: names[i], lobbyType: types[i], peerCount: peers[i], gameCount: games[i] };
+                            }
+                        }
+                        else {
+                            for (var i = 0; i < _this.lobbyStatsRequestList.length; ++i) {
+                                var l = _this.lobbyStatsRequestList[i];
+                                res[i] = { lobbyName: l[0], lobbyType: l[1], peerCount: peers[i], gameCount: games[i] };
+                            }
+                        }
+                    }
+                    else {
+                        mp._logger.error("LobbyStats request error:", data.errCode);
+                    }
+                    _this.onLobbyStats(data.errCode, data.errMsg, res);
+                });
+                mp.addEventListener(LoadBalancing.Constants.EventCode.LobbyStats, function (data) {
+                    mp._logger.debug("ev LobbyStats", data);
+                    var res = new Array();
+                    var names = data.vals[LoadBalancing.Constants.ParameterCode.LobbyName]; // not inited intentionally
+                    var types = data.vals[LoadBalancing.Constants.ParameterCode.LobbyType] || {};
+                    var peers = data.vals[LoadBalancing.Constants.ParameterCode.PeerCount] || {};
+                    var games = data.vals[LoadBalancing.Constants.ParameterCode.GameCount] || {};
+                    if (names) {
+                        for (var i = 0; i < names.length; ++i) {
+                            res[i] = { lobbyName: names[i], lobbyType: types[i], peerCount: peers[i], gameCount: games[i] };
+                        }
+                    }
+                    _this.onLobbyStats(0, "", res);
+                });
+                mp.addEventListener(LoadBalancing.Constants.EventCode.AppStats, function (data) {
+                    mp._logger.debug("ev AppStats", data);
+                    var res = {
+                        peerCount: data.vals[LoadBalancing.Constants.ParameterCode.PeerCount],
+                        masterPeerCount: data.vals[LoadBalancing.Constants.ParameterCode.MasterPeerCount],
+                        gameCount: data.vals[LoadBalancing.Constants.ParameterCode.GameCount]
+                    };
+                    _this.onAppStats(0, "", res);
+                });
+                mp.addResponseListener(LoadBalancing.Constants.OperationCode.Rpc, mp.webRpcHandler(this));
+            };
+            LoadBalancingClient.prototype.connectToGameServer = function (masterOpCode) {
+                if (!this.connectOptions.keepMasterConnection && this.masterPeer) {
+                    this.masterPeer.disconnect();
+                }
+                if (this.checkNextState(LoadBalancingClient.State.ConnectingToGameserver, true)) {
+                    this.logger.info("Connecting to Game", this.currentRoom.address);
+                    if (this.gamePeer)
+                        this.gamePeer.Destroy();
+                    this.gamePeer = new GamePeer(this, this.connectionProtocol, this.currentRoom.address, "");
+                    this.gamePeerWaitingForDisconnect = false;
+                    this.initGamePeer(this.gamePeer, masterOpCode);
+                    this.gamePeer.connect(this.appId);
+                    this.changeState(LoadBalancingClient.State.ConnectingToGameserver);
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            };
+            LoadBalancingClient.prototype.initGamePeer = function (gp, masterOpCode) {
+                var _this = this;
+                gp.setLogLevel(this.logger.getLevel());
+                // errors
+                gp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.error, function () {
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.GameError, "Game peer error");
+                });
+                gp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connectFailed, function () {
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.GameConnectFailed, "Game peer connect failed: " + _this.currentRoom.address);
+                });
+                gp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.timeout, function () {
+                    _this.changeState(LoadBalancingClient.State.Error);
+                    _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.GameTimeout, "Game peer timeout");
+                });
+                // status
+                gp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connect, function () {
+                    gp._logger.info("Connected");
+                    //TODO: encryption phase
+                    var op = [];
+                    op.push(LoadBalancing.Constants.ParameterCode.ApplicationId);
+                    op.push(_this.appId);
+                    op.push(LoadBalancing.Constants.ParameterCode.AppVersion);
+                    op.push(_this.appVersion);
+                    if (_this.connectOptions.userAuthSecret != undefined) { // may be w / o userAuthType
+                        op.push(LoadBalancing.Constants.ParameterCode.Secret);
+                        op.push(_this.connectOptions.userAuthSecret);
+                    }
+                    if (_this.userAuthType != LoadBalancing.Constants.CustomAuthenticationType.None) {
+                        op.push(LoadBalancing.Constants.ParameterCode.ClientAuthenticationType);
+                        op.push(Photon.TypeExt.Byte(_this.userAuthType));
+                    }
+                    if (_this.userId) {
+                        op.push(LoadBalancing.Constants.ParameterCode.UserId, _this.userId);
+                    }
+                    gp.sendOperation(LoadBalancing.Constants.OperationCode.Authenticate, op);
+                    gp._logger.info("Authenticate...");
+                });
+                gp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.disconnect, function () {
+                    if (gp == _this.gamePeer) { // skip delayed disconnect response
+                        _this._cleanupGamePeerData();
+                        gp._logger.info("Disconnected");
+                    }
+                });
+                gp.addPeerStatusListener(Photon.PhotonPeer.StatusCodes.connectClosed, function () {
+                    gp._logger.info("Server closed connection");
+                    if (!_this.gamePeerWaitingForDisconnect) {
+                        _this.changeState(LoadBalancingClient.State.Error);
+                        _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.GameConnectClosed, "Game server closed connection");
+                    }
+                });
+                // responses
+                gp.addResponseListener(LoadBalancing.Constants.OperationCode.Authenticate, function (data) {
+                    gp._logger.debug("resp Authenticate", data);
+                    if (!data.errCode) {
+                        gp._logger.info("Authenticated");
+                        gp._logger.info("Connected");
+                        if (masterOpCode == LoadBalancing.Constants.OperationCode.CreateGame) {
+                            _this.createRoomInternal(gp, _this.createRoomOptions);
+                        }
+                        else {
+                            var op = [];
+                            op.push(LoadBalancing.Constants.ParameterCode.RoomName);
+                            op.push(_this.currentRoom.name);
+                            op.push(LoadBalancing.Constants.ParameterCode.Broadcast);
+                            op.push(true);
+                            op.push(LoadBalancing.Constants.ParameterCode.PlayerProperties);
+                            op.push(_this._myActor._getAllProperties());
+                            if (masterOpCode == LoadBalancing.Constants.OperationCode.JoinGame) {
+                                if (_this.joinRoomOptions.createIfNotExists) {
+                                    op.push(LoadBalancing.Constants.ParameterCode.JoinMode, LoadBalancingClient.JoinMode.CreateIfNotExists);
+                                    _this.fillCreateRoomOptions(op, _this.createRoomOptions);
+                                }
+                                if (_this.joinRoomOptions.rejoin) {
+                                    op.push(LoadBalancing.Constants.ParameterCode.JoinMode, LoadBalancingClient.JoinMode.RejoinOnly);
+                                }
+                                if (_this.joinRoomOptions.expectedUsers) {
+                                    op.push(LoadBalancing.Constants.ParameterCode.Add, _this.joinRoomOptions.expectedUsers);
+                                }
+                            }
+                            gp.sendOperation(LoadBalancing.Constants.OperationCode.JoinGame, op);
+                        }
+                        _this.changeState(LoadBalancingClient.State.ConnectedToGameserver);
+                    }
+                    else {
+                        _this.changeState(LoadBalancingClient.State.Error);
+                        _this._onErrorInternal(LoadBalancingClient.PeerErrorCode.GameAuthenticationFailed, "Game authentication failed: " + data.errCode + " " + data.errMsg);
+                    }
+                });
+                gp.addResponseListener(LoadBalancing.Constants.OperationCode.CreateGame, function (data) {
+                    gp._logger.debug("resp CreateGame", data);
+                    if (!data.errCode) {
+                        _this._myActor._updateMyActorFromResponse(data.vals);
+                        gp._logger.info("myActor: ", _this._myActor);
+                        _this.currentRoom._updateFromProps(data.vals[LoadBalancing.Constants.ParameterCode.GameProperties]);
+                        _this.clearActors();
+                        _this.addActor(_this._myActor);
+                        _this.changeState(LoadBalancingClient.State.Joined);
+                        _this.onJoinRoom(true);
+                    }
+                    _this._onOperationResponseInternal2(LoadBalancing.Constants.OperationCode.CreateGame, data);
+                });
+                gp.addResponseListener(LoadBalancing.Constants.OperationCode.JoinGame, function (data) {
+                    gp._logger.debug("resp JoinGame", data);
+                    if (!data.errCode) {
+                        _this._myActor._updateMyActorFromResponse(data.vals);
+                        gp._logger.info("myActor: ", _this._myActor);
+                        _this.clearActors();
+                        _this.addActor(_this._myActor);
+                        var actorList = data.vals[LoadBalancing.Constants.ParameterCode.ActorList];
+                        var actorProps = data.vals[LoadBalancing.Constants.ParameterCode.PlayerProperties];
+                        if (actorList !== undefined) {
+                            for (var i = 0; i < actorList.length; i++) {
+                                var actorNr = actorList[i];
+                                var props;
+                                if (actorProps !== undefined)
+                                    props = actorProps[actorNr];
+                                var name = "";
+                                if (props !== undefined) {
+                                    name = props[LoadBalancing.Constants.ActorProperties.PlayerName];
+                                }
+                                var a;
+                                if (actorNr == _this._myActor.actorNr)
+                                    a = _this._myActor;
+                                else {
+                                    a = _this.actorFactoryInternal(name, actorNr);
+                                    _this.addActor(a);
+                                }
+                                if (props !== undefined) {
+                                    var userId = props[LoadBalancing.Constants.ActorProperties.UserId];
+                                    if (userId != undefined)
+                                        a.userId = userId;
+                                }
+                                if (props !== undefined) {
+                                    a._updateFromProps(props);
+                                }
+                            }
+                        }
+                        _this.currentRoom._updateFromProps(data.vals[LoadBalancing.Constants.ParameterCode.GameProperties]);
+                        _this.changeState(LoadBalancingClient.State.Joined);
+                        _this.onJoinRoom(false);
+                    }
+                    _this._onOperationResponseInternal2(LoadBalancing.Constants.OperationCode.JoinGame, data);
+                });
+                gp.addResponseListener(LoadBalancing.Constants.OperationCode.SetProperties, function (data) {
+                    gp._logger.debug("resp SetProperties", data);
+                    _this._onOperationResponseInternal2(LoadBalancing.Constants.OperationCode.SetProperties, data);
+                });
+                gp.addResponseListener(LoadBalancing.Constants.OperationCode.Leave, function (data) {
+                    gp._logger.debug("resp Leave", data);
+                    gp.disconnect();
+                    _this._onOperationResponseInternal2(LoadBalancing.Constants.OperationCode.Leave, data);
+                });
+                gp.addResponseListener(LoadBalancing.Constants.OperationCode.Rpc, gp.webRpcHandler(this));
+                // events
+                gp.addEventListener(LoadBalancing.Constants.EventCode.Join, function (data) {
+                    gp._logger.debug("ev Join", data);
+                    if (Actor._getActorNrFromResponse(data.vals) === _this._myActor.actorNr) {
+                        //this._myActor._updateMyActorFromResponse(data.vals);
+                        _this._myActor._updateFromResponse(data.vals);
+                        //                    this.addActor(this._myActor);
+                        _this.onActorJoin(_this._myActor); // let client read updated properties
+                    }
+                    else {
+                        var actor = _this.actorFactoryInternal();
+                        actor._updateFromResponse(data.vals);
+                        _this.addActor(actor);
+                        _this.onActorJoin(actor);
+                    }
+                });
+                gp.addEventListener(LoadBalancing.Constants.EventCode.Leave, function (data) {
+                    gp._logger.debug("ev Leave", data);
+                    _this.myRoom()._updateFromEvent(data.vals); // updating masterClientId
+                    var actorNr = Actor._getActorNrFromResponse(data.vals);
+                    if (actorNr && _this.actors[actorNr]) {
+                        var a = _this.actors[actorNr];
+                        if (data.vals[LoadBalancing.Constants.ParameterCode.IsInactive]) {
+                            a._setSuspended(true);
+                            _this.onActorSuspend(a);
+                        }
+                        else {
+                            _this.removeActor(actorNr);
+                            _this.onActorLeave(a, false);
+                        }
+                    }
+                });
+                gp.addEventListener(LoadBalancing.Constants.EventCode.Disconnect, function (data) {
+                    gp._logger.debug("ev Disconnect", data);
+                    var actorNr = Actor._getActorNrFromResponse(data.vals);
+                    if (actorNr && _this.actors[actorNr]) {
+                        var a = _this.actors[actorNr];
+                        a._setSuspended(true);
+                        _this.onActorSuspend(a);
+                    }
+                });
+                gp.addEventListener(LoadBalancing.Constants.EventCode.PropertiesChanged, function (data) {
+                    gp._logger.debug("ev PropertiesChanged", data);
+                    var targetActorNr = data.vals[LoadBalancing.Constants.ParameterCode.TargetActorNr];
+                    if (targetActorNr !== undefined && targetActorNr > 0) {
+                        if (_this.actors[targetActorNr] !== undefined) {
+                            var actor = _this.actors[targetActorNr];
+                            actor._updateFromProps(data.vals[LoadBalancing.Constants.ParameterCode.Properties]);
+                            _this.onActorPropertiesChange(actor);
+                        }
+                    }
+                    else {
+                        _this.currentRoom._updateFromProps(data.vals[LoadBalancing.Constants.ParameterCode.Properties]);
+                        _this.onMyRoomPropertiesChange();
+                    }
+                });
+            };
+            LoadBalancingClient.prototype._cleanupNameServerPeerData = function () {
+            };
+            LoadBalancingClient.prototype._cleanupMasterPeerData = function () {
+            };
+            LoadBalancingClient.prototype._cleanupGamePeerData = function () {
+                for (var i in this.actors) {
+                    this.onActorLeave(this.actors[i], true);
+                }
+                this.clearActors();
+                this.addActor(this._myActor);
+            };
+            LoadBalancingClient.prototype._onOperationResponseInternal2 = function (code, data) {
+                if (data.errCode) {
+                    this.logger.warn("Operation", code, "error:", data.errMsg, "(" + data.errCode + ")");
+                }
+                this.onOperationResponse(data.errCode, data.errMsg, code, data.vals);
+            };
+            LoadBalancingClient.prototype._onErrorInternal = function (errorCode, errorMsg) {
+                this.logger.error("Error:", errorCode, errorMsg);
+                this.onError(errorCode, errorMsg);
+            };
+            //TODO: ugly way to init const table
+            LoadBalancingClient.prototype.initValidNextState = function () {
+                this.validNextState[LoadBalancingClient.State.Error] = [LoadBalancingClient.State.ConnectingToMasterserver, LoadBalancingClient.State.ConnectingToNameServer];
+                this.validNextState[LoadBalancingClient.State.Uninitialized] = [LoadBalancingClient.State.ConnectingToMasterserver, LoadBalancingClient.State.ConnectingToNameServer];
+                this.validNextState[LoadBalancingClient.State.ConnectedToNameServer] = [LoadBalancingClient.State.ConnectingToMasterserver];
+                this.validNextState[LoadBalancingClient.State.Disconnected] = [LoadBalancingClient.State.ConnectingToMasterserver, LoadBalancingClient.State.ConnectingToNameServer];
+                this.validNextState[LoadBalancingClient.State.ConnectedToMaster] = [LoadBalancingClient.State.JoinedLobby, LoadBalancingClient.State.ConnectingToGameserver];
+                this.validNextState[LoadBalancingClient.State.JoinedLobby] = [LoadBalancingClient.State.ConnectingToGameserver];
+                this.validNextState[LoadBalancingClient.State.ConnectingToGameserver] = [LoadBalancingClient.State.ConnectedToGameserver];
+                this.validNextState[LoadBalancingClient.State.ConnectedToGameserver] = [LoadBalancingClient.State.Joined];
+            };
+            LoadBalancingClient.prototype.checkNextState = function (nextState, dontThrow) {
+                if (dontThrow === void 0) { dontThrow = false; }
+                var valid = this.validNextState[this.state];
+                var res = valid && valid.indexOf(nextState) >= 0;
+                if (!res) {
+                    if (dontThrow) {
+                        this.logger.error("LoadBalancingPeer checkNextState fail: " + LoadBalancingClient.StateToName(this.state) + " -> " + LoadBalancingClient.StateToName(nextState));
+                    }
+                    else {
+                        this.logger.exception(501, "LoadBalancingPeer checkNextState fail: " + LoadBalancingClient.StateToName(this.state) + " -> " + LoadBalancingClient.StateToName(nextState));
+                    }
+                }
+                return res;
+            };
+            /**
+                @summary Converts {@link Photon.LoadBalancing.LoadBalancingClient.State State} element to string name.
+                @method Photon.LoadBalancing.LoadBalancingClient.StateToName
+                @param {Photon.LoadBalancing.LoadBalancingClient.State} state Client state enum element.
+                @returns {string} Specified element name or undefined if not found.
+            */
+            LoadBalancingClient.StateToName = function (value) {
+                return LoadBalancingClient.stateName[value];
+            };
+            LoadBalancingClient.JoinMode = {
+                Default: 0,
+                CreateIfNotExists: 1,
+                //            JoinOrejoin: 2,
+                RejoinOnly: 3
+            };
+            // tsc looses all comments after first static member 
+            // jsdoc reads comments from any place within class (and may be from any place in file)
+            LoadBalancingClient.PeerErrorCode = {
+                /**
+                    @summary Enum for client peers error codes.
+                    @member Photon.LoadBalancing.LoadBalancingClient.PeerErrorCode
+                    @readonly
+                    @property {number} Ok No Error.
+                    @property {number} MasterError General Master server peer error.
+                    @property {number} MasterConnectFailed Master server connection error.
+                    @property {number} MasterConnectClosed Disconnected from Master server.
+                    @property {number} MasterTimeout Disconnected from Master server for timeout.
+                    @property {number} MasterEncryptionEstablishError Master server encryption establishing failed.
+                    @property {number} MasterAuthenticationFailed Master server authentication failed.
+                    @property {number} GameError General Game server peer error.
+                    @property {number} GameConnectFailed Game server connection error.
+                    @property {number} GameConnectClosed Disconnected from Game server.
+                    @property {number} GameTimeout Disconnected from Game server for timeout.
+                    @property {number} GameEncryptionEstablishError Game server encryption establishing failed.
+                    @property {number} GameAuthenticationFailed Game server authentication failed.
+                    @property {number} NameServerError General NameServer peer error.
+                    @property {number} NameServerConnectFailed NameServer connection error.
+                    @property {number} NameServerConnectClosed Disconnected from NameServer.
+                    @property {number} NameServerTimeout Disconnected from NameServer for timeout.
+                    @property {number} NameServerEncryptionEstablishError NameServer encryption establishing failed.
+                    @property {number} NameServerAuthenticationFailed NameServer authentication failed.
+                 */
+                Ok: 0,
+                MasterError: 1001,
+                MasterConnectFailed: 1002,
+                MasterConnectClosed: 1003,
+                MasterTimeout: 1004,
+                MasterEncryptionEstablishError: 1005,
+                MasterAuthenticationFailed: 1101,
+                GameError: 2001,
+                GameConnectFailed: 2002,
+                GameConnectClosed: 2003,
+                GameTimeout: 2004,
+                GameEncryptionEstablishError: 2005,
+                GameAuthenticationFailed: 2101,
+                NameServerError: 3001,
+                NameServerConnectFailed: 3002,
+                NameServerConnectClosed: 3003,
+                NameServerTimeout: 3004,
+                NameServerEncryptionEstablishError: 3005,
+                NameServerAuthenticationFailed: 3101
+            };
+            LoadBalancingClient.State = {
+                /**
+                    @summary Enum for client states.
+                    @member Photon.LoadBalancing.LoadBalancingClient.State
+                    @readonly
+                    @property {number} Error Critical error occurred.
+                    @property {number} Uninitialized Client is created but not used yet.
+                    @property {number} ConnectingToNameServer Connecting to NameServer.
+                    @property {number} ConnectedToNameServer Connected to NameServer.
+                    @property {number} ConnectingToMasterserver Connecting to Master (includes connect, authenticate and joining the lobby).
+                    @property {number} ConnectedToMaster Connected to Master server.
+                    @property {number} JoinedLobby Connected to Master and joined lobby. Display room list and join/create rooms at will.
+                    @property {number} ConnectingToGameserver Connecting to Game server(client will authenticate and join/create game).
+                    @property {number} ConnectedToGameserver Connected to Game server (going to auth and join game).
+                    @property {number} Joined The client joined room.
+                    @property {number} Disconnected The client is no longer connected (to any server). Connect to Master to go on.
+                */
+                Error: -1,
+                Uninitialized: 0,
+                ConnectingToNameServer: 1,
+                ConnectedToNameServer: 2,
+                ConnectingToMasterserver: 3,
+                ConnectedToMaster: 4,
+                JoinedLobby: 5,
+                ConnectingToGameserver: 6,
+                ConnectedToGameserver: 7,
+                Joined: 8,
+                Disconnected: 10
+            };
+            // Separate inverse dictionary required because State members may be obfuscated during minification
+            LoadBalancingClient.stateName = (_a = {},
+                _a[LoadBalancingClient.State.Error] = "Error",
+                _a[LoadBalancingClient.State.Uninitialized] = "Uninitialized",
+                _a[LoadBalancingClient.State.ConnectingToNameServer] = "ConnectingToNameServer",
+                _a[LoadBalancingClient.State.ConnectedToNameServer] = "ConnectedToNameServer",
+                _a[LoadBalancingClient.State.ConnectingToMasterserver] = "ConnectingToMasterserver",
+                _a[LoadBalancingClient.State.ConnectedToMaster] = "ConnectedToMaster",
+                _a[LoadBalancingClient.State.JoinedLobby] = "JoinedLobby",
+                _a[LoadBalancingClient.State.ConnectingToGameserver] = "ConnectingToGameserver",
+                _a[LoadBalancingClient.State.ConnectedToGameserver] = "ConnectedToGameserver",
+                _a[LoadBalancingClient.State.Joined] = "Joined",
+                _a[LoadBalancingClient.State.Disconnected] = "Disconnected",
+                _a);
+            return LoadBalancingClient;
+        }());
+        LoadBalancing.LoadBalancingClient = LoadBalancingClient;
+        //TODO: internal
+        var LbcPeer = /** @class */ (function (_super) {
+            __extends(LbcPeer, _super);
+            function LbcPeer() {
+                return _super !== null && _super.apply(this, arguments) || this;
+            }
+            LbcPeer.prototype.webRpc = function (uriPath, parameters, options) {
+                var params = [];
+                params.push(LoadBalancing.Constants.ParameterCode.UriPath, uriPath);
+                params.push(LoadBalancing.Constants.ParameterCode.RpcCallParams, parameters);
+                if (options) {
+                    if (options.sendAuthCookie) {
+                        params.push(LoadBalancing.Constants.ParameterCode.WebFlags, Photon.TypeExt.Byte(WebFlags.SendAuthCookie));
+                    }
+                }
+                this.sendOperation(LoadBalancing.Constants.OperationCode.Rpc, params);
+            };
+            LbcPeer.prototype.webRpcHandler = function (lbc) {
+                var _this = this;
+                return function (d) {
+                    _this._logger.debug("resp Rpc", d);
+                    var uriPath, message, data, resultCode;
+                    if (d.errCode == 0) {
+                        uriPath = d.vals[LoadBalancing.Constants.ParameterCode.UriPath];
+                        data = d.vals[LoadBalancing.Constants.ParameterCode.RpcCallRetData];
+                        resultCode = d.vals[LoadBalancing.Constants.ParameterCode.RpcCallRetCode];
+                    }
+                    else {
+                        _this._logger.error("WebRpc request error:", d.errCode);
+                    }
+                    lbc.onWebRpcResult(d.errCode, d.errMsg, uriPath, resultCode, data);
+                };
+            };
+            return LbcPeer;
+        }(Photon.PhotonPeer));
+        LoadBalancing.LbcPeer = LbcPeer;
+        var NameServerPeer = /** @class */ (function (_super) {
+            __extends(NameServerPeer, _super);
+            function NameServerPeer(client, protocol, address, subprotocol) {
+                var _this = _super.call(this, protocol, address, subprotocol, client.logger.getPrefix() + " NameServer") || this;
+                _this.client = client;
+                return _this;
+            }
+            // overrides
+            NameServerPeer.prototype.onUnhandledEvent = function (code, args) {
+                this.client.onEvent(code, args.vals[LoadBalancing.Constants.ParameterCode.CustomEventContent], args.vals[LoadBalancing.Constants.ParameterCode.ActorNr]);
+            };
+            NameServerPeer.prototype.onUnhandledResponse = function (code, args) {
+                this.client.onOperationResponse(args.errCode, args.errMsg, code, args.vals);
+            };
+            NameServerPeer.prototype.getRegions = function (appId) {
+                var params = [];
+                params.push(LoadBalancing.Constants.ParameterCode.ApplicationId, appId);
+                this.sendOperation(LoadBalancing.Constants.OperationCode.GetRegions, params, true, 0);
+            };
+            // this = LBC
+            NameServerPeer.prototype.opAuth = function (appId, appVersion, userAuthType, userAuthParameters, userAuthData, userId, region) {
+                var op = [];
+                op.push(LoadBalancing.Constants.ParameterCode.ApplicationId, appId);
+                op.push(LoadBalancing.Constants.ParameterCode.AppVersion, appVersion);
+                if (userAuthType != LoadBalancing.Constants.CustomAuthenticationType.None) {
+                    op.push(LoadBalancing.Constants.ParameterCode.ClientAuthenticationType, Photon.TypeExt.Byte(userAuthType));
+                    op.push(LoadBalancing.Constants.ParameterCode.ClientAuthenticationParams, userAuthParameters);
+                    if (userAuthData) {
+                        op.push(LoadBalancing.Constants.ParameterCode.ClientAuthenticationData, userAuthData);
+                    }
+                }
+                if (userId) {
+                    op.push(LoadBalancing.Constants.ParameterCode.UserId, userId);
+                }
+                //    		if (this.connectOptions.lobbyStats) {
+                //    			op.push(Constants.ParameterCode.LobbyStats, true);
+                //    		}
+                op.push(LoadBalancing.Constants.ParameterCode.Region, region);
+                this.sendOperation(LoadBalancing.Constants.OperationCode.Authenticate, op, true, 0);
+                this._logger.info("Authenticate...");
+            };
+            return NameServerPeer;
+        }(LbcPeer));
+        LoadBalancing.NameServerPeer = NameServerPeer;
+        //TODO: internal
+        var MasterPeer = /** @class */ (function (_super) {
+            __extends(MasterPeer, _super);
+            function MasterPeer(client, protocol, address, subprotocol) {
+                var _this = _super.call(this, protocol, address, subprotocol, client.logger.getPrefix() + " Master") || this;
+                _this.client = client;
+                return _this;
+            }
+            // overrides
+            MasterPeer.prototype.onUnhandledEvent = function (code, args) {
+                this.client.onEvent(code, args.vals[LoadBalancing.Constants.ParameterCode.CustomEventContent], args.vals[LoadBalancing.Constants.ParameterCode.ActorNr]);
+            };
+            MasterPeer.prototype.onUnhandledResponse = function (code, args) {
+                this.client.onOperationResponse(args.errCode, args.errMsg, code, args.vals);
+            };
+            MasterPeer.prototype.findFriends = function (friendsToFind) {
+                var params = [];
+                params.push(LoadBalancing.Constants.ParameterCode.FindFriendsRequestList);
+                params.push(friendsToFind);
+                this.sendOperation(LoadBalancing.Constants.OperationCode.FindFriends, params);
+            };
+            MasterPeer.prototype.requestLobbyStats = function (lobbiesToRequest) {
+                var params = [];
+                if (lobbiesToRequest && lobbiesToRequest.length > 0) {
+                    var n = new Array();
+                    var t = new Array();
+                    for (var i = 0; i < lobbiesToRequest.length; ++i) {
+                        n[i] = lobbiesToRequest[i][0];
+                        t[i] = lobbiesToRequest[i][1];
+                    }
+                    params.push(LoadBalancing.Constants.ParameterCode.LobbyName);
+                    params.push(n);
+                    params.push(LoadBalancing.Constants.ParameterCode.LobbyType);
+                    params.push(t);
+                }
+                this.sendOperation(LoadBalancing.Constants.OperationCode.LobbyStats, params);
+            };
+            return MasterPeer;
+        }(LbcPeer));
+        LoadBalancing.MasterPeer = MasterPeer;
+        //TODO: internal
+        var GamePeer = /** @class */ (function (_super) {
+            __extends(GamePeer, _super);
+            function GamePeer(client, protocol, address, subprotocol) {
+                var _this = _super.call(this, protocol, address, subprotocol, client.logger.getPrefix() + " Game") || this;
+                _this.client = client;
+                return _this;
+            }
+            // overrides
+            GamePeer.prototype.onUnhandledEvent = function (code, args) {
+                this.client.onEvent(code, args.vals[LoadBalancing.Constants.ParameterCode.CustomEventContent], args.vals[LoadBalancing.Constants.ParameterCode.ActorNr]);
+            };
+            // overrides
+            GamePeer.prototype.onUnhandledResponse = function (code, args) {
+                this.client.onOperationResponse(args.errCode, args.errMsg, code, args.vals);
+            };
+            GamePeer.prototype.raiseEvent = function (eventCode, data, options) {
+                if (this.client.isJoinedToRoom()) {
+                    this._logger.debug("raiseEvent", eventCode, data, options);
+                    var params = [LoadBalancing.Constants.ParameterCode.Code, Photon.TypeExt.Byte(eventCode), LoadBalancing.Constants.ParameterCode.Data, data];
+                    if (options) {
+                        if (options.receivers != undefined && options.receivers !== LoadBalancing.Constants.ReceiverGroup.Others) {
+                            params.push(LoadBalancing.Constants.ParameterCode.ReceiverGroup);
+                            params.push(Photon.TypeExt.Byte(options.receivers));
+                        }
+                        if (options.cache != undefined && options.cache !== LoadBalancing.Constants.EventCaching.DoNotCache) {
+                            params.push(LoadBalancing.Constants.ParameterCode.Cache);
+                            params.push(Photon.TypeExt.Byte(options.cache));
+                        }
+                        if (options.interestGroup != undefined) {
+                            if (this.checkGroupNumber(options.interestGroup)) {
+                                params.push(LoadBalancing.Constants.ParameterCode.Group);
+                                params.push(Photon.TypeExt.Byte(options.interestGroup));
+                            }
+                            else {
+                                this._logger.exception(502, "raiseEvent - Group not a number: " + options.interestGroup);
+                            }
+                        }
+                        if (options.targetActors != undefined) {
+                            params.push(LoadBalancing.Constants.ParameterCode.ActorList);
+                            params.push(options.targetActors);
+                        }
+                        if (options.webForward) {
+                            params.push(LoadBalancing.Constants.ParameterCode.WebFlags);
+                            params.push(Photon.TypeExt.Byte(WebFlags.HttpForward));
+                        }
+                    }
+                    this.sendOperation(LoadBalancing.Constants.OperationCode.RaiseEvent, params);
+                }
+                else {
+                    throw new Error("raiseEvent - Not joined!");
+                }
+            };
+            GamePeer.prototype.changeGroups = function (groupsToRemove, groupsToAdd) {
+                var params = [];
+                if (groupsToRemove != null && groupsToRemove != undefined) {
+                    this.checkGroupArray(groupsToRemove, "groupsToRemove");
+                    params.push(LoadBalancing.Constants.ParameterCode.Remove);
+                    params.push(Photon.TypeExt.Byte(groupsToRemove));
+                }
+                if (groupsToAdd != null && groupsToAdd != undefined) {
+                    this.checkGroupArray(groupsToAdd, "groupsToAdd");
+                    params.push(LoadBalancing.Constants.ParameterCode.Add);
+                    params.push(Photon.TypeExt.Byte(groupsToAdd));
+                }
+                this.sendOperation(LoadBalancing.Constants.OperationCode.ChangeGroups, params);
+            };
+            GamePeer.prototype.checkGroupNumber = function (g) {
+                return !(typeof (g) != "number" || isNaN(g) || g === Infinity || g === -Infinity);
+            };
+            GamePeer.prototype.checkGroupArray = function (groups, groupsName) {
+                if (Exitgames.Common.Util.isArray(groups)) {
+                    for (var i = 0; i < groups.length; ++i) {
+                        var g = groups[i];
+                        if (this.checkGroupNumber(g)) {
+                        }
+                        else {
+                            this._logger.exception(503, "changeGroups - " + groupsName + " (" + groups + ") not an array of numbers: element " + i + " = " + g);
+                        }
+                    }
+                }
+                else {
+                    this._logger.exception(504, "changeGroups - groupsToRemove not an array: " + groups);
+                }
+            };
+            return GamePeer;
+        }(LbcPeer));
+        LoadBalancing.GamePeer = GamePeer;
+    })(LoadBalancing = Photon.LoadBalancing || (Photon.LoadBalancing = {}));
+})(Photon || (Photon = {}));
+/**
+    Photon Load Balancing API Constants
+    @namespace Photon.LoadBalancing.Constants
+*/
+var Photon;
+(function (Photon) {
+    var Lite;
+    (function (Lite) {
+        var Constants;
+        (function (Constants) {
+            // Summary:
+            //     Lite - keys for parameters of operation requests and responses (short: OpKey).
+            //
+            // Remarks:
+            //     These keys match a definition in the Lite application (part of the server
+            //     SDK).  If your game is built as extension of Lite, don't re-use these codes
+            //     for your custom events.  These keys are defined per application, so Lite
+            //     has different keys than MMO or your custom application. This is why these
+            //     are not an enumeration.  Lite and Lite Lobby will use the keys 255 and lower,
+            //     to give you room for your own codes.  Keys for operation-parameters could
+            //     be assigned on a per operation basis, but it makes sense to have fixed keys
+            //     for values which are used throughout the whole application.
+            Constants.LiteOpKey = {
+                // Summary:
+                //     (252) Code for list of players in a room. Currently not used.
+                ActorList: 252,
+                //
+                // Summary:
+                //     (254) Code of the Actor of an operation. Used for property get and set.
+                ActorNr: 254,
+                //
+                // Summary:
+                //     (249) Code for property set (Hashtable).
+                ActorProperties: 249,
+                //
+                // Summary:
+                //     (238) The "Add" operation-parameter can be used to add something to some
+                //     list or set. E.g. add groups to player's interest groups.
+                Add: 238,
+                //
+                // Summary:
+                //     (250) Code for broadcast parameter of OpSetProperties method.
+                Broadcast: 250,
+                //
+                // Summary:
+                //     (247) Code for caching events while raising them.
+                Cache: 247,
+                //
+                // Summary:
+                //     (244) Code used when sending some code-related parameter, like OpRaiseEvent's
+                //     event-code.
+                //
+                // Remarks:
+                //     This is not the same as the Operation's code, which is no longer sent as
+                //     part of the parameter Dictionary in Photon 3.
+                Code: 244,
+                //
+                // Summary:
+                //     (245) Code of data of an event. Used in OpRaiseEvent.
+                Data: 245,
+                //
+                // Summary:
+                //     (255) Code of the game id (a unique room name). Used in OpJoin.
+                GameId: 255,
+                //
+                // Summary:
+                //     (248) Code for property set (Hashtable).
+                GameProperties: 248,
+                //
+                // Summary:
+                //     (240) Code for "group" operation-parameter (as used in Op RaiseEvent).
+                Group: 240,
+                //
+                // Summary:
+                //     (251) Code for property set (Hashtable). This key is used when sending only
+                //     one set of properties.  If either ActorProperties or GameProperties are used
+                //     (or both), check those keys.
+                Properties: 251,
+                //
+                // Summary:
+                //     (246) Code to select the receivers of events (used in Lite, Operation RaiseEvent).
+                ReceiverGroup: 246,
+                //
+                // Summary:
+                //     (239) The "Remove" operation-parameter can be used to remove something from
+                //     a list. E.g. remove groups from player's interest groups.
+                Remove: 239,
+                //
+                // Summary:
+                //     (253) Code of the target Actor of an operation. Used for property set. Is
+                //     0 for game.
+                TargetActorNr: 253,
+                //
+                // Summary:
+                //     (236) A parameter indicating how long a room instance should be keeped alive in the 
+                //     room cache after all players left the room.
+                /// <summary>
+                EmptyRoomLiveTime: 236
+            };
+            // Summary:
+            //     Lite - Event codes.  These codes are defined by the Lite application's logic
+            //     on the server side.  Other application's won't necessarily use these.
+            //
+            // Remarks:
+            //     If your game is built as extension of Lite, don't re-use these codes for
+            //     your custom events.
+            Constants.LiteEventCode = {
+                // Summary:
+                //     (255) Event Join: someone joined the game
+                Join: 255,
+                //
+                // Summary:
+                //     (254) Event Leave: someone left the game
+                Leave: 254,
+                //
+                // Summary:
+                //     (253) Event PropertiesChanged
+                PropertiesChanged: 253
+            };
+            // Summary:
+            //     Lite - Operation Codes.  This enumeration contains the codes that are given
+            //     to the Lite Application's operations. Instead of sending "Join", this enables
+            //     us to send the byte 255.
+            //
+            // Remarks:
+            //     Other applications (the MMO demo or your own) could define other operations
+            //     and other codes.  If your game is built as extension of Lite, don't re-use
+            //     these codes for your custom events.
+            Constants.LiteOpCode = {
+                // Summary:
+                //     (248) Operation code to change interest groups in Rooms (Lite application
+                //     and extending ones).
+                ChangeGroups: 248,
+                //
+                // Summary:
+                //     (251) Operation code for OpGetProperties.
+                GetProperties: 251,
+                //
+                // Summary:
+                //     (255) Code for OpJoin, to get into a room.
+                Join: 255,
+                //
+                // Summary:
+                //     (254) Code for OpLeave, to get out of a room.
+                Leave: 254,
+                //
+                // Summary:
+                //     (253) Code for OpRaiseEvent (not same as eventCode).
+                RaiseEvent: 253,
+                //
+                // Summary:
+                //     (252) Code for OpSetProperties.
+                SetProperties: 252
+            };
+        })(Constants = Lite.Constants || (Lite.Constants = {}));
+    })(Lite = Photon.Lite || (Photon.Lite = {}));
+})(Photon || (Photon = {}));
+(function (Photon) {
+    var LoadBalancing;
+    (function (LoadBalancing) {
+        var Constants;
+        (function (Constants) {
+            var LiteOpKey = Photon.Lite.Constants.LiteOpKey;
+            var LiteOpCode = Photon.Lite.Constants.LiteOpCode;
+            var LiteEventCode = Photon.Lite.Constants.LiteEventCode;
+            /**
+                @summary Master and Game servers error codes.
+                @member Photon.LoadBalancing.Constants.ErrorCode
+                @readonly
+                @property {number} Ok No Error.
+                @property {number} OperationNotAllowedInCurrentState Operation can't be executed yet.
+                @property {number} InvalidOperationCode The operation you called is not implemented on the server (application) you connect to. Make sure you run the fitting applications.
+                @property {number} InternalServerError Something went wrong in the server. Try to reproduce and contact Exit Games.
+                @property {number} InvalidAuthentication Authentication failed. Possible cause: AppId is unknown to Photon (in cloud service).
+                @property {number} GameIdAlreadyExists GameId (name) already in use (can't create another). Change name.
+                @property {number} GameFull Game is full. This can when players took over while you joined the game.
+                @property {number} GameClosed Game is closed and can't be joined. Join another game.
+                @property {number} NoRandomMatchFound Random matchmaking only succeeds if a room exists thats neither closed nor full. Repeat in a few seconds or create a new room.
+                @property {number} GameDoesNotExist Join can fail if the room (name) is not existing (anymore). This can happen when players leave while you join.
+                @property {number} MaxCcuReached Authorization on the Photon Cloud failed becaus the concurrent users (CCU) limit of the app's subscription is reached.
+                @property {number} InvalidRegion Authorization on the Photon Cloud failed because the app's subscription does not allow to use a particular region's server.
+            */
+            Constants.ErrorCode = {
+                Ok: 0,
+                // server - Photon low(er) level: <: 0
+                /// <summary>
+                /// (-3) Operation can't be executed yet (e.g. OpJoin can't be called before being authenticated, RaiseEvent cant be used before getting into a room).
+                /// </summary>
+                /// <remarks>
+                /// Before you call any operations on the Cloud servers, the automated client workflow must complete its authorization.
+                /// In PUN, wait until State is: JoinedLobby (with AutoJoinLobby : true) or ConnectedToMaster (AutoJoinLobby : false)
+                /// </remarks>
+                OperationNotAllowedInCurrentState: -3,
+                /// <summary>(-2) The operation you called is not implemented on the server (application) you connect to. Make sure you run the fitting applications.</summary>
+                InvalidOperationCode: -2,
+                /// <summary>(-1) Something went wrong in the server. Try to reproduce and contact Exit Games.</summary>
+                InternalServerError: -1,
+                // server - PhotonNetwork: 0x7FFF and down
+                // logic-level error codes start with short.max
+                /// <summary>(32767) Authentication failed. Possible cause: AppId is unknown to Photon (in cloud service).</summary>
+                InvalidAuthentication: 0x7FFF,
+                /// <summary>(32766) GameId (name) already in use (can't create another). Change name.</summary>
+                GameIdAlreadyExists: 0x7FFF - 1,
+                /// <summary>(32765) Game is full. This can when players took over while you joined the game.</summary>
+                GameFull: 0x7FFF - 2,
+                /// <summary>(32764) Game is closed and can't be joined. Join another game.</summary>
+                GameClosed: 0x7FFF - 3,
+                // AlreadyMatched: 0x7FFF - 4,
+                /// <summary>(32762) Not in use currently.</summary>
+                // ServerFull: 0x7FFF - 5,
+                /// <summary>(32761) Not in use currently.</summary>
+                // UserBlocked: 0x7FFF - 6,
+                /// <summary>(32760) Random matchmaking only succeeds if a room exists thats neither closed nor full. Repeat in a few seconds or create a new room.</summary>
+                NoRandomMatchFound: 0x7FFF - 7,
+                /// <summary>(32758) Join can fail if the room (name) is not existing (anymore). This can happen when players leave while you join.</summary>
+                GameDoesNotExist: 0x7FFF - 9,
+                /// <summary>(32757) Authorization on the Photon Cloud failed becaus the concurrent users (CCU) limit of the app's subscription is reached.</summary>
+                /// <remarks>
+                /// Unless you have a plan with "CCU Burst", clients might fail the authentication step during connect. 
+                /// Affected client are unable to call operations. Please note that players who end a game and return 
+                /// to the Master server will disconnect and re-connect, which means that they just played and are rejected 
+                /// in the next minute / re-connect.
+                /// This is a temporary measure. Once the CCU is below the limit, players will be able to connect an play again.
+                /// 
+                /// OpAuthorize is part of connection workflow but only on the Photon Cloud, this error can happen. 
+                /// Self-hosted Photon servers with a CCU limited license won't let a client connect at all.
+                /// </remarks>
+                MaxCcuReached: 0x7FFF - 10,
+                /// <summary>(32756) Authorization on the Photon Cloud failed because the app's subscription does not allow to use a particular region's server.</summary>
+                /// <remarks>
+                /// Some subscription plans for the Photon Cloud are region-bound. Servers of other regions can't be used then.
+                /// Check your Master server address and compare it with your Photon Cloud Dashboard's info.
+                /// 
+                /// OpAuthorize is part of connection workflow but only on the Photon Cloud, this error can happen. 
+                /// Self-hosted Photon servers with a CCU limited license won't let a client connect at all.
+                /// </remarks>
+                InvalidRegion: 0x7FFF - 11,
+                /// <summary>
+                /// (32755) Custom Authentication of the user failed due to setup reasons (see Cloud Dashboard) or the provided user data (like username or token). Check error message for details.
+                /// </summary>
+                CustomAuthenticationFailed: 0x7FFF - 12,
+                /// <summary>(32753) The Authentication ticket expired. Usually, this is refreshed behind the scenes. Connect (and authorize) again.</summary>
+                AuthenticationTicketExpired: 0x7FF1,
+                /// <summary>
+                /// (32752) A server-side plugin (or webhook) failed to execute and reported an error. Check the OperationResponse.DebugMessage.
+                /// </summary>
+                PluginReportedError: 0x7FFF - 15,
+                /// <summary>
+                /// (32751) CreateGame/JoinGame/Join operation fails if expected plugin does not correspond to loaded one.
+                /// </summary>
+                PluginMismatch: 0x7FFF - 16,
+                /// <summary>
+                /// (32750) for join requests. Indicates the current peer already called join and is joined to the room.
+                /// </summary>
+                JoinFailedPeerAlreadyJoined: 32750,
+                /// <summary>
+                /// (32749)  for join requests. Indicates the list of InactiveActors already contains an actor with the requested ActorNr or UserId.
+                /// </summary>
+                JoinFailedFoundInactiveJoiner: 32749,
+                /// <summary>
+                /// (32748) for join requests. Indicates the list of Actors (active and inactive) did not contain an actor with the requested ActorNr or UserId.
+                /// </summary>
+                JoinFailedWithRejoinerNotFound: 32748,
+                /// <summary>
+                /// (32747) for join requests. Note: for future use - Indicates the requested UserId was found in the ExcludedList.
+                /// </summary>
+                JoinFailedFoundExcludedUserId: 32747,
+                /// <summary>
+                /// (32746) for join requests. Indicates the list of ActiveActors already contains an actor with the requested ActorNr or UserId.
+                /// </summary>
+                JoinFailedFoundActiveJoiner: 32746,
+                /// <summary>
+                /// (32745)  for SetProerties and Raisevent (if flag HttpForward is true) requests. Indicates the maximum allowed http requests per minute was reached.
+                /// </summary>
+                HttpLimitReached: 32745,
+                /// <summary>
+                /// (32744) for WebRpc requests. Indicates the the call to the external service failed.
+                /// </summary>
+                ExternalHttpCallFailed: 32744,
+                /// <summary>
+                /// (32742) Server error during matchmaking with slot reservation. E.g. the reserved slots can not exceed MaxPlayers.
+                /// </summary>
+                SlotError: 32742,
+                /// <summary>
+                /// (32741) Server will react with this error if invalid encryption parameters provided by token
+                /// </summary>
+                InvalidEncryptionParameters: 32741
+            };
+            /// <summary>
+            /// These  values define "well known" properties for an Actor / Player.
+            /// </summary>
+            /// <remarks>
+            /// "Custom properties" have to use a string-type as key. They can be assigned at will.
+            /// </remarks>
+            Constants.ActorProperties = {
+                /// <summary>(255) Name of a player/actor.</summary>
+                PlayerName: 255,
+                UserId: 253
+            };
+            /** End user doesn't need this */
+            /// <summary>
+            /// These  values are for "well known" room/game properties used in Photon Loadbalancing.
+            /// </summary>
+            /// <remarks>
+            /// "Custom properties" have to use a string-type as key. They can be assigned at will.
+            /// </remarks>
+            Constants.GameProperties = {
+                /// <summary>(255) Max number of players that "fit" into this room. 0 is for "unlimited".</summary>
+                MaxPlayers: 255,
+                /// <summary>(254) Makes this room listed or not in the lobby on Master.</summary>
+                IsVisible: 254,
+                /// <summary>(253) Allows more players to join a room (or not).</summary>
+                IsOpen: 253,
+                /// <summary>(252) Current count od players in the room. Used only in the lobby on Master.</summary>
+                PlayerCount: 252,
+                /// <summary>(251) True if the room is to be removed from room listing (used in update to room list in lobby on Master)</summary>
+                Removed: 251,
+                /// <summary>(250) A list of the room properties to pass to the RoomInfo list in a lobby. This is used in CreateRoom, which defines this list once per room.</summary>
+                PropsListedInLobby: 250,
+                /// <summary>Equivalent of Operation Join parameter CleanupCacheOnLeave.</summary>
+                CleanupCacheOnLeave: 249,
+                /// <summary>(248) Code for MasterClientId, which is synced by server. When sent as op-parameter this is (byte)203. As room property this is (byte)248.</summary>
+                /// <remarks>Tightly related to ParameterCode.MasterClientId.</remarks>
+                MasterClientId: 248,
+                /// <summary>(247) Code for ExpectedUsers in a room. Matchmaking keeps a slot open for the players with these userIDs.</summary>
+                ExpectedUsers: 247,
+                /// <summary>(246) Player Time To Live. How long any player can be inactive (due to disconnect or leave) before the user gets removed from the playerlist (freeing a slot).</summary>
+                PlayerTtl: 246,
+                /// <summary>(245) Room Time To Live. How long a room stays available (and in server-memory), after the last player becomes inactive. After this time, the room gets persisted or destroyed.</summary>
+                EmptyRoomTtl: 245
+            };
+            /** End user doesn't need this */
+            /// <summary>
+            /// These values are for events defined by Photon Loadbalancing.
+            /// </summary>
+            /// <remarks>They start at 255 and go DOWN. Your own in-game events can start at 0.</remarks>
+            Constants.EventCode = {
+                /// <summary>(230) Initial list of RoomInfos (in lobby on Master)</summary>
+                GameList: 230,
+                /// <summary>(229) Update of RoomInfos to be merged into "initial" list (in lobby on Master)</summary>
+                GameListUpdate: 229,
+                /// <summary>(228) Currently not used. State of queueing in case of server-full</summary>
+                QueueState: 228,
+                /// <summary>(227) Currently not used. Event for matchmaking</summary>
+                // Match: 227,
+                /// <summary>(226) Event with stats about this application (players, rooms, etc)</summary>
+                AppStats: 226,
+                /// <summary>(210) Internally used in case of hosting by Azure</summary>
+                AzureNodeInfo: 210,
+                /// <summary>(255) Event Join: someone joined the game. The new actorNumber is provided as well as the properties of that actor (if set in OpJoin).</summary>
+                Join: LiteEventCode.Join,
+                /// <summary>(254) Event Leave: The player who left the game can be identified by the actorNumber.</summary>
+                Leave: LiteEventCode.Leave,
+                /// <summary>(253) When you call OpSetProperties with the broadcast option "on", this event is fired. It contains the properties being set.</summary>
+                PropertiesChanged: LiteEventCode.PropertiesChanged,
+                /// <summary>(252) When player left game unexpecable and playerTtl > 0 this event is fired</summary>
+                Disconnect: 252,
+                LobbyStats: 224
+            };
+            /** End user doesn't need this */
+            /// <summary>Codes for parameters of Operations and Events.</summary>
+            Constants.ParameterCode = {
+                /// <summary>(230) Address of a (Game) server to use.</summary>
+                Address: 230,
+                /// <summary>(229) Count of players in this application in a rooms (used in stats event)</summary>
+                PeerCount: 229,
+                /// <summary>(228) Count of games in this application (used in stats event)</summary>
+                GameCount: 228,
+                /// <summary>(227) Count of players on the Master server (in this app, looking for rooms)</summary>
+                MasterPeerCount: 227,
+                /// <summary>(225) User's ID</summary>
+                UserId: 225,
+                /// <summary>(224) Your application's ID: a name on your own Photon or a GUID on the Photon Cloud</summary>
+                ApplicationId: 224,
+                /// <summary>(223) Not used currently (as "Position"). If you get queued before connect, this is your position</summary>
+                Position: 223,
+                /// <summary>(223) Modifies the matchmaking algorithm used for OpJoinRandom. Allowed parameter values are defined in enum MatchmakingMode.</summary>
+                MatchMakingType: 223,
+                /// <summary>(222) List of RoomInfos about open / listed rooms</summary>
+                GameList: 222,
+                /// <summary>(221) Internally used to establish encryption</summary>
+                Secret: 221,
+                /// <summary>(220) Version of your application</summary>
+                AppVersion: 220,
+                /// <summary>(210) Internally used in case of hosting by Azure</summary>
+                AzureNodeInfo: 210,
+                /// <summary>(209) Internally used in case of hosting by Azure</summary>
+                AzureLocalNodeId: 209,
+                /// <summary>(208) Internally used in case of hosting by Azure</summary>
+                AzureMasterNodeId: 208,
+                /// <summary>(255) Code for the gameId/roomName (a unique name per room). Used in OpJoin and similar.</summary>
+                RoomName: LiteOpKey.GameId,
+                /// <summary>(250) Code for broadcast parameter of OpSetProperties method.</summary>
+                Broadcast: LiteOpKey.Broadcast,
+                /// <summary>(252) Code for list of players in a room. Currently not used.</summary>
+                ActorList: LiteOpKey.ActorList,
+                /// <summary>(254) Code of the Actor of an operation. Used for property get and set.</summary>
+                ActorNr: LiteOpKey.ActorNr,
+                /// <summary>(249) Code for property set (Hashtable).</summary>
+                PlayerProperties: LiteOpKey.ActorProperties,
+                /// <summary>(245) Code of data/custom content of an event. Used in OpRaiseEvent.</summary>
+                CustomEventContent: LiteOpKey.Data,
+                /// <summary>(245) Code of data of an event. Used in OpRaiseEvent.</summary>
+                Data: LiteOpKey.Data,
+                /// <summary>(244) Code used when sending some code-related parameter, like OpRaiseEvent's event-code.</summary>
+                /// <remarks>This is not the same as the Operation's code, which is no longer sent as part of the parameter Dictionary in Photon 3.</remarks>
+                Code: LiteOpKey.Code,
+                /// <summary>(248) Code for property set (Hashtable).</summary>
+                GameProperties: LiteOpKey.GameProperties,
+                /// <summary>
+                /// (251) Code for property-set (Hashtable). This key is used when sending only one set of properties.
+                /// If either ActorProperties or GameProperties are used (or both), check those keys.
+                /// </summary>
+                Properties: LiteOpKey.Properties,
+                /// <summary>(253) Code of the target Actor of an operation. Used for property set. Is 0 for game</summary>
+                TargetActorNr: LiteOpKey.TargetActorNr,
+                /// <summary>(246) Code to select the receivers of events (used in Lite, Operation RaiseEvent).</summary>
+                ReceiverGroup: LiteOpKey.ReceiverGroup,
+                /// <summary>(247) Code for caching events while raising them.</summary>
+                Cache: LiteOpKey.Cache,
+                /// <summary>(241) Boolean parameter of CreateGame Operation. If true, server cleans up roomcache of leaving players (their cached events get removed).</summary>
+                CleanupCacheOnLeave: 241,
+                /// <summary>(240) Code for "group" operation-parameter (as used in Op RaiseEvent).</summary>
+                Group: LiteOpKey.Group,
+                /// <summary>(239) The "Remove" operation-parameter can be used to remove something from a list. E.g. remove groups from player's interest groups.</summary>
+                Remove: LiteOpKey.Remove,
+                /// <summary>(238) The "Add" operation-parameter can be used to add something to some list or set. E.g. add groups to player's interest groups.</summary>
+                Add: LiteOpKey.Add,
+                /// <summary>(236) A parameter indicating how long a room instance should be keeped alive in the room cache after all players left the room.</summary>
+                EmptyRoomTTL: LiteOpKey.EmptyRoomLiveTime,
+                PlayerTTL: 235,
+                Plugins: 204,
+                /// <summary>(217) This key's (byte) value defines the target custom authentication type/service the client connects with. Used in OpAuthenticate.</summary>
+                ClientAuthenticationType: 217,
+                /// <summary>(216) This key's (string) value provides parameters sent to the custom authentication type/service the client connects with. Used in OpAuthenticate.</summary>
+                ClientAuthenticationParams: 216,
+                ClientAuthenticationData: 214,
+                /// <summary>(215) The JoinMode enum defines which variant of joining a room will be executed: Join only if available, create if not exists or re -join.</summary >
+                /// <remarks>Replaces CreateIfNotExists which was only a bool -value.</remarks >
+                JoinMode: 215,
+                /// <summary>(203) Code for MasterClientId, which is synced by server. When sent as op-parameter this is code 203.</summary>
+                /// <remarks>Tightly related to GamePropertyKey.MasterClientId.</remarks>
+                MasterClientId: 203,
+                /// <summary>(1) Used in Op FindFriends request. Value must be string[] of friends to look up.</summary>
+                FindFriendsRequestList: 1,
+                /// <summary>(1) Used in Op FindFriends response. Contains boolean[] list of online states (false if not online).</summary>
+                FindFriendsResponseOnlineList: 1,
+                /// <summary>(2) Used in Op FindFriends response. Contains string[] of room names ("" where not known or no room joined).</summary>
+                FindFriendsResponseRoomIdList: 2,
+                /// <summary>(213) Used in matchmaking-related methods and when creating a room to name a lobby (to join or to attach a room to).</summary>
+                LobbyName: 213,
+                /// <summary>(212) Used in matchmaking-related methods and when creating a room to define the type of a lobby. Combined with the lobby name this identifies the lobby.</summary>
+                LobbyType: 212,
+                LobbyStats: 211,
+                /// <summary>(210) Used for region values in OpAuth and OpGetRegions.</summary >
+                Region: 210,
+                IsInactive: 233,
+                CheckUserOnJoin: 232,
+                /// <summary>(231) Code for "Check And Swap" (CAS) when changing properties.</summary>
+                ExpectedValues: 231,
+                UriPath: 209,
+                RpcCallParams: 208,
+                RpcCallRetCode: 207,
+                RpcCallRetMessage: 206,
+                RpcCallRetData: 208,
+                WebFlags: 234,
+                // Used by the server in Operation Responses, when it sends the nickname of the client (the user's nickname).
+                Nickname: 202,
+                // Used in Op Join to define if UserIds of the players are broadcast in the room. Useful for FindFriends and reserving slots for expected users.
+                PublishUserId: 239
+            };
+            /**
+                @summary Codes for parameters and events used in Photon Load Balancing API.
+                @member Photon.LoadBalancing.Constants.OperationCode
+                @readonly
+                @property {number} Authenticate Authenticates this peer and connects to a virtual application.
+                @property {number} JoinLobby Joins lobby (on Master).
+                @property {number} LeaveLobby Leaves lobby (on Master).
+                @property {number} CreateGame Creates a game (or fails if name exists).
+                @property {number} JoinGame Joins room (by name).
+                @property {number} JoinRandomGame Joins random room (on Master).
+                @property {number} Leave Leaves the room.
+                @property {number} RaiseEvent Raises event (in a room, for other actors/players).
+                @property {number} SetProperties Sets Properties (of room or actor/player).
+                @property {number} GetProperties Gets Properties.
+                @property {number} ChangeGroups Changes interest groups in room.
+                @property {number} FindFriends Requests Master server for actors online status and joined rooms.
+                @property {number} LobbyStats Requests Master server for lobbies statistics.
+            */
+            Constants.OperationCode = {
+                /// <summary>(230) Authenticates this peer and connects to a virtual application</summary>
+                Authenticate: 230,
+                /// <summary>(229) Joins lobby (on Master)</summary>
+                JoinLobby: 229,
+                /// <summary>(228) Leaves lobby (on Master)</summary>
+                LeaveLobby: 228,
+                /// <summary>(227) Creates a game (or fails if name exists)</summary>
+                CreateGame: 227,
+                /// <summary>(226) Join game (by name)</summary>
+                JoinGame: 226,
+                /// <summary>(225) Joins random game (on Master)</summary>
+                JoinRandomGame: 225,
+                // CancelJoinRandom : 224, // obsolete, cause JoinRandom no longer is a "process". now provides result immediately
+                /// <summary>(254) Code for OpLeave, to get out of a room.</summary>
+                Leave: LiteOpCode.Leave,
+                /// <summary>(253) Raise event (in a room, for other actors/players)</summary>
+                RaiseEvent: LiteOpCode.RaiseEvent,
+                /// <summary>(252) Set Properties (of room or actor/player)</summary>
+                SetProperties: LiteOpCode.SetProperties,
+                /// <summary>(251) Get Properties</summary>
+                GetProperties: LiteOpCode.GetProperties,
+                /// <summary>(248) Operation code to change interest groups in Rooms (Lite application and extending ones).</summary>
+                ChangeGroups: LiteOpCode.ChangeGroups,
+                /// <summary>(222) Request the rooms and online status for a list of friends (by name, which should be unique).</summary>
+                FindFriends: 222,
+                LobbyStats: 221,
+                /// <summary>(220) Gets list of regional servers from a NameServer.</summary>
+                GetRegions: 220,
+                /// <summary>(219) Rpc Operation.</summary>
+                Rpc: 219
+            };
+            /**
+                @summary Options for matchmaking rules for joinRandomGame.
+                @member Photon.LoadBalancing.Constants.MatchmakingMode
+                @readonly
+                @property {number} FillRoom Default. FillRoom Fills up rooms (oldest first) to get players together as fast as possible. Makes most sense with MaxPlayers > 0 and games that can only start with more players.
+                @property {number} SerialMatching Distributes players across available rooms sequentially but takes filter into account. Without filter, rooms get players evenly distributed.
+                @property {number} RandomMatching Joins a (fully) random room. Expected properties must match but aside from this, any available room might be selected.
+            */
+            Constants.MatchmakingMode = {
+                /// <summary>Fills up rooms (oldest first) to get players together as fast as possible. Default.</summary>
+                /// <remarks>Makes most sense with MaxPlayers > 0 and games that can only start with more players.</remarks>
+                FillRoom: 0,
+                /// <summary>Distributes players across available rooms sequentially but takes filter into account. Without filter, rooms get players evenly distributed.</summary>
+                SerialMatching: 1,
+                /// <summary>Joins a (fully) random room. Expected properties must match but aside from this, any available room might be selected.</summary>
+                RandomMatching: 2
+            };
+            /**
+                @summary Caching options for events.
+                @member Photon.LoadBalancing.Constants.EventCaching
+                @readonly
+                @property {number} DoNotCache Default. Do not cache.
+                @property {number} MergeCache Will merge this event's keys with those already cached.
+                @property {number} ReplaceCache Replaces the event cache for this eventCode with this event's content.
+                @property {number} RemoveCache Removes this event (by eventCode) from the cache.
+                @property {number} AddToRoomCache Adds an event to the room's cache.
+                @property {number} AddToRoomCacheGlobal Adds this event to the cache for actor 0 (becoming a "globally owned" event in the cache).
+                @property {number} RemoveFromRoomCache Remove fitting event from the room's cache.
+                @property {number} RemoveFromRoomCacheForActorsLeft Removes events of players who already left the room (cleaning up).
+            */
+            Constants.EventCaching = {
+                // Summary:
+                //     Default value (not sent).
+                DoNotCache: 0,
+                //
+                // Summary:
+                //     Will merge this event's keys with those already cached.
+                MergeCache: 1,
+                //
+                // Summary:
+                //     Replaces the event cache for this eventCode with this event's content.
+                ReplaceCache: 2,
+                //
+                // Summary:
+                //     Removes this event (by eventCode) from the cache.
+                RemoveCache: 3,
+                //
+                // Summary:
+                //     Adds an event to the room's cache.
+                AddToRoomCache: 4,
+                //
+                // Summary:
+                //     Adds this event to the cache for actor 0 (becoming a "globally owned" event
+                //     in the cache).
+                AddToRoomCacheGlobal: 5,
+                //
+                // Summary:
+                //     Remove fitting event from the room's cache.
+                RemoveFromRoomCache: 6,
+                //
+                // Summary:
+                //     Removes events of players who already left the room (cleaning up).
+                RemoveFromRoomCacheForActorsLeft: 7
+            };
+            /**
+                @summary Options for choosing room's actors who should receive events.
+                @member Photon.LoadBalancing.Constants.ReceiverGroup
+                @readonly
+                @property {number} Others Default. Anyone else gets my event.
+                @property {number} All Everyone in the current room (including this peer) will get this event.
+                @property {number} MasterClient The "master client" does not have special rights but is the one who is in this room the longest time.
+            */
+            Constants.ReceiverGroup = {
+                // Summary:
+                //     Default value (not sent). Anyone else gets my event.
+                Others: 0,
+                //
+                // Summary:
+                //     Everyone in the current room (including this peer) will get this event.
+                All: 1,
+                //
+                // Summary:
+                //     The server sends this event only to the actor with the lowest actorNumber.
+                //
+                // Remarks:
+                //     The "master client" does not have special rights but is the one who is in
+                //     this room the longest time.
+                MasterClient: 2
+            };
+            /**
+                @summary Options for optional "Custom Authentication" services used with Photon.
+                @member Photon.LoadBalancing.Constants.CustomAuthenticationType
+                @readonly
+                @property {number} Custom Default. Use a custom authentification service.
+                @property {number} Steam Authenticates users by their Steam Account. Set auth values accordingly.
+                @property {number} Facebook Authenticates users by their Facebook Account. Set auth values accordingly.
+                @property {number} None Disables custom authentification.
+            */
+            Constants.CustomAuthenticationType = {
+                Custom: 0,
+                Steam: 1,
+                Facebook: 2,
+                None: 255
+            };
+            /**
+                @summary Options of lobby types available. Lobby types might be implemented in certain Photon versions and won't be available on older servers.
+                @member Photon.LoadBalancing.Constants.LobbyType
+                @readonly
+                @property {number} Default This lobby is used unless another is defined by game or JoinRandom. Room-lists will be sent and JoinRandomRoom can filter by matching properties.
+                @property {number} SqlLobby This lobby type lists rooms like Default but JoinRandom has a parameter for SQL-like "where" clauses for filtering. This allows bigger, less, or and and combinations.
+            **/
+            Constants.LobbyType = {
+                Default: 0,
+                SqlLobby: 2
+            };
+        })(Constants = LoadBalancing.Constants || (LoadBalancing.Constants = {}));
+    })(LoadBalancing = Photon.LoadBalancing || (Photon.LoadBalancing = {}));
+})(Photon || (Photon = {}));
+/// <reference path="photon-common.ts"/>
+/**
+    Photon Chat API Constants
+    @namespace Photon.Chat.Constants
+*/
+var Photon;
+(function (Photon) {
+    var Chat;
+    (function (Chat) {
+        var Constants;
+        (function (Constants) {
+            var _a;
+            Constants.ParameterCode = {
+                Channels: 0,
+                Channel: 1,
+                Messages: 2,
+                Message: 3,
+                Senders: 4,
+                Sender: 5,
+                ChannelUserCount: 6,
+                UserId: 225,
+                MsgId: 8,
+                MsgIds: 9,
+                SubscribeResults: 15,
+                Status: 10,
+                Friends: 11,
+                SkipMessage: 12,
+                HistoryLength: 14,
+                WebFlags: 21,
+                Properties: 22,
+                ChannelSubscribers: 23
+            };
+            //- Codes for parameters and events used in Photon Chat API.
+            Constants.OperationCode = {
+                Subscribe: 0,
+                Unsubscribe: 1,
+                Publish: 2,
+                SendPrivate: 3,
+                ChannelHistory: 4,
+                UpdateStatus: 5,
+                AddFriendds: 6,
+                RemoveFriends: 7 // Removes users from the list that should update you of their status.
+            };
+            //  Events used for opertion result notifications because user can be connected from multiple devices.
+            Constants.EventCode = {
+                ChatMessages: 0,
+                Users: 1,
+                PrivateMessage: 2,
+                FriendsList: 3,
+                StatusUpdate: 4,
+                Subscribe: 5,
+                Unsubscribe: 6,
+                UserSubscribe: 8,
+                UserUnsubscribe: 9
+            };
+            /**
+                @summary Contains commonly used status values for {@link Photon.Chat.ChatClient#setUserStatus}.You can define your own.<br/>
+                While "online"(Online and up), the status message will be sent to anyone who has you on his friend list.<br/>
+                Define custom online status values as you like with these rules:<br/>
+                0: Means "offline".It will be used when you are not connected. In this status, there is no status message.<br/>
+                1: Means "invisible" and is sent to friends as "offline". They see status 0, no message but you can chat.<br/>
+                2: And any higher value will be treated as "online". Status can be set.<br/>
+                @readonly
+                @property {number} Offline Offline.
+                @property {number} Invisible Offline. Be invisible to everyone. Sends no message.
+                @property {number} Online Online and available.
+                @property {number} Away Online but not available.
+                @property {number} Dnd Do not disturb.
+                @property {number} Lfg Looking For Game / Group. Could be used when you want to be invited or do matchmaking.
+                @property {number} Playing Could be used when in a room, playing.
+                @member Photon.Chat.Constants.UserStatus
+            */
+            Constants.UserStatus = {
+                Offline: 0,
+                Invisible: 1,
+                Online: 2,
+                Away: 3,
+                Dnd: 4,
+                Lfg: 5,
+                Playing: 6
+            };
+            var userStatusName = (_a = {},
+                _a[Constants.UserStatus.Offline] = "Offline",
+                _a[Constants.UserStatus.Invisible] = "Invisible",
+                _a[Constants.UserStatus.Online] = "Online",
+                _a[Constants.UserStatus.Away] = "Away",
+                _a[Constants.UserStatus.Dnd] = "Dnd",
+                _a[Constants.UserStatus.Lfg] = "Lfg",
+                _a[Constants.UserStatus.Playing] = "Playing",
+                _a);
+            Constants.ChannelProperties = {
+                MaxSubscribers: 255,
+                PublishSubscribers: 254
+            };
+            /**
+                @summary Converts {@link Photon.Chat.Constants.UserStatus} element to string name.
+                @param {Photon.Chat.Constants.UserStatus} status User status enum element.
+                @returns {string} Specified element name or undefined if not found.
+                @method Photon.Chat.Constants.UserStatusToName
+            */
+            function UserStatusToName(status) {
+                return userStatusName[status];
+            }
+            Constants.UserStatusToName = UserStatusToName;
+        })(Constants = Chat.Constants || (Chat.Constants = {}));
+    })(Chat = Photon.Chat || (Photon.Chat = {}));
+})(Photon || (Photon = {}));
+/// <reference path="photon-loadbalancing.ts"/>
+/// <reference path="photon-chat-constants.ts"/>
+/**
+    Photon Chat API
+    @namespace Photon.Chat
+*/
+var Photon;
+(function (Photon) {
+    var Chat;
+    (function (Chat) {
+        var _a;
+        var WebFlags = {
+            HttpForward: 0x01,
+            SendAuthCookie: 0x02,
+            SendSync: 0x04,
+            SendState: 0x08
+        };
+        /**
+            @class Photon.Chat.Message
+            @classdesc Encapsulates chat message data.
+        */
+        var Message = /** @class */ (function () {
+            function Message(sender, content) {
+                this.sender = sender;
+                this.content = content;
+            }
+            /**
+                @summary Returns message sender.
+                @return {string} Message sender.
+                @method Photon.Chat.Message#getSender
+            */
+            Message.prototype.getSender = function () {
+                return this.sender;
+            };
+            /**
+                @summary Returns message content.
+                @return {any} Message content.
+                @method Photon.Chat.Message#getContent
+            */
+            Message.prototype.getContent = function () {
+                return this.content;
+            };
+            return Message;
+        }());
+        Chat.Message = Message;
+        /**
+            @class Photon.Chat.Channel
+            @classdesc Represents chat channel.
+        */
+        var Channel = /** @class */ (function () {
+            function Channel(name, isPrivat) {
+                this.name = name;
+                this.isPrivat = isPrivat;
+                this.messages = [];
+                this.lastId = 0;
+                this.properties = {};
+                this.publishSubscribers = false;
+                this.maxSubscribers = 0;
+                this.subscribers = {};
+            }
+            /**
+                @summary Returns channel name (counterpart user id for private channel).
+                @return {string} Channel name.
+                @method Photon.Chat.Channel#getName
+            */
+            Channel.prototype.getName = function () {
+                return this.name;
+            };
+            /**
+                @summary Returns true if channel is private.
+                @return {boolean} Channel private status.
+                @method Photon.Chat.Channel#isPrivate
+            */
+            Channel.prototype.isPrivate = function () {
+                return this.isPrivat;
+            };
+            /**
+                @summary Returns messages cache.
+                @return {{@link Photon.Chat.Message}[]} Array of messages.
+                @method Photon.Chat.Channel#getMessages
+            */
+            Channel.prototype.getMessages = function () {
+                return this.messages;
+            };
+            /**
+                @summary Returns ID of the last message received.
+                @return {number} Last message ID.
+                @method Photon.Chat.Channel#getLastId
+            */
+            Channel.prototype.getLastId = function () {
+                return this.lastId;
+            };
+            /**
+                @summary Clears messages cache.
+                @method Photon.Chat.Channel#clearMessages
+            */
+            Channel.prototype.clearMessages = function () {
+                this.messages.splice(0);
+            };
+            // internal
+            Channel.prototype.addMessages = function (senders, messages) {
+                var newMessages = [];
+                for (var i in senders) {
+                    if (parseInt(i) < messages.length) {
+                        var m = new Message(senders[i], messages[i]);
+                        this.messages.push(m);
+                        newMessages.push(m);
+                    }
+                }
+                return newMessages;
+            };
+            Channel.prototype.readProperties = function (props) {
+                if (props) {
+                    for (var p in props) {
+                        if (props[p] == null)
+                            this.properties[p] = undefined;
+                        else
+                            this.properties[p] = props[p];
+                    }
+                    var x = props[Chat.Constants.ChannelProperties.PublishSubscribers];
+                    if (x != undefined) {
+                        this.publishSubscribers = x;
+                    }
+                    x = props[Chat.Constants.ChannelProperties.MaxSubscribers];
+                    if (x != undefined) {
+                        this.maxSubscribers = x;
+                    }
+                }
+            };
+            // returns false in case max subscribers exceeded
+            Channel.prototype.addSubscriber = function (user) {
+                if (this.subscribers[user]) // ignore if already added
+                    return false;
+                if (Object.keys(this.subscribers).length > this.maxSubscribers) {
+                    return false;
+                }
+                else {
+                    this.subscribers[user] = true;
+                    return true;
+                }
+            };
+            // returns false in case max subscribers exceeded
+            Channel.prototype.removeSubscriber = function (user) {
+                if (!this.subscribers[user]) // ignore if not exisst
+                    return false;
+                delete this.subscribers[user];
+                return true;
+            };
+            Channel.prototype.reset = function () {
+                this.subscribers = {};
+                this.properties = {};
+            };
+            return Channel;
+        }());
+        Chat.Channel = Channel;
+        var ChatClient = /** @class */ (function (_super) {
+            __extends(ChatClient, _super);
+            /**
+                @classdesc Implements the Photon Chat API workflow.<br/>
+                This class should be extended to handle system or custom events and operation responses.<br/>
+                
+                @borrows Photon.LoadBalancing.LoadBalancingClient#setCustomAuthentication
+    //            @borrows Photon.LoadBalancing.LoadBalancingClient#connectToNameServer
+                @borrows Photon.LoadBalancing.LoadBalancingClient#getRegions
+                @borrows Photon.LoadBalancing.LoadBalancingClient#onGetRegionsResult
+                @borrows Photon.LoadBalancing.LoadBalancingClient#isConnectedToNameServer
+                @borrows Photon.LoadBalancing.LoadBalancingClient#disconnect
+                @borrows Photon.LoadBalancing.LoadBalancingClient#setLogLevel
+    
+                @constructor Photon.Chat.ChatClient
+                @param {Photon.ConnectionProtocol} protocol Connecton protocol.
+                @param {string} appId Cloud application ID.
+                @param {string} appVersion Cloud application version.
+            */
+            function ChatClient(protocol, appId, appVersion) {
+                var _this = _super.call(this, protocol, appId, appVersion) || this;
+                _this.DefaultMaxSubscribers = 100;
+                _this.publicChannels = {};
+                _this.privateChannels = {};
+                _this.subscribeRequests = [];
+                _this.unsubscribeRequests = [];
+                _this.autoJoinLobby = false;
+                return _this;
+            }
+            /**
+                @summary Called on client state change. Override to handle it.
+                @method Photon.Chat.ChatClient#onStateChange
+                @param {Photon.Chat.ChatClient.ChatState} state New client state.
+            */
+            ChatClient.prototype.onStateChange = function (state) { };
+            /**
+                @summary Called if client error occures. Override to handle it.
+                @method Chat.ChatClient#onError
+                @param {Chat.ChatClient.ChatPeerErrorCode} errorCode Client error code.
+                @param {string} errorMsg Error message.
+            */
+            ChatClient.prototype.onError = function (errorCode, errorMsg) { };
+            /**
+                @summary Called when {@link Photon.Chat.ChatClient#subscribe subscribe} request completed.<br/ >
+                Override to handle request results.
+                @param {object} results Object with channel names as keys and boolean results as values.
+                @method Photon.Chat.ChatClient#onSubscribeResult
+            */
+            ChatClient.prototype.onSubscribeResult = function (results) { };
+            /**
+                @summary Called when {@link Photon.Chat.ChatClient#unsubscribe unsubscribe} request completed.<br/ >
+                Override to handle request results.
+                @param {object} results Object with channel names as keys and boolean results as values.
+                @method Photon.Chat.ChatClient#onUnsubscribeResult
+            */
+            ChatClient.prototype.onUnsubscribeResult = function (results) { };
+            /**
+                @summary Called when new chat messages received.<br/ >
+                Override to handle messages receive event.
+                @param {string} channelName Chat channel name.
+                @param {{@link Photon.Chat.Message}[]} messages Array of received messages.
+                @method Photon.Chat.ChatClient#onChatMessages
+            */
+            ChatClient.prototype.onChatMessages = function (channelName, messages) { };
+            /**
+                @summary Called when new private message received.<br/ >
+                Override to handle message receive event.
+                @param {string} channelName Private channel name(counterpart user id).
+                @param {Photon.Chat.Message} message Received message.
+                @method Photon.Chat.ChatClient#onPrivateMessage
+            */
+            ChatClient.prototype.onPrivateMessage = function (channelName, message) { };
+            /**
+                @summary Called when user from friend list changes state.<br/ >
+                Override to handle change state event.
+                @param {string} userId User id.
+                @param {number} status New User status. Predefined {@link Photon.chat.Constants.UserStatus Constants.UserStatus} or custom.
+                @param {boolean} gotMessage True if status message updated.
+                @param {string} statusMessage Optional status message (may be null even if gotMessage = true).
+                @method Photon.Chat.ChatClient#onUserStatusUpdate
+            */
+            ChatClient.prototype.onUserStatusUpdate = function (userId, status, gotMessage, statusMessage) { };
+            /**
+                @summary A user has subscribed to a public chat channel
+                @param {string} channelName Chat channel name.
+                @param {string} userId User id.
+                @method Photon.Chat.ChatClient#onUserSubscribe
+            */
+            ChatClient.prototype.onUserSubscribe = function (channelName, userId) { };
+            /**
+                @summary A user has unsubscribed from a public chat channel
+                @param {string} channelName Chat channel name.
+                @param {string} userId User id.
+                @method Photon.Chat.ChatClient#onUserUnsubscribe
+            */
+            ChatClient.prototype.onUserUnsubscribe = function (channelName, userId) { };
+            /**
+                @summary Starts connection to NameServer.
+                @method Photon.LoadBalancing.LoadBalancingClient#connectToNameServer
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {string} [options.region] If specified, Connect ro region master after succesfull connection to name server
+                @returns {boolean} True if current client state allows connection.
+            */
+            ChatClient.prototype.connectToNameServer = function (options) {
+                return _super.prototype.connectToNameServer.call(this, options);
+            };
+            /**
+                @summary Connects to a specific region's Master server, using the NameServer to find the IP.
+                Override {@link Photon.Chat.ChatClient#onWebRpcResult onWebRpcResult} to handle request results.<br/>
+                @method Photon.Chat.ChatClient#connectToRegionFrontEnd
+                @param {string} region Region connect to Master server of.
+                @returns {boolean} True if current client state allows connection.
+            **/
+            ChatClient.prototype.connectToRegionFrontEnd = function (region) {
+                return this.connectToRegionMaster(region);
+            };
+            /**
+                @summary Returns true if client connected to Front End.When connected, client can send messages, subscribe to channels and so on.
+                @return {boolean} True if connected.
+                @method Photon.Chat.ChatClient#isConnectedToFrontEnd
+            */
+            ChatClient.prototype.isConnectedToFrontEnd = function () {
+                return this.state == ChatClient.ChatState.ConnectedToFrontEnd;
+            };
+            /**
+                @summary Sends operation to subscribe to a list of channels by name.<br/>
+                Override {@link Photon.Chat.ChatClient#onSubscribeResult onSubscribeResult} to handle request results.
+                @param {string[]} channelNames Array of channel names to subscribe to.
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {number} [options.historyLength] Controls messages history sent on subscription. Not specified or 0: no history. 1 and higher: number of messages in history. -1: all history.
+                @property {number[]} [options.lastIds] Array of IDs of last messages received per channel. Useful when resubscribing to receive only messages we missed.
+                @param {object} [createOptions] Room options for creation
+                @property {object} createOptions Room options for creation
+                @property {boolean} [createOptions.publishSubscribers=false] Whether or not the channel to be created will allow client to keep a list of users.
+                @property {number} [createOptions.maxSubscribers=0] Limit of the number of users subscribed to the channel to be created.
+                @return {boolean} True if operation sent.
+                @method Photon.Chat.ChatClient#subscribe
+            */
+            ChatClient.prototype.subscribe = function (channelNames, options) {
+                // backward compatibility
+                if (typeof (options) == "number") {
+                    options = { historyLength: options };
+                }
+                if (this.masterPeer && this.isConnectedToFrontEnd()) {
+                    this.logger.debug("Subscribe channels:", channelNames);
+                    var params = [];
+                    params.push(Chat.Constants.ParameterCode.Channels, Photon.TypeExt.String(channelNames));
+                    if (options) {
+                        if (options.historyLength) {
+                            params.push(Chat.Constants.ParameterCode.HistoryLength, Photon.TypeExt.Int(options.historyLength));
+                        }
+                        if (options.lastIds) {
+                            params.push(Chat.Constants.ParameterCode.MsgIds, Photon.TypeExt.Int(options.lastIds));
+                            if (options.historyLength === undefined) {
+                                params.push(Chat.Constants.ParameterCode.HistoryLength, Photon.TypeExt.Int(-1));
+                            }
+                        }
+                        if (options.createOptions) {
+                            if (options.createOptions.publishSubscribers) {
+                                if (options.createOptions.maxSubscribers > this.DefaultMaxSubscribers) {
+                                    this.logger.error("Cannot set MaxSubscribers > " + this.DefaultMaxSubscribers + " when PublishSubscribers == true.");
+                                    return false;
+                                }
+                                var props = Photon.TypeExt.DictTypedKeys(Photon.TypeExtType.Object, Photon.TypeExtType.Object);
+                                Photon.TypeExt.PutTypedKey(props, Photon.TypeExt.Byte(Chat.Constants.ChannelProperties.PublishSubscribers), true);
+                                Photon.TypeExt.PutTypedKey(props, Photon.TypeExt.Byte(Chat.Constants.ChannelProperties.MaxSubscribers), Photon.TypeExt.Int(options.createOptions.maxSubscribers));
+                                params.push(Chat.Constants.ParameterCode.Properties, props);
+                            }
+                        }
+                    }
+                    this.masterPeer.sendOperation(Chat.Constants.OperationCode.Subscribe, params);
+                    return true;
+                }
+                else {
+                    this.logger.error("subscribe request error:", "Not connected to Front End");
+                    return false;
+                }
+            };
+            /**
+                @summary Sends operation to unsubscribe from a list of channels by name.<br/ >
+                Override {@link Photon.Chat.ChatClient#onUnsubscribeResult onUnsubscribeResult} to handle request results.
+                @param {string[]} channelNames Array of channel names to unsubscribe from.
+                @return {boolean} True if operation sent.
+                @method Photon.Chat.ChatClient#unsubscribe
+            */
+            ChatClient.prototype.unsubscribe = function (channelNames) {
+                if (this.masterPeer && this.isConnectedToFrontEnd()) {
+                    this.logger.debug("Unsubscribe channels:", channelNames);
+                    var params = [];
+                    params.push(Chat.Constants.ParameterCode.Channels, Photon.TypeExt.String(channelNames));
+                    this.masterPeer.sendOperation(Chat.Constants.OperationCode.Unsubscribe, params);
+                    return true;
+                }
+                else {
+                    this.logger.error("unsubscribe request error:", "Not connected to Front End");
+                    return false;
+                }
+            };
+            /**
+                @summary Sends a message to a public channel.<br/>
+                Channel should be subscribed before publishing to it.
+                Everyone in that channel will get the message.
+                @param {string} channelName Channel name to send message to.
+                @param {any} content Text string or arbitrary data to send.
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {boolean} [options.webForward] Optionally, private messages can be forwarded as webhooks. Configure webhooks for your Chat app to use this.
+                @return {boolean} True if message sent.
+                @method Photon.Chat.ChatClient#publishMessage
+            */
+            ChatClient.prototype.publishMessage = function (channelName, content, options) {
+                if (this.masterPeer && this.isConnectedToFrontEnd()) {
+                    var params = [];
+                    params.push(Chat.Constants.ParameterCode.Channel, channelName);
+                    params.push(Chat.Constants.ParameterCode.Message, content);
+                    if (options) {
+                        if (options.webForward) {
+                            params.push(Chat.Constants.ParameterCode.WebFlags);
+                            params.push(Photon.TypeExt.Byte(WebFlags.HttpForward));
+                        }
+                    }
+                    this.masterPeer.sendOperation(Chat.Constants.OperationCode.Publish, params);
+                    return true;
+                }
+                else {
+                    this.logger.error("publishMessage request error:", "Not connected to Front End");
+                    return false;
+                }
+            };
+            /**
+                @summary Sends a private message to a single target user.<br/>
+                @param {string} userId User id to send this message to.
+                @param {any} content Text string or arbitrary data to send.
+                @param {object} [options] Additional options
+                @property {object} options Additional options
+                @property {boolean} [options.webForward] Optionally, private messages can be forwarded as webhooks. Configure webhooks for your Chat app to use this.
+                @return {boolean} True if message sent.
+                @method Photon.Chat.ChatClient#sendPrivateMessage
+            */
+            ChatClient.prototype.sendPrivateMessage = function (userId, content, options) {
+                if (this.masterPeer && this.isConnectedToFrontEnd()) {
+                    var params = [];
+                    params.push(Chat.Constants.ParameterCode.UserId, userId);
+                    params.push(Chat.Constants.ParameterCode.Message, content);
+                    if (options) {
+                        if (options.webForward) {
+                            params.push(Chat.Constants.ParameterCode.WebFlags);
+                            params.push(Photon.TypeExt.Byte(WebFlags.HttpForward));
+                        }
+                    }
+                    this.masterPeer.sendOperation(Chat.Constants.OperationCode.SendPrivate, params);
+                    return true;
+                }
+                else {
+                    this.logger.error("sendPrivateMessage request error:", "Not connected to Front End");
+                    return false;
+                }
+            };
+            /**
+                @summary Sets the user's status (pre-defined or custom) and an optional message.<br/>
+                The predefined status values can be found in {@link Photon.Chat.Constants.UserStatus Constants.UserStatus}.<br/>
+                State UserStatus.Invisible will make you offline for everyone and send no message.
+                @param {number} status User status to set.
+                @param {string} [message=null] State message.
+                @param {boolean} [skipMessage=false] If true { client does not send state message.
+                @return {boolean} True if command sent.
+                @method Photon.Chat.ChatClient#setUserStatus
+            */
+            ChatClient.prototype.setUserStatus = function (status, statusMessage, skipMessage) {
+                if (statusMessage === void 0) { statusMessage = null; }
+                if (skipMessage === void 0) { skipMessage = false; }
+                if (this.masterPeer && this.isConnectedToFrontEnd()) {
+                    var params = [];
+                    params.push(Chat.Constants.ParameterCode.Status, Photon.TypeExt.Int(status));
+                    if (skipMessage)
+                        params.push(Chat.Constants.ParameterCode.SkipMessage, true);
+                    else
+                        params.push(Chat.Constants.ParameterCode.Message, statusMessage);
+                    this.masterPeer.sendOperation(Chat.Constants.OperationCode.UpdateStatus, params);
+                    return true;
+                }
+                else {
+                    this.logger.error("setUserStatus request error:", "Not connected to Front End");
+                    return false;
+                }
+            };
+            /**
+                @summary Adds users to the list on the Chat Server which will send you status updates for those.
+                @tparam string[] userIds Array of user ids.
+                @return {boolean} True if command sent.
+            */
+            ChatClient.prototype.addFriends = function (userIds) {
+                if (this.masterPeer && this.isConnectedToFrontEnd()) {
+                    var params = [];
+                    params.push(Chat.Constants.ParameterCode.Friends, Photon.TypeExt.String(userIds));
+                    this.masterPeer.sendOperation(Chat.Constants.OperationCode.AddFriendds, params);
+                    return true;
+                }
+                else {
+                    this.logger.error("addFriends request error:", "Not connected to Front End");
+                    return false;
+                }
+            };
+            /**
+                @summary Removes users from the list on the Chat Server which will send you status updates for those.
+                @tparam string[] friends Array of user ids.
+                @return {boolean} True if command sent.
+            */
+            ChatClient.prototype.removeFriends = function (userIds) {
+                if (this.masterPeer && this.isConnectedToFrontEnd()) {
+                    var params = [];
+                    params.push(Chat.Constants.ParameterCode.Friends, Photon.TypeExt.String(userIds));
+                    this.masterPeer.sendOperation(Chat.Constants.OperationCode.RemoveFriends, params);
+                    return true;
+                }
+                else {
+                    this.logger.error("removeFriends request error:", "Not connected to Front End");
+                    return false;
+                }
+            };
+            /**
+                @summary Returns list of public channels client subscribed to.
+                @return Channel[] Array of public channels.
+            */
+            ChatClient.prototype.getPublicChannels = function () {
+                return this.publicChannels;
+            };
+            /**
+                @summary Returns list of channels representing current private conversation.
+                @return Channel[] Array of private channels.
+            */
+            ChatClient.prototype.getPrivateChannels = function () {
+                return this.privateChannels;
+            };
+            // private
+            ChatClient.prototype.getOrAddChannel = function (channels, name, isPrivate) {
+                if (channels[name] == undefined) {
+                    channels[name] = new Channel(name, isPrivate);
+                }
+                return channels[name];
+            };
+            // internal
+            ChatClient.prototype.initMasterPeer = function (mp) {
+                var _this = this;
+                _super.prototype.initMasterPeer.call(this, mp);
+                // onOperationResponse called if no listener exists
+                //mp.addResponseListener(Constants.OperationCode.Publish, (data: any) => {
+                //    mp._logger.debug("resp Publish", data.errCode, data.errMsg);
+                //});
+                //mp.addResponseListener(Constants.OperationCode.SendPrivate, (data: any) => {
+                //    mp._logger.debug("resp SendPrivate", data.errCode, data.errMsg);
+                //});
+                //mp.addResponseListener(Constants.OperationCode.UpdateStatus, (data: any) => {
+                //    mp._logger.debug("resp UpdateStatus", data.errCode, data.errMsg);
+                //});
+                //mp.addResponseListener(Constants.OperationCode.FriendList, (data: any) => {
+                //    mp._logger.debug("resp FriendList", data.errCode, data.errMsg);
+                //});
+                mp.addEventListener(Chat.Constants.EventCode.ChatMessages, function (data) {
+                    var senders = data.vals[Chat.Constants.ParameterCode.Senders];
+                    var messages = data.vals[Chat.Constants.ParameterCode.Messages];
+                    var channelName = data.vals[Chat.Constants.ParameterCode.Channel];
+                    var ch = _this.publicChannels[channelName];
+                    if (ch) {
+                        var newMessages = ch.addMessages(senders, messages);
+                        ch.lastId = data.vals[Chat.Constants.ParameterCode.MsgId];
+                        _this.onChatMessages(channelName, newMessages);
+                    }
+                    else {
+                        mp._logger.warn("ev ChatMessages: Got message from unsubscribed channel ", channelName);
+                    }
+                });
+                mp.addEventListener(Chat.Constants.EventCode.PrivateMessage, function (data) {
+                    var sender = data.vals[Chat.Constants.ParameterCode.Sender];
+                    var message = data.vals[Chat.Constants.ParameterCode.Message];
+                    var userId = data.vals[Chat.Constants.ParameterCode.UserId];
+                    var channelName = "";
+                    if (_this.getUserId() == sender)
+                        channelName = userId;
+                    else
+                        channelName = sender;
+                    var ch = _this.getOrAddChannel(_this.privateChannels, channelName, true);
+                    ch.lastId = data.vals[Chat.Constants.ParameterCode.MsgId];
+                    _this.onPrivateMessage(channelName, new Message(sender, message));
+                });
+                mp.addEventListener(Chat.Constants.EventCode.StatusUpdate, function (data) {
+                    var sender = data.vals[Chat.Constants.ParameterCode.Sender];
+                    var status = data.vals[Chat.Constants.ParameterCode.Status];
+                    var message = data.vals[Chat.Constants.ParameterCode.Message];
+                    var gotMessage = message !== undefined;
+                    _this.onUserStatusUpdate(sender, status, gotMessage, message);
+                });
+                mp.addEventListener(Chat.Constants.EventCode.Subscribe, function (data) {
+                    mp._logger.debug("ev Subscribe", data);
+                    var res = {};
+                    var channels = data.vals[Chat.Constants.ParameterCode.Channels] || [];
+                    var results = data.vals[Chat.Constants.ParameterCode.SubscribeResults] || [];
+                    var readProps = false;
+                    var channelProperties = data.vals[Chat.Constants.ParameterCode.Properties];
+                    var subscribers = data.vals[Chat.Constants.ParameterCode.ChannelSubscribers];
+                    if (channelProperties != undefined) {
+                        if (channels.length == 1) {
+                            readProps = true;
+                        }
+                        else {
+                            _this.logger.error("Subscribe event for multiple channels with channels properties returned. Ignoring properties.");
+                        }
+                    }
+                    for (var i in channels) {
+                        var channelName = channels[i];
+                        res[channelName] = false;
+                        if (i < results.length && results[i]) {
+                            var ch = _this.getOrAddChannel(_this.publicChannels, channelName, false);
+                            ch.reset();
+                            res[channelName] = true;
+                            if (readProps) {
+                                ch.readProperties(channelProperties);
+                                if (subscribers) {
+                                    for (var i in subscribers) {
+                                        if (!ch.addSubscriber(subscribers[i])) {
+                                            mp._logger.error("Subscribe: channel '" + channelName + "' max subscribers exceeded");
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    _this.onSubscribeResult(res);
+                });
+                mp.addEventListener(Chat.Constants.EventCode.Unsubscribe, function (data) {
+                    mp._logger.debug("ev Unsubscribe", data);
+                    var res = {};
+                    var channels = data.vals[Chat.Constants.ParameterCode.Channels] || [];
+                    for (var i in channels) {
+                        var ch = channels[i];
+                        delete (_this.publicChannels[ch]);
+                        res[ch] = true;
+                    }
+                    _this.onUnsubscribeResult(res);
+                });
+                mp.addEventListener(Chat.Constants.EventCode.UserSubscribe, function (data) {
+                    mp._logger.debug("ev UserSubscribe", data);
+                    var res = {};
+                    var channelName = data.vals[Chat.Constants.ParameterCode.Channel];
+                    var userId = data.vals[Chat.Constants.ParameterCode.UserId];
+                    var ch = _this.publicChannels[channelName];
+                    if (ch == undefined) {
+                        mp._logger.error("UserSubscribe: channel '" + channelName + "' not found");
+                    }
+                    else {
+                        if (!ch.addSubscriber(userId)) {
+                            mp._logger.error("UserSubscribe: channel '" + channelName + "' max subscribers exceeded");
+                        }
+                    }
+                    _this.onUserSubscribe(channelName, userId);
+                });
+                mp.addEventListener(Chat.Constants.EventCode.UserUnsubscribe, function (data) {
+                    mp._logger.debug("ev UserUnsubscribe", data);
+                    var res = {};
+                    var channelName = data.vals[Chat.Constants.ParameterCode.Channel];
+                    var userId = data.vals[Chat.Constants.ParameterCode.UserId];
+                    var ch = _this.publicChannels[channelName];
+                    if (ch == undefined) {
+                        mp._logger.debug("UserUnsubscribe: channel '" + channelName + "' not found");
+                    }
+                    else {
+                        if (!ch.removeSubscriber(userId)) {
+                            mp._logger.debug("UserUnsubscribe: subscriber '" + userId + "' not found in channel '" + channelName + "'");
+                        }
+                    }
+                    _this.onUserUnsubscribe(channelName, userId);
+                });
+            };
+            /**
+                @summary Converts {@link Photon.Chat.ChatClient.ChatState ChatState} element to string name.
+                @method Photon.Chat.ChatClient.StateToName
+                @param {Photon.Chat.ChatClient.ChatState} state Client state.
+                @returns {string} Specified element name or undefined if not found.
+            */
+            ChatClient.StateToName = function (value) {
+                var x = ChatClient.chatStateName[value];
+                if (x === undefined) {
+                    // Super class states support - useless since all states overridden but may help somehow when debugging
+                    return _super.StateToName.call(this, value);
+                }
+                else {
+                    return x;
+                }
+            };
+            ChatClient.ChatPeerErrorCode = {
+                /**
+                    @summary Enum for client peers error codes.
+                    @member Photon.Chat.ChatClient.ChatPeerErrorCode
+                    @readonly
+                    @property {number} Ok No Error.
+                    @property {number} FrontEndError General FrontEnd server peer error.
+                    @property {number} FrontEndConnectFailed FrontEnd server connection error.
+                    @property {number} FrontEndConnectClosed Disconnected from FrontEnd server.
+                    @property {number} FrontEndTimeout Disconnected from FrontEnd server for timeout.
+                    @property {number} FrontEndEncryptionEstablishError FrontEnd server encryption establishing failed.
+                    @property {number} FrontEndAuthenticationFailed FrontEnd server authentication failed.
+                    @property {number} NameServerError General NameServer peer error.
+                    @property {number} NameServerConnectFailed NameServer connection error.
+                    @property {number} NameServerConnectClosed Disconnected from NameServer.
+                    @property {number} NameServerTimeout Disconnected from NameServer for timeout.
+                    @property {number} NameServerEncryptionEstablishError NameServer encryption establishing failed.
+                    @property {number} NameServerAuthenticationFailed NameServer authentication failed.
+                 */
+                Ok: 0,
+                FrontEndError: 1001,
+                FrontEndConnectFailed: 1002,
+                FrontEndConnectClosed: 1003,
+                FrontEndTimeout: 1004,
+                FrontEndEncryptionEstablishError: 1005,
+                FrontEndAuthenticationFailed: 1101,
+                NameServerError: 3001,
+                NameServerConnectFailed: 3002,
+                NameServerConnectClosed: 3003,
+                NameServerTimeout: 3004,
+                NameServerEncryptionEstablishError: 300,
+                NameServerAuthenticationFailed: 3101
+            };
+            ChatClient.ChatState = {
+                /**
+                    @summary Enum for client states.
+                    @member Photon.Chat.ChatClient.ChatState
+                    @readonly
+                    @property {number} Error Critical error occurred.
+                    @property {number} Uninitialized Client is created but not used yet.
+                    @property {number} ConnectingToNameServer Connecting to NameServer.
+                    @property {number} ConnectedToNameServer Connected to NameServer.
+                    @property {number} ConnectingToFrontEnd Connecting to FrontEnd server.
+                    @property {number} ConnectedToFrontEnd Connected to FrontEnd server.
+                    @property {number} Disconnected The client is no longer connected (to any server).
+                */
+                Error: -1,
+                Uninitialized: 0,
+                ConnectingToNameServer: 1,
+                ConnectedToNameServer: 2,
+                ConnectingToFrontEnd: 3,
+                ConnectedToFrontEnd: 4,
+                Disconnected: 10
+            };
+            ChatClient.chatStateName = (_a = {},
+                _a[ChatClient.ChatState.Error] = "Error",
+                _a[ChatClient.ChatState.Uninitialized] = "Uninitialized",
+                _a[ChatClient.ChatState.ConnectingToNameServer] = "ConnectingToNameServer",
+                _a[ChatClient.ChatState.ConnectedToNameServer] = "ConnectedToNameServer",
+                _a[ChatClient.ChatState.ConnectingToFrontEnd] = "ConnectingToFrontEnd",
+                _a[ChatClient.ChatState.ConnectedToFrontEnd] = "ConnectedToFrontEnd",
+                _a[ChatClient.ChatState.Disconnected] = "Disconnected",
+                _a);
+            return ChatClient;
+        }(Photon.LoadBalancing.LoadBalancingClient));
+        Chat.ChatClient = ChatClient;
+    })(Chat = Photon.Chat || (Photon.Chat = {}));
+})(Photon || (Photon = {}));
+
+// Construct 3 'Module' 'Scripts type' support in editor preview, when the lib is in a separate file despite the 'inline-script' settings
+globalThis.Exitgames = Exitgames;
+globalThis.Photon = Photon;
 
 
 'use strict';{const C3=self.C3;let cacheRegex=null;let lastRegex="";let lastFlags="";let regexMatches=[];let lastMatchesStr="";let lastMatchesRegex="";let lastMatchesFlags="";const forEachStack=C3.New(C3.ArrayStack);function ForEachOrdered_SortInstances(a,b){const va=a[1];const vb=b[1];if(typeof va==="number"&&typeof vb==="number")return va-vb;else{const sa=""+va;const sb=""+vb;if(sa<sb)return-1;else if(sa>sb)return 1;else return 0}}C3.Plugins.System=class SystemPlugin extends C3.SDKPluginBase{constructor(opts){super(opts);
@@ -2589,6 +7518,8 @@ this._imagesLoadingTotal},renderer(){return"webgl"},rendererdetail(){return this
 "use strict";
 
 {
+	const C3 = self.C3;
+
 	C3.Plugins.Photon = class Photon extends C3.SDKPluginBase
 	{
 		constructor(opts)
@@ -2606,6 +7537,8 @@ this._imagesLoadingTotal},renderer(){return"webgl"},rendererdetail(){return this
 "use strict";
 
 {
+	const C3 = self.C3;
+
 	C3.Plugins.Photon.Type = class PhotonType extends C3.SDKTypeBase
 	{
 		constructor(objectClass)
@@ -2626,18 +7559,16 @@ this._imagesLoadingTotal},renderer(){return"webgl"},rendererdetail(){return this
 
 "use strict";
 
-// assign globals with correct value in case closure compilier renames them
-var Photon = this["Photon"];
-var Exitgames = this["Exitgames"];
-
 {
+	const C3 = self.C3;
+
 	C3.Plugins.Photon.Instance = class PhotonInstance extends C3.SDKInstanceBase
 	{
 		createLBC() 
 		{
-			Photon["LoadBalancing"]["LoadBalancingClient"].prototype["roomFactory"] = function(name) {
-				var r = new Photon["LoadBalancing"]["Room"](name);
-				r["onPropertiesChange"] = function (changedCustomProps, byClient) {
+			Photon.LoadBalancing.LoadBalancingClient.prototype.roomFactory = function(name) {
+				var r = new Photon.LoadBalancing.Room(name);
+				r.onPropertiesChange = function (changedCustomProps, byClient) {
 					self.changedPropertiesNames = [];
 					for(var i in changedCustomProps) {
 						self.changedPropertiesNames.push(i);
@@ -2645,9 +7576,9 @@ var Exitgames = this["Exitgames"];
 				};
 				return r;
 			};
-			Photon["LoadBalancing"]["LoadBalancingClient"].prototype["actorFactory"] = function(name, actorNr, isLocal) {
-				var a = new Photon["LoadBalancing"]["Actor"](name, actorNr, isLocal);
-				a["onPropertiesChange"] = function (changedCustomProps, byClient) {
+			Photon.LoadBalancing.LoadBalancingClient.prototype.actorFactory = function(name, actorNr, isLocal) {
+				var a = new Photon.LoadBalancing.Actor(name, actorNr, isLocal);
+				a.onPropertiesChange = function (changedCustomProps, byClient) {
 
 					self.changedPropertiesNames = [];
 					for(var i in changedCustomProps) {
@@ -2657,37 +7588,37 @@ var Exitgames = this["Exitgames"];
 				return a;
 			};
 
-			Exitgames["Common"]["Logger"]["setExceptionHandler"](function(code, message) {
+			Exitgames.Common.Logger.setExceptionHandler(function(code, message) {
 				self.errorCode = code;
 				self.errorMsg = message;
 				self.Trigger(C3.Plugins.Photon.Cnds.onError);
 				return false;
 			});
 			
-			this.lbc = new Photon["LoadBalancing"]["LoadBalancingClient"](this.Protocol, this.AppId, this.AppVersion);
+			this.lbc = new Photon.LoadBalancing.LoadBalancingClient(this.Protocol, this.AppId, this.AppVersion);
 			var self = this;
 			
-			this.lbc["setLogLevel"](this.LogLevel);
+			this.lbc.setLogLevel(this.LogLevel);
 			
-			this.lbc["onError"] = function(errorCode, errorMsg) {
+			this.lbc.onError = function(errorCode, errorMsg) {
 				self.errorCode = errorCode;
 				self.errorMsg = errorMsg;
 				self.Trigger(C3.Plugins.Photon.Cnds.onError);
 			};
 			
-			this.lbc["onStateChange"] = function(state) {
+			this.lbc.onStateChange = function(state) {
 				self.Trigger(C3.Plugins.Photon.Cnds.onStateChange);
 				
-				var LBC = Photon["LoadBalancing"]["LoadBalancingClient"];
+				var LBC = Photon.LoadBalancing.LoadBalancingClient;
 				switch (state) {
-	//				case LBC["State"]["ConnectedToNameServer"]:
+	//				case LBC.State.ConnectedToNameServer:
 	//					this.getRegions();
 	//					this.connectToRegionMaster(this.Region);
 	//					break;
-					case LBC["State"]["JoinedLobby"]:
+					case LBC.State.JoinedLobby:
 						self.Trigger(C3.Plugins.Photon.Cnds.onJoinedLobby);
 						break;
-					case LBC["State"]["Disconnected"]:
+					case LBC.State.Disconnected:
 						self.Trigger(C3.Plugins.Photon.Cnds.onDisconnected);
 					break;						
 					default:
@@ -2695,12 +7626,12 @@ var Exitgames = this["Exitgames"];
 				}
 			};
 			
-			this.lbc["onOperationResponse"] = function (errorCode, errorMsg, code, content) {
+			this.lbc.onOperationResponse = function (errorCode, errorMsg, code, content) {
 				if (errorCode) {
 					switch (code) {
-						case Photon["LoadBalancing"]["Constants"]["OperationCode"]["JoinRandomGame"]:
+						case Photon.LoadBalancing.Constants.OperationCode.JoinRandomGame:
 							switch (errorCode) {
-								case Photon["LoadBalancing"]["Constants"]["ErrorCode"]["NoRandomMatchFound"]:
+								case Photon.LoadBalancing.Constants.ErrorCode.NoRandomMatchFound:
 									self.Trigger(C3.Plugins.Photon.Cnds.onJoinRandomRoomNoMatchFound);
 									break;
 								default:
@@ -2717,7 +7648,7 @@ var Exitgames = this["Exitgames"];
 				}
 			};
 			
-			this.lbc["onEvent"] = function (code, data, actorNr) {
+			this.lbc.onEvent = function (code, data, actorNr) {
 				self.eventCode = code;
 				self.eventData = data;
 				self.actorNr = actorNr;
@@ -2725,41 +7656,41 @@ var Exitgames = this["Exitgames"];
 				self.Trigger(C3.Plugins.Photon.Cnds.onAnyEvent);
 			};
 			
-			this.lbc["onRoomList"] = function (rooms){ 
+			this.lbc.onRoomList = function (rooms){ 
 				self.Trigger(C3.Plugins.Photon.Cnds.onRoomList);
 			};
 
-			this.lbc["onRoomListUpdate"] = function (rooms, roomsUpdated, roomsAdded, roomsRemoved) { 
+			this.lbc.onRoomListUpdate = function (rooms, roomsUpdated, roomsAdded, roomsRemoved) { 
 				// TODO:
 				self.Trigger(C3.Plugins.Photon.Cnds.onRoomListUpdate);
 			};
 			
-			this.lbc["onMyRoomPropertiesChange"] = function () { 
+			this.lbc.onMyRoomPropertiesChange = function () { 
 				self.Trigger(C3.Plugins.Photon.Cnds.onMyRoomPropertiesChange);
 			};
 
-			this.lbc["onActorPropertiesChange"] = function (actor) { 
-				self.actorNr = actor["actorNr"];
+			this.lbc.onActorPropertiesChange = function (actor) { 
+				self.actorNr = actor.actorNr;
 				self.Trigger(C3.Plugins.Photon.Cnds.onActorPropertiesChange);
 			};
 			
-			this.lbc["onJoinRoom"] = function (createdByMe) {
+			this.lbc.onJoinRoom = function (createdByMe) {
 				self.Trigger(C3.Plugins.Photon.Cnds.onJoinRoom);
 			};
 			
-			this.lbc["onActorJoin"] = function (actor) {
-				self.actorNr = actor["actorNr"];
+			this.lbc.onActorJoin = function (actor) {
+				self.actorNr = actor.actorNr;
 				self.Trigger(C3.Plugins.Photon.Cnds.onActorJoin);
 			};
-			this.lbc["onActorLeave"] = function (actor) {
-				self.actorNr = actor["actorNr"];
+			this.lbc.onActorLeave = function (actor) {
+				self.actorNr = actor.actorNr;
 				self.Trigger(C3.Plugins.Photon.Cnds.onActorLeave);
 			};
-			this.lbc["onActorSuspend"] = function (actor) {
-				self.actorNr = actor["actorNr"];
+			this.lbc.onActorSuspend = function (actor) {
+				self.actorNr = actor.actorNr;
 				self.Trigger(C3.Plugins.Photon.Cnds.onActorSuspend);
 			};
-			this.lbc["onWebRpcResult"] = function (errorCode, errorMsg, uriPath, resultCode, data) {
+			this.lbc.onWebRpcResult = function (errorCode, errorMsg, uriPath, resultCode, data) {
 				self.errorCode = errorCode;
 				self.errorMsg = errorMsg;
 				self.webRpcUriPath = uriPath;
@@ -2767,19 +7698,19 @@ var Exitgames = this["Exitgames"];
 				self.webRpcData = data;
 				self.Trigger(C3.Plugins.Photon.Cnds.onWebRpcResult);
 			};
-			this.lbc["onFindFriendsResult"] = function (errorCode, errorMsg, friends) {
+			this.lbc.onFindFriendsResult = function (errorCode, errorMsg, friends) {
 				self.errorCode = errorCode;
 				self.errorMsg = errorMsg;
 				self.friends = friends;
 				self.Trigger(C3.Plugins.Photon.Cnds.onFindFriendsResult);
 			};
-			this.lbc["onLobbyStats"] = function (errorCode, errorMsg, lobbies) {
+			this.lbc.onLobbyStats = function (errorCode, errorMsg, lobbies) {
 				self.errorCode = errorCode;
 				self.errorMsg = errorMsg;
 				self.lobbyStats = lobbies;
 				self.Trigger(C3.Plugins.Photon.Cnds.onLobbyStats);
 			};
-			this.lbc["onAppStats"] = function (errorCode, errorMsg, stats) {
+			this.lbc.onAppStats = function (errorCode, errorMsg, stats) {
 				self.errorCode = errorCode;
 				self.errorMsg = errorMsg;
 				self.appStats = stats;
@@ -2799,11 +7730,12 @@ var Exitgames = this["Exitgames"];
 
 				this.AppId = this.properties[0];
 				this.AppVersion = this.properties[1];
-				this.Protocol = ["ws", "wss"][this.properties[2]] == "wss" ? this.Protocol = Photon["ConnectionProtocol"]["Wss"] : Photon["ConnectionProtocol"]["Ws"];
+				// advanced minimizer breaks enum access via .Wss
+				this.Protocol = ["ws", "wss"][this.properties[2]] == "wss" ? this.Protocol = Photon.ConnectionProtocol["Wss"] : Photon.ConnectionProtocol["Ws"];
 				this.Region = ["eu", "us", "asia", "jp", "au", "usw", "sa", "cae", "kr", "in", "cn", "ru", "rue"][this.properties[3]];
 				this.SelfHosted = this.properties[4] == 1;
 				this.SelfHostedAddress = this.properties[5];
-				this.LogLevel = this.properties[6] + Exitgames["Common"]["Logger"]["Level"]["DEBUG"]; // list starts from DEBUG = 1
+				this.LogLevel = this.properties[6] + Exitgames.Common.Logger.Level.DEBUG; // list starts from DEBUG = 1
 			}	
 			
 			this.createLBC();
@@ -2829,7 +7761,7 @@ var Exitgames = this["Exitgames"];
 "use strict";
 
 {
-	C3.Plugins.Photon.Cnds =
+	self.C3.Plugins.Photon.Cnds =
 	{
 		onError 				() { return true; },
 		onStateChange 			() { return true; },
@@ -2853,19 +7785,19 @@ var Exitgames = this["Exitgames"];
 		
 		isConnectedToNameServer  ()
 		{
-			return this.lbc["isConnectedToNameServer"]();
+			return this.lbc.isConnectedToNameServer();
 		},
 		isConnectedToMaster  ()
 		{
-			return this.lbc["isConnectedToMaster"]();
+			return this.lbc.isConnectedToMaster();
 		},
 		isInLobby  ()
 		{
-			return this.lbc["isInLobby"]();
+			return this.lbc.isInLobby();
 		},
 		isJoinedToRoom  ()
 		{
-			return this.lbc["isJoinedToRoom"]();
+			return this.lbc.isJoinedToRoom();
 		}
 	};
 }
@@ -2873,16 +7805,16 @@ var Exitgames = this["Exitgames"];
 "use strict";
 
 {
-	C3.Plugins.Photon.Acts =
+	self.C3.Plugins.Photon.Acts =
 	{
 		setUserId (userId)
 		{
-			this.lbc["setUserId"](userId);
+			this.lbc.setUserId(userId);
 		},
 		
 		setCustomAuthentication (authParameters, authType)
 		{
-			this.lbc["setCustomAuthentication"](authParameters, authType);
+			this.lbc.setCustomAuthentication(authParameters, authType);
 		},
 	
 		setHostingType (hostType)
@@ -2913,33 +7845,33 @@ var Exitgames = this["Exitgames"];
 		connect ()
 		{
 			if (this.SelfHosted) {
-				this.lbc["setMasterServerAddress"](this.SelfHostedAddress);
-				this.lbc["connect"]();
+				this.lbc.setMasterServerAddress(this.SelfHostedAddress);
+				this.lbc.connect();
 			}
 			else {
 				if (this.Region)
-					this.lbc["connectToRegionMaster"](this.Region);
+					this.lbc.connectToRegionMaster(this.Region);
 				else
-					this.lbc["connectToNameServer"]();
+					this.lbc.connectToNameServer();
 			}
 		},
 	
 		createRoom (name, lobbyName, lobbyType)
 		{
 			if (lobbyType == 1)  {
-				lobbyType = Photon["LoadBalancing"]["Constants"]["LobbyType"]["SqlLobby"]; // 2
+				lobbyType = Photon.LoadBalancing.Constants.LobbyType.SqlLobby; // 2
 			}
 			var options = {			
 				"lobbyName": lobbyName,
 				"lobbyType": lobbyType
 			};
-			this.lbc["createRoomFromMy"](name, options);
+			this.lbc.createRoomFromMy(name, options);
 		},
 	
 		joinRoom (name, rejoin, createIfNotExists, lobbyName, lobbyType)
 		{
 			if (lobbyType == 1)  {
-				lobbyType = Photon["LoadBalancing"]["Constants"]["LobbyType"]["SqlLobby"]; // 2
+				lobbyType = Photon.LoadBalancing.Constants.LobbyType.SqlLobby; // 2
 			}
 			var joinOptions = {
 			"rejoin": rejoin && true,
@@ -2951,14 +7883,14 @@ var Exitgames = this["Exitgames"];
 				"lobbyName": lobbyName,
 				"lobbyType": lobbyType
 			};
-			createOptions = this.lbc["copyCreateOptionsFromMyRoom"](createOptions);
-			this.lbc["joinRoom"](name, joinOptions, createOptions);
+			createOptions = this.lbc.copyCreateOptionsFromMyRoom(createOptions);
+			this.lbc.joinRoom(name, joinOptions, createOptions);
 		},
 	
 		joinRandomRoom (matchMyRoom, matchmakingMode, lobbyName, lobbyType, sqlLobbyFilter)
 		{
 			if (lobbyType == 1)  {
-				lobbyType = Photon["LoadBalancing"]["Constants"]["LobbyType"]["SqlLobby"]; // 2
+				lobbyType = Photon.LoadBalancing.Constants.LobbyType.SqlLobby; // 2
 			}
 			var options = {						
 				"matchmakingMode": matchmakingMode,
@@ -2967,25 +7899,25 @@ var Exitgames = this["Exitgames"];
 				"sqlLobbyFilter": sqlLobbyFilter
 			};
 			if (matchMyRoom) {
-				options.expectedCustomRoomProperties = this.lbc["myRoom"]()["_customProperties"];
-				options.expectedMaxPlayers = this.lbc["myRoom"]()["maxPlayers"];
+				options.expectedCustomRoomProperties = this.lbc.myRoom()._customProperties;
+				options.expectedMaxPlayers = this.lbc.myRoom().maxPlayers;
 			}
-			this.lbc["joinRandomRoom"](options);
+			this.lbc.joinRandomRoom(options);
 		},
 		
 		disconnect ()
 		{
-			this.lbc["disconnect"]();
+			this.lbc.disconnect();
 		},
 		
 		suspendRoom ()
 		{
-			this.lbc["suspendRoom"]();
+			this.lbc.suspendRoom();
 		},
 		
 		leaveRoom ()
 		{
-			this.lbc["leaveRoom"]();
+			this.lbc.leaveRoom();
 		},
 		
 		raiseEvent (eventCode, data, interestGroup, cache, receivers, targetActors, webForward)
@@ -2998,87 +7930,87 @@ var Exitgames = this["Exitgames"];
 				"webForward": webForward
 			};
 			if(typeof(targetActors) === "string" && targetActors) {
-				opt["targetActors"] = targetActors.split(",").map(function(x) { return parseInt(x); } );
+				opt.targetActors = targetActors.split(",").map(function(x) { return parseInt(x); } );
 			}
-			this.lbc["raiseEvent"](eventCode, data, opt);
+			this.lbc.raiseEvent(eventCode, data, opt);
 		},
 	
 		changeGroups (action, group)
 		{
 			switch (action) {
 				case 0: // Add
-					this.lbc["changeGroups"](null, [group]);
+					this.lbc.changeGroups(null, [group]);
 					break;
 				case 1: // Add all current
-					this.lbc["changeGroups"](null ,[]);
+					this.lbc.changeGroups(null ,[]);
 					break;
 				case 2: // Remove				
-					this.lbc["changeGroups"]([group], null);
+					this.lbc.changeGroups([group], null);
 					break;
 				case 3: // Remove all
-					this.lbc["changeGroups"]([], null);
+					this.lbc.changeGroups([], null);
 					break;
 			}
 		},
 	
 		webRpc (uriPath, parameters, parametersType)
 		{
-			this.lbc["webRpc"](uriPath, parametersType ? JSON.parse(parameters) : parameters);
+			this.lbc.webRpc(uriPath, parametersType ? JSON.parse(parameters) : parameters);
 		},
 		
 		findFriends (friends)
 		{
-			this.lbc["findFriends"](friends.split(","));
+			this.lbc.findFriends(friends.split(","));
 		},
 		
 		requestLobbyStats ()
 		{
-			this.lbc["requestLobbyStats"]();
+			this.lbc.requestLobbyStats();
 		},
 	
 		setMyActorName (name)
 		{
-			this.lbc["myActor"]()["setName"](name);
+			this.lbc.myActor().setName(name);
 		},
 
 		setPropertyOfActorByNr (nr, propName, propValue, webForward, checkAndSet, expectedValue)
 		{
-			this.lbc["myRoomActors"]()[nr]["setCustomProperty"](propName, propValue, webForward, checkAndSet ? expectedValue : undefined);
+			this.lbc.myRoomActors()[nr].setCustomProperty(propName, propValue, webForward, checkAndSet ? expectedValue : undefined);
 		},
 
 		setPropertyOfMyRoom (propName, propValue, webForward, checkAndSet, expectedValue)
 		{
-			this.lbc["myRoom"]()["setCustomProperty"](propName, propValue, webForward, checkAndSet ? expectedValue : undefined);
+			this.lbc.myRoom().setCustomProperty(propName, propValue, webForward, checkAndSet ? expectedValue : undefined);
 		},
 
 		setPropsListedInLobby (propNames)
 		{
-			this.lbc["myRoom"]()["setPropsListedInLobby"](propNames.split(","));
+			this.lbc.myRoom().setPropsListedInLobby(propNames.split(","));
 		},
 
 		setMyRoomIsVisible (isVisisble)
 		{
-			this.lbc["myRoom"]()["setIsVisible"](isVisisble ? true : false);
+			this.lbc.myRoom().setIsVisible(isVisisble ? true : false);
 		},
 
 		setMyRoomIsOpen (isOpen)
 		{
-			this.lbc["myRoom"]()["setIsOpen"](isOpen ? true : false);
+			this.lbc.myRoom().setIsOpen(isOpen ? true : false);
 		},
 
 		setMyRoomMaxPlayers (maxPlayers)
 		{
-			this.lbc["myRoom"]()["setMaxPlayers"](maxPlayers);
+			this.lbc.myRoom().setMaxPlayers(maxPlayers);
 		},
 
 		setEmptyRoomLiveTime (emptyRoomLiveTime)
 		{
-			this.lbc["myRoom"]()["setEmptyRoomLiveTime"](emptyRoomLiveTime);
+			this.lbc.myRoom().setEmptyRoomLiveTime(emptyRoomLiveTime);
 		},
 
 		setSuspendedPlayerLiveTime (suspendedPlayerLiveTime)
 		{
-			this.lbc["myRoom"]()["setSuspendedPlayerLiveTime"](suspendedPlayerLiveTime);
+			this.lbc.myRoom().setSuspendedPlayerLiveTime(suspendedPlayerLiveTime);
 		},
 
 		setUniqueUserId (unique)
@@ -3088,9 +8020,9 @@ var Exitgames = this["Exitgames"];
 
 		reset ()
 		{
-			this.lbc["disconnect"]();
+			this.lbc.disconnect();
 			this.createLBC();
-			this.lbc["logger"]["info"]("Photon client reset.");
+			this.lbc.logger.info("Photon client reset.");
 		}
 	};
 }
@@ -3098,7 +8030,7 @@ var Exitgames = this["Exitgames"];
 "use strict";
 
 {
-	C3.Plugins.Photon.Exps =
+	self.C3.Plugins.Photon.Exps =
 	{
 		ErrorCode ()
 		{
@@ -3112,22 +8044,22 @@ var Exitgames = this["Exitgames"];
 		
 		State ()
 		{
-			return (this.lbc["state"]);
+			return (this.lbc.state);
 		},
 		
 		StateString ()
 		{
-			return (Photon["LoadBalancing"]["LoadBalancingClient"]["StateToName"](this.lbc["state"]));
+			return (Photon.LoadBalancing.LoadBalancingClient.StateToName(this.lbc.state));
 		},
 	
 		UserId ()
 		{
-			return (this.lbc["getUserId"]() || "");
+			return (this.lbc.getUserId() || "");
 		},
 	
 		MyActorNr ()
 		{
-			return (this.lbc["myActor"]()["actorNr"]);
+			return (this.lbc.myActor().actorNr);
 		},
 	
 		ActorNr ()
@@ -3137,7 +8069,7 @@ var Exitgames = this["Exitgames"];
 		
 		MyRoomName ()
 		{
-			return (this.lbc["myRoom"]()["name"] || "");
+			return (this.lbc.myRoom().name || "");
 		},
 		
 		EventCode ()
@@ -3150,72 +8082,67 @@ var Exitgames = this["Exitgames"];
 			return (this.eventData);
 		},
 		
-		ActorNr ()
-		{
-			return (this.actorNr || 0);
-		},
-	
 		RoomCount ()
 		{
-			return (this.lbc["availableRooms"]().length);
+			return (this.lbc.availableRooms().length);
 		},
 	
 		RoomNameAt (i)
 		{
-			return (this.lbc["availableRooms"]()[i]["name"] || "");
+			return (this.lbc.availableRooms()[i].name || "");
 		},
 	
 		RoomMaxPlayers (name)
 		{
-			var r = this.lbc["roomInfosDict"][name];
-			return (r && r["maxPlayers"] || 0);
+			var r = this.lbc.roomInfosDict[name];
+			return (r && r.maxPlayers || 0);
 		},
 	
 		RoomIsOpen (name)
 		{
-			var r = this.lbc["roomInfosDict"][name];
-			return (r && r["isOpen"] ? 1 : 0);
+			var r = this.lbc.roomInfosDict[name];
+			return (r && r.isOpen ? 1 : 0);
 		},
 		
 		RoomPlayerCount (name)
 		{
-			var r = this.lbc["roomInfosDict"][name];
-			return (r && r["playerCount"]);
+			var r = this.lbc.roomInfosDict[name];
+			return (r && r.playerCount);
 		},
 	
 		RoomProperty (name, propName)
 		{
-			var r = this.lbc["roomInfosDict"][name];
-			return (r && r["getCustomProperty"](propName));
+			var r = this.lbc.roomInfosDict[name];
+			return (r && r.getCustomProperty(propName));
 		},
 		
 		PropertyOfMyRoom (propName)
 		{
-			var r = this.lbc["myRoom"]();
-			return (r && r["getCustomProperty"](propName));
+			var r = this.lbc.myRoom();
+			return (r && r.getCustomProperty(propName));
 		},
 		
 		ActorCount ()
 		{
-			return (this.lbc["myRoomActorsArray"]().length);
+			return (this.lbc.myRoomActorsArray().length);
 		},
 
 		ActorNrAt (i)
 		{
-			var a = this.lbc["myRoomActorsArray"]()[i];
-			return (a && a["actorNr"] || -i);
+			var a = this.lbc.myRoomActorsArray()[i];
+			return (a && a.actorNr || -i);
 		},
 	
 		ActorNameByNr (nr)
 		{
-			var a = this.lbc["myRoomActors"]()[nr];
-			return (a && a["name"] || "-- not found acorNr " + nr);
+			var a = this.lbc.myRoomActors()[nr];
+			return (a && a.name || "-- not found acorNr " + nr);
 		},
 	
 		PropertyOfActorByNr (nr, propName)
 		{
-			var a = this.lbc["myRoomActors"]()[nr];
-			return (a && a["getCustomProperty"](propName));
+			var a = this.lbc.myRoomActors()[nr];
+			return (a && a.getCustomProperty(propName));
 		},
 	
 		ChangedPropertiesCount ()
@@ -3230,7 +8157,7 @@ var Exitgames = this["Exitgames"];
 	
 		MasterActorNr (i)
 		{
-			return (this.lbc["myRoomMasterActorNr"]());
+			return (this.lbc.myRoomMasterActorNr());
 		},
 		
 		WebRpcUriPath ()
@@ -3250,12 +8177,12 @@ var Exitgames = this["Exitgames"];
 		
 		FriendOnline (name)
 		{
-			return (this.friends && this.friends[name] && this.friends[name]["online"] ? 1 : 0);
+			return (this.friends && this.friends[name] && this.friends[name].online ? 1 : 0);
 		},
 		
 		FriendRoom (name)
 		{
-			return (this.friends && this.friends[name] ? this.friends[name]["roomId"] : "");
+			return (this.friends && this.friends[name] ? this.friends[name].roomId : "");
 		},
 	
 		LobbyStatsCount ()
@@ -3265,37 +8192,37 @@ var Exitgames = this["Exitgames"];
 		
 		LobbyStatsNameAt (i)
 		{
-			return (this.lobbyStats && this.lobbyStats[i] ? this.lobbyStats[i]["lobbyName"] : "");
+			return (this.lobbyStats && this.lobbyStats[i] ? this.lobbyStats[i].lobbyName : "");
 		},
 		
 		LobbyStatsTypeAt (i)
 		{
-			return (this.lobbyStats && this.lobbyStats[i] ? this.lobbyStats[i]["lobbyType"] : 0);
+			return (this.lobbyStats && this.lobbyStats[i] ? this.lobbyStats[i].lobbyType : 0);
 		},
 	
 		LobbyStatsPeerCountAt (i)
 		{
-			return (this.lobbyStats && this.lobbyStats[i] ? this.lobbyStats[i]["peerCount"] : 0);
+			return (this.lobbyStats && this.lobbyStats[i] ? this.lobbyStats[i].peerCount : 0);
 		},
 		
 		LobbyStatsGameCountAt (i)
 		{
-			return (this.lobbyStats && this.lobbyStats[i] ? this.lobbyStats[i]["gameCount"] : 0);
+			return (this.lobbyStats && this.lobbyStats[i] ? this.lobbyStats[i].gameCount : 0);
 		},
 	
 		AppStatsPeerCount (i)
 		{
-			return (this.appStats ? this.appStats["peerCount"] : 0);
+			return (this.appStats ? this.appStats.peerCount : 0);
 		},
 	
 		AppStatsMasterPeerCount (i)
 		{
-			return (this.appStats ? this.appStats["masterPeerCount"] : 0);
+			return (this.appStats ? this.appStats.masterPeerCount : 0);
 		},
 	
 		AppStatsGameCount (i)
 		{
-			return (this.appStats ? this.appStats["gameCount"] : 0);
+			return (this.appStats ? this.appStats.gameCount : 0);
 		}
 	};
 }
@@ -4972,6 +9899,278 @@ for(const timeline of timelineManager.GetTimelinesByTags(nameOrTags))return time
 if(!triggerKeyframe)return"";return triggerKeyframe.GetTags().join(" ")},TimelineName(){const timeline=C3.Plugins.Timeline.Cnds.GetTriggerTimeline();return timeline?timeline.GetName():""},TimelineTags(){const timeline=C3.Plugins.Timeline.Cnds.GetTriggerTimeline();return timeline?timeline.GetStringTags():""}}};
 
 
+"use strict";
+{
+	C3.Plugins.VKBridge = class VKBridgePlugin extends C3.SDKPluginBase {
+		constructor(opts){
+			super(opts);
+		}
+		
+		Release(){
+			super.Release();
+		}
+	};
+}
+
+"use strict";
+{
+	C3.Plugins.VKBridge.Type = class VKBridgeType extends C3.SDKTypeBase {
+		constructor(objectClass){
+			super(objectClass);
+		}
+		
+		Release(){
+			super.Release();
+		}
+		
+		OnCreate(){}
+	};
+}
+
+"use strict";
+{
+	C3.Plugins.VKBridge.Instance = class VKBridgeInstance extends C3.SDKInstanceBase {
+        constructor(inst, properties = []){
+			super(inst);
+            this.init(properties);
+            this.conditions = C3.Plugins.VKBridge.Cnds;
+		}
+		
+        async init(properties){
+			// Properties
+            this.app_id				= properties[0];
+            this.app_secret_key		= properties[1];
+            this.app_service_key	= properties[2];
+			// Error
+			this.error_code			= 0;
+			this.error_reason		= "";
+			// User
+			this.user_id			= 0;
+			this.user_token			= "";
+			this.user_data			= [];
+			// Friends
+			this.friends_count		= 0;
+			this.friends_id			= [];
+			this.friends_data		= [];
+			// Storage
+			this.storage_data		= [];
+        }
+		
+        Release(){
+            super.Release();
+        }
+        SaveToJson(){
+            return {
+                // data to be saved for savegames
+            };
+        }
+        LoadFromJson(o){
+            // load state for savegames
+        }
+		GetScriptInterfaceClass(){
+			return VKBInstance;
+		}
+	};
+}
+
+"use strict";
+{
+	C3.Plugins.VKBridge.Cnds = {
+		// Bridge connected
+		BridgeConnectSuccess()				{console.log("VK Bridge connected");			return true;},
+		// Bridge not connected
+		BridgeConnectFailed()				{console.log("VK Bridge not connected");		return true;},
+		// User is authorized
+		AuthorizationSuccess()				{console.log("User is authorized");				return true;},
+		// Authorization error
+		AuthorizationFailed()				{console.log("Authorization error");			return true;},
+		// User data received
+		UserGetSuccess()					{console.log("User data received");				return true;},
+		// User data not received
+		UserGetFailed()						{console.log("User data not received");			return true;},
+		// Friends data received
+		FriendsGetSuccess()					{console.log("Friends data received");			return true;},
+		// Friends data not received
+		FriendsGetFailed()					{console.log("Friends data not received");		return true;},
+		// Variables loaded
+		StorageGetSuccess()					{console.log("Variables loaded");				return true;},
+		// Variables not loaded
+		StorageGetFailed()					{console.log("Variables not loaded");			return true;},
+		// Variable saved
+		StorageSetSuccess()					{console.log("Variable saved");					return true;},
+		// Variable not saved
+		StorageSetFailed()					{console.log("Variable not saved");				return true;},
+		// Friends invited
+		ShowInviteSuccess()					{console.log("Friends invited");				return true;},
+		// Friends not invited
+		ShowInviteFailed()					{console.log("Friends not invited");			return true;},
+		// Wall post created
+		ShowWallSuccess()					{console.log("Wall post created");				return true;},
+		// Wall post failed
+		ShowWallFailed()					{console.log("Wall post failed");				return true;},
+		// Purchase success
+		ShowOrderSuccess()					{console.log("Purchase success");				return true;},
+		// Purchase failed
+		ShowOrderFailed()					{console.log("Purchase failed");				return true;}
+	};
+}
+
+"use strict";
+{
+	C3.Plugins.VKBridge.Acts = {
+		// Bridge connect
+		BridgeConnect(){
+			// Подключение VK Bridge
+			vkBridge.send('VKWebAppInit');
+			console.log("Connect VK Bridge");
+			// Подключение событий, отправленных нативным клиентом
+			vkBridge.subscribe((e) => console.log(e));
+			// Получение прав доступа
+			vkBridge
+				.send("VKWebAppGetAuthToken", {"app_id": this.app_id, "scope": "friends,status,wall"})
+				.then(data => {
+					this.user_token = data.access_token;
+					this.Trigger(this.conditions.BridgeConnectSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.BridgeConnectFailed);
+				});
+		},
+		// Authorization
+		Authorization(){
+			vkBridge
+				.send("VKWebAppGetUserInfo")
+				.then(data => {
+					this.user_id = data["id"];
+					this.Trigger(this.conditions.AuthorizationSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.AuthorizationFailed);
+				});
+		},
+		// User get
+		UserGet(get_user_id, get_fields){
+			vkBridge
+				.send("VKWebAppCallAPIMethod", {"method": "users.get", "request_id": "user", "params": {"user_ids": get_user_id, "fields": get_fields, "v": "5.130", "access_token": this.user_token}})
+				.then(data => {
+					this.user_data = data.response[0];
+					this.Trigger(this.conditions.UserGetSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.UserGetFailed);
+				});
+		},
+		// Friends get
+		FriendsGet(get_fields){
+			vkBridge
+				.send("VKWebAppCallAPIMethod", {"method": "friends.getAppUsers", "request_id": "friends", "params": {"v": "5.130", "access_token": this.user_token}})
+				.then(data => {
+					this.friends_id = data.response;
+					this.friends_count = this.friends_id.length;
+						vkBridge
+							.send("VKWebAppCallAPIMethod", {"method": "users.get", "request_id": "friends", "params": {"user_ids": this.friends_id.join(','), "fields": get_fields, "v": "5.130", "access_token": this.user_token}})
+							.then(data => {
+								this.friends_data = data.response;
+								this.Trigger(this.conditions.FriendsGetSuccess);
+							})
+							.catch(error => {
+								if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+								this.Trigger(this.conditions.FriendsGetFailed);
+							});
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.FriendsGetFailed);
+				});				
+		},
+		// Storage get
+		StorageGet(get_keys, keys){
+			
+			var separator = /\s*,\s*/;
+			keys = get_keys.split(separator);
+			
+			vkBridge
+				.send("VKWebAppStorageGet", {"keys": keys})
+				.then(data => {
+					this.storage_data = data.keys;
+					this.Trigger(this.conditions.StorageGetSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.StorageGetFailed);
+				});				
+		},
+		// Storage set
+		StorageSet(get_keys, get_value){
+			vkBridge
+				.send("VKWebAppStorageSet", {"key": get_keys, "value": get_value})
+				.then(data => {
+					this.Trigger(this.conditions.StorageSetSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.StorageSetFailed);
+				});				
+		},
+		// Show invite box
+		ShowInvite(){
+			vkBridge
+				.send("VKWebAppShowInviteBox")
+				.then(data => {
+					this.Trigger(this.conditions.ShowInviteSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.ShowInviteFailed);
+				});				
+		},
+		// Create post
+		ShowWall(message, attachments){
+			vkBridge
+				.send("VKWebAppShowWallPostBox", {"message": message, "attachments": attachments})
+				.then(data => {
+					this.Trigger(this.conditions.ShowWallSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.ShowWallFailed);
+				});				
+		},
+		// Purchase item
+		ShowOrder(item){
+			vkBridge
+				.send("VKWebAppShowOrderBox", {"type": "item", "item": item})
+				.then(data => {
+					this.Trigger(this.conditions.ShowOrderSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.ShowOrderFailed);
+				});				
+		}
+	};
+}
+
+"use strict";
+{
+	C3.Plugins.VKBridge.Exps = {
+		// Error
+		ErrorCode()							{return this.error_code;},
+		ErrorReason()						{return this.error_reason;},
+		// User
+		UserID()							{return this.user_id;},
+		UserData(type)						{if (this.user_data[type]){return this.user_data[type];};},
+		// Friends
+		FriendsCount()						{return this.friends_count;},
+		FriendsData(number, type, data)		{if (this.friends_data[number]){data = this.friends_data[number];if (data[type]){return data[type];};};},
+		// Storage
+		StorageData(keys)					{for (let i = 0; i < this.storage_data.length; i++){if (this.storage_data[i].key === keys){return this.storage_data[i].value;break;};};}
+	};
+}
+
 'use strict';{const C3=self.C3;C3.Plugins.NinePatch=class NinePatchPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}};
 
 
@@ -5746,35 +10945,710 @@ AddRemoteURL(url,type,name){this._remoteUrls.set(name.toLowerCase(),{url,type})}
 SampleRate(){return this._sampleRate},CurrentTime(){if(self["C3_GetAudioContextCurrentTime"])return self["C3_GetAudioContextCurrentTime"]();else return performance.now()/1E3}}};
 
 
-'use strict';{const C3=self.C3;C3.Behaviors.Sin=class SinBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+'use strict';{const C3=self.C3;C3.Plugins.LocalStorage=class LocalStoragePlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}};
 
 
-'use strict';{const C3=self.C3;C3.Behaviors.Sin.Type=class SinType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
+'use strict';{const C3=self.C3;C3.Plugins.LocalStorage.Type=class LocalStorageType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}}};
 
 
-'use strict';{const C3=self.C3;const MOVEMENT=0;const WAVE=1;const PERIOD=2;const PERIOD_RANDOM=3;const PERIOD_OFFSET=4;const PERIOD_OFFSET_RANDOM=5;const MAGNITUDE=6;const MAGNITUDE_RANDOM=7;const ENABLE=8;const HORIZONTAL=0;const VERTICAL=1;const SIZE=2;const WIDTH=3;const HEIGHT=4;const ANGLE=5;const OPACITY=6;const VALUE=7;const FORWARDS_BACKWARDS=8;const ZELEVATION=9;const SINE=0;const TRIANGLE=1;const SAWTOOTH=2;const REVERSE_SAWTOOTH=3;const SQUARE=4;const _2pi=2*Math.PI;const _pi_2=Math.PI/
-2;const _3pi_2=3*Math.PI/2;const MOVEMENT_LOOKUP=[0,1,8,3,4,2,5,6,9,7];C3.Behaviors.Sin.Instance=class SinInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this._i=0;this._movement=0;this._wave=0;this._period=0;this._mag=0;this._isEnabled=true;this._basePeriod=0;this._basePeriodOffset=0;this._baseMag=0;this._periodRandom=0;this._periodOffsetRandom=0;this._magnitudeRandom=0;this._initialValue=0;this._initialValue2=0;this._lastKnownValue=0;this._lastKnownValue2=
-0;this._ratio=0;if(properties){this._movement=MOVEMENT_LOOKUP[properties[MOVEMENT]];this._wave=properties[WAVE];this._periodRandom=this._runtime.Random()*properties[PERIOD_RANDOM];this._basePeriod=properties[PERIOD];this._period=properties[PERIOD];this._period+=this._periodRandom;this._basePeriodOffset=properties[PERIOD_OFFSET];if(this._period!==0){this._periodOffsetRandom=this._runtime.Random()*properties[PERIOD_OFFSET_RANDOM];this._i=properties[PERIOD_OFFSET]/this._period*_2pi;this._i+=this._periodOffsetRandom/
-this._period*_2pi}this._magnitudeRandom=this._runtime.Random()*properties[MAGNITUDE_RANDOM];this._baseMag=properties[MAGNITUDE];this._mag=properties[MAGNITUDE];this._mag+=this._magnitudeRandom;this._isEnabled=!!properties[ENABLE]}if(this._movement===ANGLE)this._mag=C3.toRadians(this._mag);this.Init();if(this._isEnabled)this._StartTicking()}Release(){super.Release()}SaveToJson(){return{"i":this._i,"e":this._isEnabled,"mv":this._movement,"w":this._wave,"p":this._period,"mag":this._mag,"iv":this._initialValue,
-"iv2":this._initialValue2,"r":this._ratio,"lkv":this._lastKnownValue,"lkv2":this._lastKnownValue2}}LoadFromJson(o){this._i=o["i"];this._SetEnabled(o["e"]);this._movement=o["mv"];this._wave=o["w"];this._period=o["p"];this._mag=o["mag"];this._initialValue=o["iv"];this._initialValue2=o["iv2"];this._ratio=o["r"];this._lastKnownValue=o["lkv"];this._lastKnownValue2=o["lkv2"]}Init(){const wi=this._inst.GetWorldInfo();switch(this._movement){case HORIZONTAL:this._initialValue=wi.GetX();break;case VERTICAL:this._initialValue=
-wi.GetY();break;case SIZE:this._initialValue=wi.GetWidth();this._ratio=wi.GetHeight()/wi.GetWidth();break;case WIDTH:this._initialValue=wi.GetWidth();break;case HEIGHT:this._initialValue=wi.GetHeight();break;case ANGLE:this._initialValue=wi.GetAngle();break;case OPACITY:this._initialValue=wi.GetOpacity();break;case VALUE:this._initialValue=0;break;case FORWARDS_BACKWARDS:this._initialValue=wi.GetX();this._initialValue2=wi.GetY();break;case ZELEVATION:this._initialValue=wi.GetZElevation();break;default:}this._lastKnownValue=
-this._initialValue;this._lastKnownValue2=this._initialValue2}WaveFunc(x){x=x%_2pi;switch(this._wave){case SINE:return Math.sin(x);case TRIANGLE:if(x<=_pi_2)return x/_pi_2;else if(x<=_3pi_2)return 1-2*(x-_pi_2)/Math.PI;else return(x-_3pi_2)/_pi_2-1;case SAWTOOTH:return 2*x/_2pi-1;case REVERSE_SAWTOOTH:return-2*x/_2pi+1;case SQUARE:return x<Math.PI?-1:1}return 0}Tick(){const dt=this._runtime.GetDt(this._inst);if(!this._isEnabled||dt===0)return;if(this._period===0)this._i=0;else this._i=(this._i+dt/
-this._period*_2pi)%_2pi;this._UpdateFromPhase()}_UpdateFromPhase(){const wi=this._inst.GetWorldInfo();switch(this._movement){case HORIZONTAL:if(wi.GetX()!==this._lastKnownValue)this._initialValue+=wi.GetX()-this._lastKnownValue;wi.SetX(this._initialValue+this.WaveFunc(this._i)*this._mag);this._lastKnownValue=wi.GetX();break;case VERTICAL:if(wi.GetY()!==this._lastKnownValue)this._initialValue+=wi.GetY()-this._lastKnownValue;wi.SetY(this._initialValue+this.WaveFunc(this._i)*this._mag);this._lastKnownValue=
-wi.GetY();break;case SIZE:wi.SetWidth(this._initialValue+this.WaveFunc(this._i)*this._mag);wi.SetHeight(wi.GetWidth()*this._ratio);break;case WIDTH:wi.SetWidth(this._initialValue+this.WaveFunc(this._i)*this._mag);break;case HEIGHT:wi.SetHeight(this._initialValue+this.WaveFunc(this._i)*this._mag);break;case ANGLE:if(wi.GetAngle()!==this._lastKnownValue)this._initialValue=C3.clampAngle(this._initialValue+(wi.GetAngle()-this._lastKnownValue));wi.SetAngle(this._initialValue+this.WaveFunc(this._i)*this._mag);
-this._lastKnownValue=wi.GetAngle();break;case OPACITY:wi.SetOpacity(this._initialValue+this.WaveFunc(this._i)*this._mag/100);break;case FORWARDS_BACKWARDS:if(wi.GetX()!==this._lastKnownValue)this._initialValue+=wi.GetX()-this._lastKnownValue;if(wi.GetY()!==this._lastKnownValue2)this._initialValue2+=wi.GetY()-this._lastKnownValue2;wi.SetX(this._initialValue+Math.cos(wi.GetAngle())*this.WaveFunc(this._i)*this._mag);wi.SetY(this._initialValue2+Math.sin(wi.GetAngle())*this.WaveFunc(this._i)*this._mag);
-this._lastKnownValue=wi.GetX();this._lastKnownValue2=wi.GetY();break;case ZELEVATION:wi.SetZElevation(this._initialValue+this.WaveFunc(this._i)*this._mag);break}wi.SetBboxChanged()}_OnSpriteFrameChanged(prevFrame,nextFrame){}_SetEnabled(e){this._isEnabled=!!e;if(this._isEnabled)this._StartTicking();else this._StopTicking()}GetPropertyValueByIndex(index){switch(index){case MOVEMENT:return this._movement;case WAVE:return this._wave;case PERIOD:return this._basePeriod;case MAGNITUDE:return this._baseMag;
-case ENABLE:return this._isEnabled}}SetPropertyValueByIndex(index,value){switch(index){case MOVEMENT:this._movement=MOVEMENT_LOOKUP[value];this.Init();break;case WAVE:this._wave=value;break;case PERIOD:this._basePeriod=value;this._period=this._basePeriod+this._periodRandom;if(!this._isEnabled)if(this._period!==0){this._i=this._basePeriodOffset/this._period*_2pi;this._i+=this._periodOffsetRandom/this._period*_2pi}else this._i=0;break;case MAGNITUDE:this._baseMag=value;this._mag=this._baseMag+this._magnitudeRandom;
-if(this._movement===ANGLE)this._mag=C3.toRadians(this._mag);break;case ENABLE:this._isEnabled=!!value;break}}GetDebuggerProperties(){const prefix="behaviors.sin";return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:prefix+".properties.enabled.name",value:this._isEnabled,onedit:v=>this._SetEnabled(v)},{name:prefix+".properties.period.name",value:this._period,onedit:v=>this._period=v},{name:prefix+".properties.magnitude.name",value:this._mag,onedit:v=>this._mag=v},{name:prefix+".debugger.value",
-value:this.WaveFunc(this._i)*this._mag}]}]}}};
+'use strict';{const C3=self.C3;C3.Plugins.LocalStorage.Instance=class LocalStorageInstance extends C3.SDKInstanceBase{constructor(inst,properties){super(inst);this._currentKey="";this._lastValue="";this._keyNamesList=[];this._errorMessage="";this._pendingGets=0;this._pendingSets=0;this._storage=this._runtime._GetProjectStorage();this._debugCache=new Map;this._isLoadingDebugCache=false}Release(){super.Release()}async _TriggerStorageError(err){this._errorMessage=this._GetErrorString(err);await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnError)}_GetErrorString(err){if(!err)return"unknown error";
+else if(typeof err==="string")return err;else if(typeof err.message==="string")return err.message;else if(typeof err.name==="string")return err.name;else if(typeof err.data==="string")return err.data;else return"unknown error"}GetDebuggerProperties(){if(!this._isLoadingDebugCache)this._DebugCacheStorage();return[{title:"plugins.localstorage.name",properties:[...this._debugCache.entries()].map(entry=>({name:"$"+entry[0],value:entry[1],onedit:v=>this._storage.setItem(entry[0],v)}))}]}async _DebugCacheStorage(){this._isLoadingDebugCache=
+true;try{const keyList=await this._storage.keys();keyList.sort((a,b)=>{const la=a.toLowerCase();const lb=b.toLowerCase();if(la<lb)return-1;else if(lb<la)return 1;else return 0});const values=await Promise.all(keyList.map(key=>this._storage.getItem(key)));this._debugCache.clear();for(let i=0,len=keyList.length;i<len;++i)this._debugCache.set(keyList[i],values[i])}catch(err){console.warn("[C3 debugger] Error displaying local storage: ",err)}finally{this._isLoadingDebugCache=false}}}};
 
 
-'use strict';{const C3=self.C3;C3.Behaviors.Sin.Cnds={IsEnabled(){return this._isEnabled},CompareMovement(m){return this._movement===m},ComparePeriod(cmp,v){return C3.compare(this._period,cmp,v)},CompareMagnitude(cmp,v){if(this._movement===5)return C3.compare(this._mag,cmp,C3.toRadians(v));else return C3.compare(this._mag,cmp,v)},CompareWave(w){return this._wave===w}}};
+'use strict';{const C3=self.C3;C3.Plugins.LocalStorage.Cnds={OnItemSet(key){return this._currentKey===key},OnAnyItemSet(){return true},OnItemGet(key){return this._currentKey===key},OnAnyItemGet(){return true},OnItemRemoved(key){return this._currentKey===key},OnAnyItemRemoved(){return true},OnCleared(){return true},OnAllKeyNamesLoaded(){return true},OnError(){return true},OnItemExists(key){return this._currentKey===key},OnItemMissing(key){return this._currentKey===key},CompareKey(cmp,key){return C3.compare(this._currentKey,
+cmp,key)},CompareValue(cmp,v){return C3.compare(this._lastValue,cmp,v)},IsProcessingSets(){return this._pendingSets>0},IsProcessingGets(){return this._pendingGets>0},OnAllSetsComplete(){return true},OnAllGetsComplete(){return true}}};
 
 
-'use strict';{const C3=self.C3;C3.Behaviors.Sin.Acts={SetEnabled(e){this._SetEnabled(e!==0)},SetPeriod(x){this._period=x},SetMagnitude(x){this._mag=x;if(this._movement===5)this._mag=C3.toRadians(this._mag)},SetMovement(m){if(this._movement===5&&m!==5)this._mag=C3.toDegrees(this._mag);this._movement=m;this.Init()},SetWave(w){this._wave=w},SetPhase(x){const _2pi=Math.PI*2;this._i=x*_2pi%_2pi;this._UpdateFromPhase()},UpdateInitialState(){this.Init()}}};
+'use strict';{const C3=self.C3;function IsExpressionType(x){return typeof x==="string"||typeof x==="number"}C3.Plugins.LocalStorage.Acts={async SetItem(key,value){this._pendingSets++;try{const valueSet=await this._storage.setItem(key,value);await this.ScheduleTriggers(async()=>{this._currentKey=key;this._lastValue=valueSet;await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnAnyItemSet);await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnItemSet)})}catch(err){await this._TriggerStorageError(err)}finally{this._pendingSets--;
+if(this._pendingSets===0)await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnAllSetsComplete)}},async SetBinaryItem(key,objectClass){if(!objectClass)return;const inst=objectClass.GetFirstPicked(this._inst);if(!inst)return;const sdkInst=inst.GetSdkInstance();if(!sdkInst)return;const buffer=sdkInst.GetArrayBufferReadOnly();this._pendingSets++;try{await this._storage.setItem(key,buffer);await this.ScheduleTriggers(async()=>{this._currentKey=key;this._lastValue="";await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnAnyItemSet);
+await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnItemSet)})}catch(err){await this._TriggerStorageError(err)}finally{this._pendingSets--;if(this._pendingSets===0)await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnAllSetsComplete)}},async GetItem(key){this._pendingGets++;try{const value=await this._storage.getItem(key);await this.ScheduleTriggers(async()=>{this._currentKey=key;this._lastValue=IsExpressionType(value)?value:"";await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnAnyItemGet);
+await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnItemGet)})}catch(err){await this._TriggerStorageError(err)}finally{this._pendingGets--;if(this._pendingGets===0)await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnAllGetsComplete)}},async GetBinaryItem(key,objectClass){if(!objectClass)return;const inst=objectClass.GetFirstPicked(this._inst);if(!inst)return;const sdkInst=inst.GetSdkInstance();this._pendingGets++;try{let value=await this._storage.getItem(key);value=value instanceof ArrayBuffer?
+value:new ArrayBuffer(0);await this.ScheduleTriggers(async()=>{this._lastValue="";this._currentKey=key;sdkInst.SetArrayBufferTransfer(value);await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnAnyItemGet);await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnItemGet)})}catch(err){await this._TriggerStorageError(err)}finally{this._pendingGets--;if(this._pendingGets===0)await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnAllGetsComplete)}},async CheckItemExists(key){try{const value=await this._storage.getItem(key);
+await this.ScheduleTriggers(async()=>{this._currentKey=key;if(typeof value==="undefined"||value===null){this._lastValue="";await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnItemMissing)}else{this._lastValue=IsExpressionType(value)?value:"";await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnItemExists)}})}catch(err){await this._TriggerStorageError(err)}},async RemoveItem(key){try{await this._storage.removeItem(key);await this.ScheduleTriggers(async()=>{this._currentKey=key;this._lastValue=
+"";await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnAnyItemRemoved);await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnItemRemoved)})}catch(err){await this._TriggerStorageError(err)}},async ClearStorage(){try{await this._storage.clear();await this.ScheduleTriggers(async()=>{this._currentKey="";this._lastValue="";C3.clearArray(this._keyNamesList);await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnCleared)})}catch(err){await this._TriggerStorageError(err)}},async GetAllKeyNames(){try{const keyList=
+await this._storage.keys();await this.ScheduleTriggers(async()=>{this._keyNamesList=keyList;await this.TriggerAsync(C3.Plugins.LocalStorage.Cnds.OnAllKeyNamesLoaded)})}catch(err){await this._TriggerStorageError(err)}}}};
 
 
-'use strict';{const C3=self.C3;C3.Behaviors.Sin.Exps={CyclePosition(){return this._i/(2*Math.PI)},Period(){return this._period},Magnitude(){if(this._movement===5)return C3.toDegrees(this._mag);else return this._mag},Value(){return this.WaveFunc(this._i)*this._mag}}};
+'use strict';{const C3=self.C3;C3.Plugins.LocalStorage.Exps={ItemValue(){return this._lastValue},Key(){return this._currentKey},KeyCount(){return this._keyNamesList.length},KeyAt(i){i=Math.floor(i);if(i<0||i>=this._keyNamesList.length)return"";return this._keyNamesList[i]},ErrorMessage(){return this._errorMessage}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Browser=class BrowserPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Browser.Type=class BrowserType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;const DOM_COMPONENT_ID="browser";C3.Plugins.Browser.Instance=class BrowserInstance extends C3.SDKInstanceBase{constructor(inst,properties){super(inst,DOM_COMPONENT_ID);this._initLocationStr="";this._isOnline=false;this._referrer="";this._docTitle="";this._isCookieEnabled=false;this._screenWidth=0;this._screenHeight=0;this._windowOuterWidth=0;this._windowOuterHeight=0;this._isScirraArcade=false;this.AddDOMMessageHandlers([["online-state",e=>this._OnOnlineStateChanged(e)],
+["backbutton",()=>this._OnBackButton()],["sw-message",e=>this._OnSWMessage(e)],["hashchange",e=>this._OnHashChange(e)]]);const rt=this.GetRuntime().Dispatcher();this._disposables=new C3.CompositeDisposable(C3.Disposable.From(rt,"afterfirstlayoutstart",()=>this._OnAfterFirstLayoutStart()),C3.Disposable.From(rt,"window-resize",()=>this._OnWindowResize()),C3.Disposable.From(rt,"suspend",()=>this._OnSuspend()),C3.Disposable.From(rt,"resume",()=>this._OnResume()));this._runtime.AddLoadPromise(this.PostToDOMAsync("get-initial-state",
+{"exportType":this._runtime.GetExportType()}).then(data=>{this._initLocationStr=data["location"];this._isOnline=data["isOnline"];this._referrer=data["referrer"];this._docTitle=data["title"];this._isCookieEnabled=data["isCookieEnabled"];this._screenWidth=data["screenWidth"];this._screenHeight=data["screenHeight"];this._windowOuterWidth=data["windowOuterWidth"];this._windowOuterHeight=data["windowOuterHeight"];this._isScirraArcade=data["isScirraArcade"]}))}Release(){super.Release()}_OnAfterFirstLayoutStart(){this.PostToDOM("ready-for-sw-messages")}async _OnOnlineStateChanged(e){const isOnline=
+!!e["isOnline"];if(this._isOnline===isOnline)return;this._isOnline=isOnline;if(this._isOnline)await this.TriggerAsync(C3.Plugins.Browser.Cnds.OnOnline);else await this.TriggerAsync(C3.Plugins.Browser.Cnds.OnOffline)}async _OnWindowResize(){await this.TriggerAsync(C3.Plugins.Browser.Cnds.OnResize)}_OnSuspend(){this.Trigger(C3.Plugins.Browser.Cnds.OnPageHidden)}_OnResume(){this.Trigger(C3.Plugins.Browser.Cnds.OnPageVisible)}async _OnBackButton(){await this.TriggerAsync(C3.Plugins.Browser.Cnds.OnBackButton)}_OnSWMessage(e){const messageType=
+e["type"];if(messageType==="downloading-update")this.Trigger(C3.Plugins.Browser.Cnds.OnUpdateFound);else if(messageType==="update-ready"||messageType==="update-pending")this.Trigger(C3.Plugins.Browser.Cnds.OnUpdateReady);else if(messageType==="offline-ready")this.Trigger(C3.Plugins.Browser.Cnds.OnOfflineReady)}_OnHashChange(e){this._initLocationStr=e["location"];this.Trigger(C3.Plugins.Browser.Cnds.OnHashChange)}GetDebuggerProperties(){const prefix="plugins.browser.debugger";return[{title:"plugins.browser.name",
+properties:[{name:prefix+".user-agent",value:navigator.userAgent},{name:prefix+".is-online",value:this._isOnline},{name:prefix+".is-fullscreen",value:this._runtime.GetCanvasManager().IsDocumentFullscreen()}]}]}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Browser.Cnds={IsOnline(){return this._isOnline},OnOnline(){return true},OnOffline(){return true},OnResize(){return true},CookiesEnabled(){return this._isCookieEnabled},IsFullscreen(){return this._runtime.GetCanvasManager().IsDocumentFullscreen()},OnBackButton(){return true},IsPortraitLandscape(p){const lastInnerWidth=this._runtime.GetCanvasManager().GetLastWidth();const lastInnerHeight=this._runtime.GetCanvasManager().GetLastHeight();const current=lastInnerWidth<=
+lastInnerHeight?0:1;return current===p},OnUpdateFound(){return true},OnUpdateReady(){return true},OnOfflineReady(){return true},OnHashChange(){return true},PageVisible(){return!this._runtime.IsSuspended()},OnPageHidden(){return true},OnPageVisible(){return true},HasJava(){return false},IsDownloadingUpdate(){return false},OnMenuButton(){return false},OnSearchButton(){return false},IsMetered(){return false},IsCharging(){return true},SupportsFullscreen(){return true}}};
+
+
+'use strict';{const C3=self.C3;const ORIENTATIONS=["portrait","landscape","portrait-primary","portrait-secondary","landscape-primary","landscape-secondary"];C3.Plugins.Browser.Acts={Alert(message){this.PostToDOM("alert",{"message":message.toString()})},Close(){if(this._isScirraArcade)return;if(this._runtime.IsDebug())self.C3Debugger.CloseWindow();else this.PostToDOM("close")},Focus(){this.PostToDOM("set-focus",{"isFocus":true})},Blur(){this.PostToDOM("set-focus",{"isFocus":false})},GoBack(){if(this._isScirraArcade)return;
+this.PostToDOM("navigate",{"type":"back"})},GoForward(){if(this._isScirraArcade)return;this.PostToDOM("navigate",{"type":"forward"})},GoHome(){if(this._isScirraArcade)return;this.PostToDOM("navigate",{"type":"home"})},Reload(){if(this._isScirraArcade)return;if(this._runtime.IsDebug())this._runtime.PostToDebugger({"type":"reload"});else this.PostToDOM("navigate",{"type":"reload"})},GoToURL(url,target){this._PostToDOMMaybeSync("navigate",{"type":"url","url":url,"target":target,"exportType":this._runtime.GetExportType()})},
+GoToURLWindow(url,tag){this._PostToDOMMaybeSync("navigate",{"type":"new-window","url":url,"tag":tag,"exportType":this._runtime.GetExportType()})},RequestFullScreen(mode,navUi){if(mode>=2)mode+=1;if(mode===6)mode=2;if(mode===1)mode=0;const modeStr=C3.CanvasManager._FullscreenModeNumberToString(mode);this._runtime.GetCanvasManager().SetDocumentFullscreenMode(modeStr);this._PostToDOMMaybeSync("request-fullscreen",{"navUI":navUi})},CancelFullScreen(){this._PostToDOMMaybeSync("exit-fullscreen")},Vibrate(pattern){const arr=
+pattern.split(",");for(let i=0,len=arr.length;i<len;++i)arr[i]=parseInt(arr[i],10);this._PostToDOMMaybeSync("vibrate",{"pattern":arr})},async InvokeDownload(url,filename){if(!filename)return;const urlToDownload=await this._runtime.GetAssetManager().GetProjectFileUrl(url);this._runtime.InvokeDownload(urlToDownload,filename)},InvokeDownloadString(str,mimeType,filename){if(!filename)return;const dataUri=`data:${mimeType},${encodeURIComponent(str)}`;this._runtime.InvokeDownload(dataUri,filename)},ConsoleLog(type,
+msg){msg=msg.toString();if(type===0)console.log(msg);else if(type===1)console.warn(msg);else if(type===2)console.error(msg)},ConsoleGroup(name){console.group(name)},ConsoleGroupEnd(){console.groupEnd()},ExecJs(jsStr){try{eval(jsStr)}catch(err){console.error("Error executing JavaScript: ",err)}},LockOrientation(o){o=Math.floor(o);if(o<0||o>=ORIENTATIONS.length)return;const orientation=ORIENTATIONS[o];this._PostToDOMMaybeSync("lock-orientation",{"orientation":orientation})},UnlockOrientation(){this._PostToDOMMaybeSync("unlock-orientation")},
+LoadStyleSheet(url){this._runtime.GetAssetManager().LoadStyleSheet(url)},SetHash(h){this.PostToDOM("set-hash",{"hash":h})}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Browser.Exps={URL(){if(this._runtime.IsInWorker())return this._initLocationStr;else return location.toString()},Protocol(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).protocol;else return location.protocol},Domain(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).hostname;else return location.hostname},Port(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).port;else return location.port},PathName(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).pathname;
+else return location.pathname},Hash(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).hash;else return location.hash},QueryString(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).search;else return location.search},QueryParam(param){const search=this._runtime.IsInWorker()?(new URL(this._initLocationStr)).search:location.search;const match=RegExp("[?&]"+param+"=([^&]*)").exec(search);if(match)return decodeURIComponent(match[1].replace(/\+/g," "));else return""},
+Referrer(){return this._referrer},Title(){return this._docTitle},Language(){return navigator.language},Platform(){return navigator.platform},UserAgent(){return navigator.userAgent},ExecJS(jsStr){let result=0;try{result=eval(jsStr)}catch(err){console.error("Error executing JavaScript: ",err)}if(typeof result==="number"||typeof result==="string")return result;if(typeof result==="boolean")return result?1:0;else return 0},Name(){return navigator.appName},Version(){return navigator.appVersion},Product(){return navigator.product},
+Vendor(){return navigator.vendor},BatteryLevel(){return 1},BatteryTimeLeft(){return Infinity},Bandwidth(){const connection=navigator["connection"];if(connection)return connection["downlink"]||connection["downlinkMax"]||connection["bandwidth"]||Infinity;else return Infinity},ConnectionType(){const connection=navigator["connection"];if(connection)return connection["type"]||"unknown";else return"unknown"},DevicePixelRatio(){return self.devicePixelRatio},ScreenWidth(){return this._screenWidth},ScreenHeight(){return this._screenHeight},
+WindowInnerWidth(){return this._runtime.GetCanvasManager().GetLastWidth()},WindowInnerHeight(){return this._runtime.GetCanvasManager().GetLastHeight()},WindowOuterWidth(){return this._windowOuterWidth},WindowOuterHeight(){return this._windowOuterWidth}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Particles=class ParticlesPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Particles.Type=class ParticlesType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){this.GetImageInfo().LoadAsset(this._runtime)}LoadTextures(renderer){return this.GetImageInfo().LoadStaticTexture(renderer,{sampling:this._runtime.GetSampling()})}ReleaseTextures(){this.GetImageInfo().ReleaseTexture()}}};
+
+
+'use strict';{const C3=self.C3;const RATE=0;const SPRAY_CONE=1;const TYPE=2;const SPAWNOBJECTCLASS=3;const SPEED=4;const SIZE=5;const OPACITY=6;const GROW_RATE=7;const X_RANDOMISER=8;const Y_RANDOMISER=9;const INITIAL_SPEED_RANDOMISER=10;const SIZE_RANDOMISER=11;const GROW_RATE_RANDOMISER=12;const ACCELERATION=13;const GRAVITY=14;const ANGLE_RANDOMISER=15;const LIFE_SPEED_RANDOMISER=16;const OPACITY_RANDOMISER=17;const DESTROY_MODE=18;const TIMEOUT=19;const CONTINUOUS=0;const ONE_SHOT=1;const tempRect=
+C3.New(C3.Rect);C3.Plugins.Particles.Instance=class ParticlesInstance extends C3.SDKWorldInstanceBase{constructor(inst,properties){super(inst);this._isFirstTick=true;const pe=C3.New(self.ParticleEngine);this._particleEngine=pe;pe.ononeshotfinish=()=>this._OnOneShotFinish();this._spawnObjectClass=null;this._particleUpdateCallback=(inst,dx,dy,dSize,dAngle,dOpacity)=>this._OnParticleUpdate(inst,dx,dy,dSize,dAngle,dOpacity);this._particleDestroyCallback=inst=>this._OnParticleDestroy(inst);this._hasAnyDefaultParticle=
+true;if(properties){pe.SetRate(properties[RATE]);pe.SetSprayCone(C3.toRadians(properties[SPRAY_CONE]));pe.SetSprayType(properties[TYPE]?"one-shot":"continuous-spray");this._SetParticleObjectClass(this._runtime.GetObjectClassBySID(properties[SPAWNOBJECTCLASS]));pe.SetInitSpeed(properties[SPEED]);pe.SetInitSize(properties[SIZE]);pe.SetInitOpacity(properties[OPACITY]/100);pe.SetGrowRate(properties[GROW_RATE]);pe.SetInitXRandom(properties[X_RANDOMISER]);pe.SetInitYRandom(properties[Y_RANDOMISER]);pe.SetInitSpeedRandom(properties[INITIAL_SPEED_RANDOMISER]);
+pe.SetInitSizeRandom(properties[SIZE_RANDOMISER]);pe.SetGrowRandom(properties[GROW_RATE_RANDOMISER]);pe.SetAcceleration(properties[ACCELERATION]);pe.SetGravity(properties[GRAVITY]);pe.SetLifeAngleRandom(properties[ANGLE_RANDOMISER]);pe.SetLifeSpeedRandom(properties[LIFE_SPEED_RANDOMISER]);pe.SetLifeOpacityRandom(properties[OPACITY_RANDOMISER]);pe.SetDestroyModeIndex(properties[DESTROY_MODE]);pe.SetTimeout(properties[TIMEOUT])}this._UpdateEngineParameters();if(this._spawnObjectClass)this._hasAnyDefaultParticle=
+false;if(pe.GetSprayType()==="one-shot")pe.CreateOneShotSpray();else pe.SetSpraying(true);const wi=this.GetWorldInfo();wi.SetBboxChangeEventEnabled(true);this._inst.Dispatcher().addEventListener("bboxchange",()=>{wi.OverwriteBoundingBox(this._particleEngine.GetBoundingBox())});this._StartTicking()}Release(){this._particleEngine.Release();this._particleEngine=null;this._particleUpdateCallback=null;this._particleDestroyCallback=null;super.Release()}_SetParticleObjectClass(objectClass){if(objectClass===
+this.GetObjectClass())objectClass=null;this._spawnObjectClass=objectClass;this._particleEngine.onparticlecreate=objectClass?p=>this._OnParticleCreate(p):null;if(!this._spawnObjectClass)this._hasAnyDefaultParticle=true}_UpdateEngineParameters(){const pe=this._particleEngine;const wi=this.GetWorldInfo();pe.SetMasterOpacity(wi.GetOpacity());pe.SetPixelRounding(this._runtime.IsPixelRoundingEnabled());pe.SetSpawnX(wi.GetX());pe.SetSpawnY(wi.GetY());pe.SetSpawnAngle(wi.GetAngle());pe.SetInitSizeScale(wi.GetSceneGraphScale())}_OnOneShotFinish(){this._runtime.DestroyInstance(this._inst)}Draw(renderer){if(!this._hasAnyDefaultParticle)return;
+const imageInfo=this._objectClass.GetImageInfo();const texture=imageInfo.GetTexture();if(!texture)return;const wi=this.GetWorldInfo();const layer=wi.GetLayer();const viewport=tempRect;layer.GetViewportForZ(wi.GetTotalZElevation(),viewport);renderer.SetTexture(texture);const zScaleFactor=layer.Get2DScaleFactorToZ(wi.GetTotalZElevation());this._particleEngine.SetParticleScale(layer.GetRenderScale()*zScaleFactor);this._particleEngine.Draw(renderer,imageInfo.GetTexRect(),viewport)}SaveToJson(){const pe=
+this._particleEngine;return{"r":pe.GetRate(),"sc":pe.GetSprayCone(),"st":pe.GetSprayType(),"isp":pe.GetInitSpeed(),"isz":pe.GetInitSize(),"io":pe.GetInitOpacity(),"gr":pe.GetGrowRate(),"xr":pe.GetInitXRandom(),"yr":pe.GetInitYRandom(),"spr":pe.GetInitSpeedRandom(),"szr":pe.GetInitSizeRandom(),"grnd":pe.GetGrowRandom(),"acc":pe.GetAcceleration(),"g":pe.GetGravity(),"lar":pe.GetLifeAngleRandom(),"lsr":pe.GetLifeSpeedRandom(),"lor":pe.GetLifeOpacityRandom(),"dm":pe.GetDestroyModeIndex(),"to":pe.GetTimeout(),
+"s":pe.IsSpraying(),"pcc":pe._GetCreateCounter(),"ft":this._isFirstTick,"p":pe.GetParticles().map(p=>p.toJSON())}}LoadFromJson(o){const pe=this._particleEngine;pe.SetRate(o["r"]);pe.SetSprayCone(o["sc"]);pe.SetSprayType(o["st"]);pe.SetInitSpeed(o["isp"]);pe.SetInitSize(o["isz"]);pe.SetInitOpacity(o["io"]);pe.SetGrowRate(o["gr"]);pe.SetInitXRandom(o["xr"]);pe.SetInitYRandom(o["yr"]);pe.SetInitSpeedRandom(o["spr"]);pe.SetInitSizeRandom(o["szr"]);pe.SetGrowRandom(o["grnd"]);pe.SetAcceleration(o["acc"]);
+pe.SetGravity(o["g"]);pe.SetLifeAngleRandom(o["lar"]);pe.SetLifeSpeedRandom(o["lsr"]);pe.SetLifeOpacityRandom(o["lor"]);pe.SetDestroyModeIndex(o["dm"]);pe.SetTimeout(o["to"]);pe.SetSpraying(o["s"]);pe._SetCreateCounter(o["pcc"]);this._isFirstTick=o["ft"];const particlesData=o["p"];pe.SetParticleCount(particlesData.length);const particles=pe.GetParticles();for(let i=0,len=particles.length;i<len;++i)particles[i].setFromJSON(particlesData[i])}Tick(){const dt=this._runtime.GetDt(this._inst);this._UpdateEngineParameters();
+if(this._isFirstTick&&this._particleEngine.GetSprayType()==="one-shot")this._particleEngine.ReInitAllParticles();this._particleEngine.Tick(dt);if(this._particleEngine.IsSpraying())this._runtime.UpdateRender();this.GetWorldInfo().SetBboxChanged();this._isFirstTick=false}_OnParticleCreate(p){const inst=this._runtime.CreateInstance(this._spawnObjectClass,this.GetWorldInfo().GetLayer(),p.GetX(),p.GetY());const wi=inst.GetWorldInfo();wi.SetSize(p.GetSize(),p.GetSize());wi.SetAngle(p.GetAngle());wi.SetOpacity(p.GetOpacity());
+wi.SetUnpremultipliedColor(this.GetWorldInfo().GetUnpremultipliedColor());wi.SetBboxChanged();wi.ZOrderMoveAdjacentToInstance(this.GetInstance(),true);inst._TriggerOnCreated();p.SetUpdateCallback(this._particleUpdateCallback);p.SetDestroyCallback(this._particleDestroyCallback);return inst}_OnParticleUpdate(inst,dx,dy,dSize,dAngle,dOpacity){if(inst.IsDestroyed())return;const wi=inst.GetWorldInfo();wi.OffsetXY(dx,dy);wi.SetSize(wi.GetWidth()+dSize,wi.GetHeight()+dSize);wi.SetAngle(wi.GetAngle()+dAngle);
+wi.SetOpacity(wi.GetOpacity()+dOpacity);wi.SetBboxChanged()}_OnParticleDestroy(inst){if(inst.IsDestroyed())return;this._runtime.DestroyInstance(inst)}GetPropertyValueByIndex(index){const pe=this._particleEngine;switch(index){case RATE:return pe.GetRate();case SPRAY_CONE:return C3.toDegrees(pe.GetSprayCone());case TYPE:return pe.GetSprayType()==="one-shot"?ONE_SHOT:CONTINUOUS;case SPEED:return pe.GetInitSpeed();case SIZE:return pe.GetInitSize();case OPACITY:return pe.GetInitOpacity()*100;case GROW_RATE:return pe.GetGrowRate();
+case X_RANDOMISER:return pe.GetInitXRandom();case Y_RANDOMISER:return pe.GetInitYRandom();case INITIAL_SPEED_RANDOMISER:return pe.GetInitSpeedRandom();case SIZE_RANDOMISER:return pe.GetInitSizeRandom();case GROW_RATE_RANDOMISER:return pe.GetGrowRandom();case ACCELERATION:return pe.GetAcceleration();case GRAVITY:return pe.GetGravity();case ANGLE_RANDOMISER:return pe.GetLifeAngleRandom();case LIFE_SPEED_RANDOMISER:return pe.GetLifeSpeedRandom();case OPACITY_RANDOMISER:return pe.GetLifeOpacityRandom();
+case DESTROY_MODE:return pe.GetDestroyModeIndex();case TIMEOUT:return pe.GetTimeout()}}SetPropertyValueByIndex(index,value){const pe=this._particleEngine;switch(index){case RATE:pe.SetRate(value);break;case SPRAY_CONE:pe.SetSprayCone(C3.toRadians(value));break;case TYPE:pe.SetSprayType(value?"one-shot":"continuous-spray");break;case SPEED:pe.SetInitSpeed(value);break;case SIZE:pe.SetInitSize(value);break;case OPACITY:pe.SetInitOpacity(value/100);break;case GROW_RATE:pe.SetGrowRate(value);break;case X_RANDOMISER:pe.SetInitXRandom(value);
+break;case Y_RANDOMISER:pe.SetInitYRandom(value);break;case INITIAL_SPEED_RANDOMISER:pe.SetInitSpeedRandom(value);break;case SIZE_RANDOMISER:pe.SetInitSizeRandom(value);break;case GROW_RATE_RANDOMISER:pe.SetGrowRandom(value);break;case ACCELERATION:pe.SetAcceleration(value);break;case GRAVITY:pe.SetGravity(value);break;case ANGLE_RANDOMISER:pe.SetLifeAngleRandom(value);break;case LIFE_SPEED_RANDOMISER:pe.SetLifeSpeedRandom(value);break;case OPACITY_RANDOMISER:pe.SetLifeOpacityRandom(value);break;
+case DESTROY_MODE:pe.SetDestroyModeIndex(value);break;case TIMEOUT:pe.SetTimeout(value);break}}GetDebuggerProperties(){const prefix="plugins.particles";const propPrefix=prefix+".properties";const dbgPrefix=prefix+".debugger";const pe=this._particleEngine;return[{title:prefix+".name",properties:[{name:dbgPrefix+".particle-count",value:pe.GetParticleCount()},{name:propPrefix+".type.name",value:[propPrefix+".type.items."+pe.GetSprayType()]},{name:dbgPrefix+".is-spraying",value:pe.IsSpraying(),onedit:v=>
+pe.SetSpraying(v)},{name:propPrefix+".rate.name",value:pe.GetRate(),onedit:v=>pe.SetRate(v)},{name:propPrefix+".spray-cone.name",value:C3.toDegrees(pe.GetSprayCone()),onedit:v=>pe.SetSprayCone(C3.toRadians(v))},{name:propPrefix+".speed.name",value:pe.GetInitSpeed(),onedit:v=>pe.SetInitSpeed(v)},{name:propPrefix+".size.name",value:pe.GetInitSize(),onedit:v=>pe.SetInitSize(v)},{name:propPrefix+".opacity.name",value:pe.GetInitOpacity(),onedit:v=>pe.SetInitOpacity(v)},{name:propPrefix+".grow-rate.name",
+value:pe.GetGrowRate(),onedit:v=>pe.SetGrowRate(v)},{name:propPrefix+".x-randomiser.name",value:pe.GetInitXRandom(),onedit:v=>pe.SetInitXRandom(v)},{name:propPrefix+".y-randomiser.name",value:pe.GetInitYRandom(),onedit:v=>pe.SetInitYRandom(v)},{name:propPrefix+".initial-speed-randomiser.name",value:pe.GetInitSpeedRandom(),onedit:v=>pe.SetInitSpeedRandom(v)},{name:propPrefix+".size-randomiser.name",value:pe.GetInitSizeRandom(),onedit:v=>pe.SetInitSizeRandom(v)},{name:propPrefix+".grow-rate-randomiser.name",
+value:pe.GetGrowRandom(),onedit:v=>pe.SetGrowRandom(v)},{name:propPrefix+".acceleration.name",value:pe.GetAcceleration(),onedit:v=>pe.SetAcceleration(v)},{name:propPrefix+".gravity.name",value:pe.GetGravity(),onedit:v=>pe.SetGravity(v)},{name:propPrefix+".angle-randomiser.name",value:pe.GetLifeAngleRandom(),onedit:v=>pe.SetLifeAngleRandom(v)},{name:propPrefix+".life-speed-randomiser.name",value:pe.GetLifeSpeedRandom(),onedit:v=>pe.SetLifeSpeedRandom(v)},{name:propPrefix+".opacity-randomiser.name",
+value:pe.GetLifeOpacityRandom(),onedit:v=>pe.SetLifeOpacityRandom(v)},{name:propPrefix+".timeout.name",value:pe.GetTimeout(),onedit:v=>pe.SetTimeout(v)}]}]}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Particles.Cnds={IsSpraying(){return this._particleEngine.IsSpraying()}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Particles.Acts={SetSpraying(s){this._particleEngine.SetSpraying(s!==0)},SetRate(r){this._particleEngine.SetRate(r);if(this._particleEngine.GetSprayType()==="one-shot"&&this._isFirstTick)this._particleEngine.SetParticleCount(r)},SetParticleObject(objectClass){this._SetParticleObjectClass(objectClass)},UnsetParticleObject(){this._SetParticleObjectClass(null)},SetSprayCone(c){this._particleEngine.SetSprayCone(C3.toRadians(c))},SetInitSpeed(x){this._particleEngine.SetInitSpeed(x)},
+SetInitSize(x){this._particleEngine.SetInitSize(x)},SetInitOpacity(x){this._particleEngine.SetInitOpacity(x/100)},SetGrowRate(x){this._particleEngine.SetGrowRate(x)},SetXRandomiser(x){this._particleEngine.SetInitXRandom(x)},SetYRandomiser(x){this._particleEngine.SetInitYRandom(x)},SetSpeedRandomiser(x){this._particleEngine.SetInitSpeedRandom(x)},SetSizeRandomiser(x){this._particleEngine.SetInitSizeRandom(x)},SetGrowRateRandomiser(x){this._particleEngine.SetGrowRandom(x)},SetParticleAcc(x){this._particleEngine.SetAcceleration(x)},
+SetGravity(x){this._particleEngine.SetGravity(x)},SetAngleRandomiser(x){this._particleEngine.SetLifeAngleRandom(x)},SetLifeSpeedRandomiser(x){this._particleEngine.SetLifeSpeedRandom(x)},SetOpacityRandomiser(x){this._particleEngine.SetLifeOpacityRandom(x)},SetTimeout(x){this._particleEngine.SetTimeout(x)},SetEffect(effect){this.GetWorldInfo().SetBlendMode(effect);this._runtime.UpdateRender()}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Particles.Exps={ParticleCount(){return this._particleEngine.GetParticleCount()},Rate(){return this._particleEngine.GetRate()},SprayCone(){return C3.toDegrees(this._particleEngine.GetSprayCone())},InitSpeed(){return this._particleEngine.GetInitSpeed()},InitSize(){return this._particleEngine.GetInitSize()},InitOpacity(){return this._particleEngine.GetInitOpacity()*100},InitGrowRate(){return this._particleEngine.GetGrowRate()},XRandom(){return this._particleEngine.GetInitXRandom()},
+YRandom(){return this._particleEngine.GetInitYRandom()},InitSpeedRandom(){return this._particleEngine.GetInitSpeedRandom()},InitGrowRandom(){return this._particleEngine.GetGrowRandom()},ParticleAcceleration(){return this._particleEngine.GetAcceleration()},Gravity(){return this._particleEngine.GetGravity()},ParticleAngleRandom(){return this._particleEngine.GetLifeAngleRandom()},ParticleSpeedRandom(){return this._particleEngine.GetLifeSpeedRandom()},ParticleOpacityRandom(){return this._particleEngine.GetLifeOpacityRandom()},
+Timeout(){return this._particleEngine.GetTimeout()}}};
+
+
+'use strict';{const C3=self.C3;const inactiveParticles=[];const MAX_RECYCLE_PARTICLES=1E3;const VALID_SPRAY_TYPES=new Set(["continuous-spray","one-shot"]);const DESTROY_MODES=["fade-to-invisible","timeout-expired","particle-stopped"];self.ParticleEngine=class ParticleEngine{constructor(){this._rate=0;this._sprayCone=0;this._sprayType="continuous-spray";this._isSpraying=false;this._masterOpacity=0;this._isPixelRounding=false;this._spawnX=0;this._spawnY=0;this._spawnAngle=0;this._initSpeed=0;this._initSize=
+0;this._initSizeScale=1;this._initOpacity=0;this._growRate=0;this._xRandom=0;this._yRandom=0;this._initSpeedRandom=0;this._initSizeRandom=0;this._growRandom=0;this._acceleration=0;this._gravity=0;this._lifeAngleRandom=0;this._lifeSpeedRandom=0;this._lifeOpacityRandom=0;this._destroyMode=0;this._timeout=0;this._createCounter=0;this._particleScale=1;this.ononeshotfinish=null;this.onparticlecreate=null;this._particles=[];this._boundingBox=new C3.Rect;this._color=new C3.Color}Release(){this.Cancel();
+C3.clearArray(this._particles);this._particles=null;this.ononeshotfinish=null;this.onparticlecreate=null;this._boundingBox=null;this._boundingBox=null;this._color=null}Cancel(){const particles=this._particles;for(let i=0,len=particles.length;i<len;++i)particles[i].Destroy();C3.appendArray(inactiveParticles,particles);C3.clearArray(particles);if(inactiveParticles.length>MAX_RECYCLE_PARTICLES)C3.truncateArray(inactiveParticles,MAX_RECYCLE_PARTICLES);this._isSpraying=false}CreateOneShotSpray(){for(let i=
+0,len=this._rate;i<len;++i)this._CreateParticle();if(this._particles.length)this._isSpraying=true}_CreateParticle(){let ret=null;if(inactiveParticles.length){ret=inactiveParticles.pop();ret.SetEngine(this)}else ret=C3.New(self.Particle,this);this._particles.push(ret);ret.Init(this.onparticlecreate);return ret}ReInitAllParticles(){const particles=this._particles;const onparticlecreate=this.onparticlecreate;for(let i=0,len=particles.length;i<len;++i)particles[i].Init(onparticlecreate)}SetParticleCount(c){const particles=
+this._particles;if(c<particles.length){const diff=particles.length-c;for(let i=0;i<diff;++i){const p=particles.pop();p.Destroy();inactiveParticles.push(p)}if(inactiveParticles.length>MAX_RECYCLE_PARTICLES)C3.truncateArray(inactiveParticles,MAX_RECYCLE_PARTICLES)}else if(c>particles.length){const diff=c-particles.length;for(let i=0;i<diff;++i)this._CreateParticle()}}GetParticles(){return this._particles}GetParticleCount(){return this._particles.length}Tick(dt){this._SpawnContinuous(dt);this._TickParticles(dt);
+this._MaybeFinishOneShot()}_SpawnContinuous(dt){if(this._sprayType==="continuous-spray"&&this._isSpraying){this._createCounter+=dt*this._rate;const n=Math.floor(this._createCounter);this._createCounter-=n;for(let i=0;i<n;++i)this._CreateParticle()}}_SetCreateCounter(c){this._createCounter=c}_GetCreateCounter(){return this._createCounter}_TickParticles(dt){const bbox=this._boundingBox;bbox.set(this._spawnX,this._spawnY,this._spawnX,this._spawnY);const particles=this._particles;let j=0;for(let i=0,
+len=particles.length;i<len;++i){const p=particles[i];particles[j]=p;p.Tick(dt);if(p.IsActive()){++j;bbox.expandToContain(p.GetBoundingBox())}else{p.Destroy();inactiveParticles.push(p)}}C3.truncateArray(particles,j);if(inactiveParticles.length>MAX_RECYCLE_PARTICLES)C3.truncateArray(inactiveParticles,MAX_RECYCLE_PARTICLES)}_MaybeFinishOneShot(){if(this._sprayType==="one-shot"&&this._particles.length===0&&this._isSpraying){if(this.ononeshotfinish)this.ononeshotfinish();this._isSpraying=false}}Draw(renderer,
+texRect,viewport){renderer.SetPointTextureCoords(texRect);this._color.copy(renderer.GetColor());const particles=this._particles;for(let i=0,len=particles.length;i<len;++i){const p=particles[i];if(viewport.intersectsRect(p.GetBoundingBox()))p.Draw(renderer,texRect)}}GetColor(){return this._color}SetRate(r){this._rate=+r}GetRate(){return this._rate}SetSprayCone(c){this._sprayCone=+c}GetSprayCone(){return this._sprayCone}SetSprayType(type){if(!VALID_SPRAY_TYPES.has(type))throw new Error("invalid spray type");
+this._sprayType=type}GetSprayType(){return this._sprayType}SetSpraying(s){this._isSpraying=!!s}IsSpraying(){return this._isSpraying}SetMasterOpacity(o){this._masterOpacity=+o}GetMasterOpacity(){return this._masterOpacity}SetPixelRounding(r){this._isPixelRounding=!!r}IsPixelRounding(){return this._isPixelRounding}SetSpawnX(x){this._spawnX=+x}GetSpawnX(){return this._spawnX}SetSpawnY(y){this._spawnY=+y}GetSpawnY(){return this._spawnY}SetSpawnAngle(a){this._spawnAngle=+a}GetInitAngle(){return this._spawnAngle}SetInitSpeed(s){this._initSpeed=
++s}GetInitSpeed(){return this._initSpeed}SetInitSize(s){this._initSize=+s}GetInitSize(){return this._initSize}SetInitSizeScale(s){this._initSizeScale=+s}GetInitSizeScale(){return this._initSizeScale}SetInitOpacity(o){this._initOpacity=+o}GetInitOpacity(){return this._initOpacity}SetGrowRate(g){this._growRate=+g}GetGrowRate(){return this._growRate}SetInitXRandom(x){this._xRandom=+x}GetInitXRandom(){return this._xRandom}SetInitYRandom(y){this._yRandom=+y}GetInitYRandom(){return this._yRandom}SetInitSpeedRandom(s){this._initSpeedRandom=
++s}GetInitSpeedRandom(){return this._initSpeedRandom}SetInitSizeRandom(s){this._initSizeRandom=+s}GetInitSizeRandom(){return this._initSizeRandom}SetGrowRandom(g){this._growRandom=+g}GetGrowRandom(){return this._growRandom}SetAcceleration(a){this._acceleration=+a}GetAcceleration(){return this._acceleration}SetGravity(g){this._gravity=+g}GetGravity(){return this._gravity}SetLifeAngleRandom(a){this._lifeAngleRandom=+a}GetLifeAngleRandom(){return this._lifeAngleRandom}SetLifeSpeedRandom(s){this._lifeSpeedRandom=
++s}GetLifeSpeedRandom(){return this._lifeSpeedRandom}SetLifeOpacityRandom(o){this._lifeOpacityRandom=+o}GetLifeOpacityRandom(){return this._lifeOpacityRandom}SetDestroyMode(m){let i=DESTROY_MODES.indexOf(m);if(i===-1)throw new Error("invalid destroy mode");this._destroyMode=i}SetDestroyModeIndex(i){this.SetDestroyMode(DESTROY_MODES[i])}GetDestroyMode(){return DESTROY_MODES[this._destroyMode]}GetDestroyModeIndex(){return this._destroyMode}SetTimeout(t){this._timeout=+t}GetTimeout(){return this._timeout}SetParticleScale(s){this._particleScale=
++s}GetParticleScale(){return this._particleScale}GetBoundingBox(){return this._boundingBox}}};
+
+
+'use strict';{const C3=self.C3;const ParticleEngine=self.ParticleEngine;function randomOffset(x){return Math.random()*x-x/2}const tmpQuad=new C3.Quad;const tmpColor=new C3.Color;const DPR=self.devicePixelRatio||1;let didChangeColor=false;self.Particle=class Particle{constructor(engine){this._engine=engine;this._isActive=false;this._x=0;this._y=0;this._speed=0;this._angle=0;this._opacity=1;this._lastOpacity=0;this._grow=0;this._size=0;this._halfSize=0;this._gs=0;this._age=0;this._bbox=new C3.Rect;
+this._userData=null;this._updateCallback=null;this._destroyCallback=null}SetEngine(engine){this._engine=engine}Init(particleCreateCallback){const engine=this._engine;this._isActive=true;this._x=engine.GetSpawnX()+randomOffset(engine.GetInitXRandom());this._y=engine.GetSpawnY()+randomOffset(engine.GetInitYRandom());this._speed=engine.GetInitSpeed()+randomOffset(engine.GetInitSpeedRandom());this._angle=engine.GetInitAngle()+randomOffset(engine.GetSprayCone());this._opacity=engine.GetInitOpacity();this._lastOpacity=
+this._opacity;this._size=(engine.GetInitSize()+randomOffset(engine.GetInitSizeRandom()))*engine.GetInitSizeScale();this._halfSize=this._size/2;this._grow=engine.GetGrowRate()+randomOffset(engine.GetGrowRandom());this._gs=0;this._age=0;this._UpdateBoundingBox();if(particleCreateCallback){if(!this._userData)this._userData=particleCreateCallback(this)}else{this._userData=null;this._updateCallback=null;this._destroyCallback=null}}SetUpdateCallback(f){this._updateCallback=f}SetDestroyCallback(f){this._destroyCallback=
+f}Destroy(){const particleDestroyCallback=this._destroyCallback;if(particleDestroyCallback)particleDestroyCallback(this._userData);this._userData=null;this._updateCallback=null;this._destroyCallback=null}toJSON(){return[this._x,this._y,this._speed,this._angle,this._opacity,this._grow,this._size,this._gs,this._age]}setFromJSON(o){this._x=o[0];this._y=o[1];this._speed=o[2];this._angle=o[3];this._opacity=o[4];this._grow=o[5];this._size=o[6];this._gs=o[7];this._age=o[8];this._halfSize=this._size/2;this._UpdateBoundingBox()}Tick(dt){const engine=
+this._engine;const dist=this._speed*dt;const a=this._angle;const dx=Math.cos(a)*dist;const dy=Math.sin(a)*dist+this._gs*dt;this._x+=dx;this._y+=dy;const dSize=this._grow*dt;this._size+=dSize;this._halfSize=this._size/2;this._speed+=engine.GetAcceleration()*dt;this._gs+=engine.GetGravity()*dt;this._age+=dt;this._UpdateBoundingBox();const lifeAngleRandom=engine.GetLifeAngleRandom();const lifeSpeedRandom=engine.GetLifeSpeedRandom();const lifeOpacityRandom=engine.GetLifeOpacityRandom();let dAngle=0;if(lifeAngleRandom!==
+0){dAngle=randomOffset(lifeAngleRandom*dt);this._angle+=dAngle}if(lifeSpeedRandom!==0)this._speed+=randomOffset(lifeSpeedRandom*dt);if(lifeOpacityRandom!==0)this._opacity=C3.clamp(this._opacity+randomOffset(lifeOpacityRandom*dt),0,1);const isActive=this._size>=1&&(engine.GetDestroyModeIndex()===2?this._speed>0:this._age<engine.GetTimeout());const particleUpdateCallback=this._updateCallback;if(particleUpdateCallback&&isActive){let curOpacity=engine.GetMasterOpacity()*this._opacity;if(engine.GetDestroyModeIndex()===
+0)curOpacity*=1-this._age/engine.GetTimeout();const dOpacity=curOpacity-this._lastOpacity;this._lastOpacity=curOpacity;particleUpdateCallback(this._userData,dx,dy,dSize,dAngle,dOpacity)}this._isActive=isActive}IsActive(){return this._isActive}GetBoundingBox(){return this._bbox}_UpdateBoundingBox(){const x=this._x;const y=this._y;const halfSize=this._halfSize;this._bbox.set(x-halfSize,y-halfSize,x+halfSize,y+halfSize)}Draw(renderer,texRect){if(this._userData)return;const engine=this._engine;let opacity=
+engine.GetMasterOpacity()*this._opacity;if(engine.GetDestroyModeIndex()===0)opacity*=1-this._age/engine.GetTimeout();if(opacity<=0)return;const size=this._size;const scaledSize=size*engine.GetParticleScale()*DPR;if(scaledSize<1)return;let x=this._x;let y=this._y;if(engine.IsPixelRounding()){x=x+.5|0;y=y+.5|0}if(scaledSize>renderer.GetMaxPointSize()||scaledSize<renderer.GetMinPointSize()){tmpColor.copy(engine.GetColor());tmpColor.multiplyAlpha(opacity);renderer.SetColor(tmpColor);didChangeColor=true;
+tmpQuad.setFromRect(this._bbox);renderer.Quad3(tmpQuad,texRect)}else{if(didChangeColor){renderer.SetColor(engine.GetColor());didChangeColor=false}renderer.Point(x,y,scaledSize,opacity)}}GetUserData(){return this._userData}GetX(){return this._x}GetY(){return this._y}GetSize(){return this._size}GetAngle(){return this._angle}GetOpacity(){return this._opacity}}};
+
+
+"use strict";
+
+{
+	C3.Behaviors.aekiro_dialog = class aekiro_dialogBehavior extends C3.SDKBehaviorBase
+	{
+		constructor(opts)
+		{
+			super(opts);
+		}
+		
+		Release()
+		{
+			super.Release();
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	C3.Behaviors.aekiro_dialog.Type = class aekiro_dialogType extends C3.SDKBehaviorTypeBase
+	{
+		constructor(behaviorType)
+		{
+			super(behaviorType);
+		}
+		
+		Release()
+		{
+			super.Release();
+		}
+		
+		OnCreate()
+		{	
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	C3.Behaviors.aekiro_dialog.Instance = class aekiro_dialogInstance extends C3.SDKBehaviorInstanceBase {
+		constructor(behInst, properties)
+		{
+			super(behInst);
+	
+			//properties
+			if (properties)
+			{
+				this.openAnimation = properties[0];
+				this.openAnimTweenFunction = properties[1];
+				this.openAnimDuration = properties[2];
+				this.openSound = properties[3];
+				this.closeAnimation = properties[4];
+				this.closeAnimTweenFunction = properties[5];
+				this.closeAnimDuration = properties[6];
+				this.closeSound = properties[7];
+				this.closeButtonUID = properties[8];
+				this.isModal = properties[9];
+			}
+	
+			//********************
+			this.proui = this.GetRuntime().GetSingleGlobalObjectClassByCtor(C3.Plugins.aekiro_proui);
+			if(this.proui){
+				this.proui = this.proui.GetSingleGlobalInstance().GetSdkInstance();
+			}
+			this.GetObjectInstance().GetUnsavedDataMap().aekiro_dialog = this;
+			this.wi = this.GetWorldInfo();
+			this.inst = this.GetObjectInstance();
+			this.aekiro_dialogManager = globalThis["aekiro_dialogManager"];
+			this.goManager = globalThis["aekiro_goManager"];
+		
+			//*****************************
+			this.isInit = false;
+			this.isOpen = false;
+			this.tween = new self["TWEEN"]["Tween"]();
+			this.tween_opacity = new self["TWEEN"]["Tween"](); //a separate tween for opacity: we don't want the opacity to be tweened by elastic 
+			this.tweenObject = {};
+			this.reverseTweenObject = {};
+			
+			this.tweenFunctions = [
+				self["TWEEN"]["Easing"]["Linear"]["None"],
+				self["TWEEN"]["Easing"]["Quadratic"]["Out"],
+				self["TWEEN"]["Easing"]["Quartic"]["Out"],
+				self["TWEEN"]["Easing"]["Exponential"]["Out"],
+				self["TWEEN"]["Easing"]["Circular"]["Out"],
+				self["TWEEN"]["Easing"]["Back"]["Out"],
+				self["TWEEN"]["Easing"]["Elastic"]["Out"],
+				self["TWEEN"]["Easing"]["Bounce"]["Out"]
+			];
+	
+			this.goManager.eventManager.on("childrenRegistred",() =>{				
+				this.setCloseButton();
+				this.onCreateInit();	
+			},{"once":true}); 
+		}
+	
+		PostCreate(){
+			this.aekiro_gameobject = this.GetObjectInstance().GetUnsavedDataMap().aekiro_gameobject;
+			//console.log("PostCreate dialog");
+		}
+	
+		onCreateInit(){
+			//if(this.isInit)return;
+	
+			
+			var map = this.GetObjectInstance().GetUnsavedDataMap();
+			if(!map.audioSources){
+				map.audioSources = {};
+			}
+			this.audioSources = map.audioSources;
+			this.audioSources.open = new AudioSource(this.openSound,this.GetRuntime());
+			this.audioSources.close = new AudioSource(this.closeSound,this.GetRuntime());
+			
+			this.setVisible(false);
+			//this.wi.SetX(this.wi.GetLayer().GetViewport().getLeft() - this.wi.GetWidth() - 100);
+			this.wi.SetX(this.wi.GetLayer().GetViewport().getLeft());
+			this.wi.SetBboxChanged();
+			this.isInit = true;
+		}
+		
+		setCloseButton(){
+			if(!this.closeButtonUID)return;
+	
+			this.closeButton = this.goManager.gos[this.closeButtonUID];
+			if(!this.closeButton){
+				console.error("ProUI-Dialog: Close button not found; Please check its name !");
+				return;
+			}
+			
+			if(!this.closeButton.GetUnsavedDataMap().aekiro_button){
+				console.error("ProUI-Dialog: The close button needs to have a button behavior !");
+				return;
+			}
+	
+			var self = this;
+			this.closeButton.GetUnsavedDataMap().aekiro_button.callbacks.push(function(){
+				self.close();
+			});
+		}
+		
+		SetOwnScale(scale){
+			var layers = this.getOutLayers();
+			layers.push(this.wi.GetLayer());
+			
+			for (var i = 0, l= layers.length; i < l; i++) {
+				layers[i].SetOwnScale(scale);
+			}
+		}
+		
+		SetOpacity(opacity){
+			var layers = this.getOutLayers();
+			layers.push(this.wi.GetLayer());
+			
+			for (var i = 0, l= layers.length; i < l; i++) {
+				layers[i].SetOpacity(opacity);
+			}
+		}
+			
+		setVisible(isVisible){
+			var layers = this.getOutLayers();
+			layers.push(this.wi.GetLayer());
+			//console.log(layers);
+			
+			for (var i = 0, l= layers.length; i < l; i++) {
+				layers[i].SetVisible(isVisible);
+			}
+		}
+		
+		getOutLayers(){
+			var mylayer = this.wi.GetLayer();
+			var insts = this.aekiro_gameobject.hierarchyToArray();
+			var layers = [];
+			
+			var layer;
+			for (var i = 0, l= insts.length; i < l; i++) {
+				layer = insts[i].GetWorldInfo().GetLayer();
+				if(layer!=mylayer && layers.indexOf(layer)==-1){
+					layers.push(layer);
+				}
+			}
+			
+			return layers;
+		}
+		
+		setInitialState(targetX,targetY,center){
+			//None|SlideDown|SlideUp|SlideLeft|SlideRight|ScaleDown|ScaleUp
+			var initX,initY;
+			var viewport = this.wi.GetLayer().GetViewport();
+			
+			if(this.openAnimation == 0 || this.openAnimation == 5 || this.openAnimation == 6){ //None/ScaleDown|ScaleUp
+				initX = targetX;
+				initY = targetY;
+				if(center){
+					initY = (viewport.getTop() + viewport.getBottom())/2;
+					initX = (viewport.getLeft() + viewport.getRight())/2;
+				}
+	
+				if(this.openAnimation == 5 || this.openAnimation == 6){//ScaleDown|ScaleUp
+					if(this.openAnimation == 5){ //ScaleDown
+						this.wi.GetLayer().SetOwnScale(2);
+					}else{ //ScaleUp
+						this.wi.GetLayer().SetOwnScale(0.2);
+					}
+					this.wi.GetLayer().SetOpacity(0);
+					//this.GetRuntime().UpdateRender();
+				}
+			}else if(this.openAnimation == 1){ //SlideDown
+				initY =  viewport.getTop() - this.wi.GetHeight()/2 - 100;
+				if(center){
+					initX = (viewport.getLeft() + viewport.getRight())/2;
+				}else{
+					initX = targetX;
+				}
+			}else if(this.openAnimation == 2){ //SlideUp
+				initY = viewport.getBottom() + this.wi.GetHeight()/2 + 100;
+				if(center){
+					initX = (viewport.getLeft() + viewport.getRight())/2;
+				}else{
+					initX = targetX;
+				}
+			}else if(this.openAnimation == 3){ //SlideLeft
+				initX = viewport.getRight() + this.wi.GetWidth()/2 + 100;
+				if(center){
+					initY = (viewport.getTop() + viewport.getBottom())/2;
+				}else{
+					initY = targetY;
+				}
+			}else if(this.openAnimation == 4){ //SlideRight
+				initX = viewport.getLeft() - this.wi.GetWidth()/2 - 100;
+				if(center){
+					initY = (viewport.getTop() + viewport.getBottom())/2;
+				}else{
+					initY = targetY;
+				}
+			}
+	
+			this.wi.SetX(initX);
+			this.wi.SetY(initY);
+			this.wi.SetBboxChanged();
+			//console.log(initX+"******"+initY);
+	
+		}
+		
+		open(_targetX,_targetY,center){
+			//Can't be opened if: already opened or opening
+			if(this.isOpen){//|| (this.isOpen && this.tween["isPlaying"]) ??
+				return;
+			}
+			//Cant' be opened if a modal dialog is already opened
+			if(this.aekiro_dialogManager.isModalDialogOpened()){
+				console.log("ProUI-Dialog: Can not open dialog because modal dialog is already opened");
+				return;
+			}
+			//console.log("ProUI-Dialog: open");
+	
+			//If it's closing, we stop the closing animation
+			if(!this.isOpen && this.tween["isPlaying"]){
+				//this.tween["isPlaying"] = false;
+				this.tween["stop"]();
+				this.postClose();
+			}
+	
+			this.aekiro_dialogManager.addDialog(this.GetObjectInstance());
+	
+			//console.log("%cDIALOG %d : Open","color:blue", this.inst.uid);
+			this.isOpen = true;
+			this.Trigger(C3.Behaviors.aekiro_dialog.Cnds.onDialogOpened);
+			//in case the timescale of the game is not 1 (paused)
+			if(this.GetRuntime().GetTimeScale() != 1){
+				this.aekiro_gameobject.setTimeScale(1);
+			}
+			//set the start position of the dialog, which depends on the type of the open animation
+			this.setInitialState(_targetX,_targetY,center);
+			this.setVisible(true);
+	
+			//*******************************************
+			var targetX = _targetX;
+			var targetY = _targetY;
+			var viewport = this.wi.GetLayer().GetViewport();
+			//target = center of viewport
+			if(center){
+				targetX = (viewport.getLeft() + viewport.getRight())/2;
+				targetY = (viewport.getTop() + viewport.getBottom())/2;
+			}
+	
+			if(this.openAnimDuration == 0){ //If anim duration = 0 then we set animation to "no animation", otherwise wierd bug emerge
+				this.openAnimation = 0;
+			}
+	
+			
+			this.isScaleAnimation = false;
+			this.tweenObject.x = this.wi.GetX();
+			this.tweenObject.y = this.wi.GetY();
+			this.tweenObject.scale = this.wi.GetLayer().GetOwnScale();
+			this.tweenObject.opacity = this.wi.GetLayer().GetOpacity();
+			this.tween["setObject"](this.tweenObject);
+			this.tween["easing"](this.tweenFunctions[this.openAnimTweenFunction]);
+			this.tween["onComplete"](this.postOpen,this);
+			//None|SlideDown|SlideUp|SlideLeft|SlideRight|ScaleDown|ScaleUp
+			if(this.openAnimation == 1 || this.openAnimation == 2){ //SlideDown|SlideUp
+				this.tween["to"]({y: targetY }, this.openAnimDuration);
+				this.reverseTweenObject.y = this.wi.GetY();
+			}else if(this.openAnimation == 3 || this.openAnimation == 4){ //SlideLeft|SlideRight
+				this.tween["to"]({x: targetX }, this.openAnimDuration);
+				this.reverseTweenObject.x = this.wi.GetX();
+			}else if(this.openAnimation == 5 || this.openAnimation == 6){ //ScaleDown|ScaleUp
+				this.tween["to"]({ scale: 1 }, this.openAnimDuration);
+				this.reverseTweenObject.scale = this.wi.GetLayer().GetOwnScale();
+				
+				this.tween_opacity["setObject"](this.tweenObject);
+				this.tween_opacity["to"]({ opacity: 1 }, 300);
+				this.tween_opacity["easing"](self["TWEEN"]["Easing"]["Quartic"]["Out"]);
+				
+				this.isScaleAnimation = true;
+				this.outLayers = this.getOutLayers(); //layers of childrens not on the same layer (like a scrollview)
+			}
+			//*******************************************
+	
+			if(this.openAnimation>0){
+				this.tween["start"](this.GetRuntime().GetWallTime()*1000);
+				this._StartTicking();
+		
+				if(this.openAnimation == 5 || this.openAnimation == 6){ //ScaleDown|ScaleUp
+					this.tween_opacity["start"](this.GetRuntime().GetWallTime()*1000);
+				}
+			}else{
+				this.wi.SetXY(targetX,targetY);
+				this.wi.SetBboxChanged();
+			}
+	
+			//*******************************************
+			//Play Sound
+			this.audioSources.open.play();
+		}
+	
+	
+		postOpen(){
+			//this.showOverlay();
+		}
+		
+		getCloseTargetPosition(){
+			//None|Reverse|SlideDown|SlideUp|SlideLeft|SlideRight|ScaleDown|ScaleUp
+			var viewport = this.wi.GetLayer().GetViewport();
+			var X = this.wi.GetX();
+			var Y = this.wi.GetY();
+			
+			if(this.closeAnimation == 2){ //SlideDown
+				Y = viewport.getBottom() + this.wi.GetHeight()/2 + 100;
+			}else if(this.closeAnimation == 3){ //SlideUp
+				Y = viewport.getTop() - this.wi.GetHeight()/2 - 100;
+			}else if(this.closeAnimation == 4){ //SlideLeft
+				X = viewport.getLeft() - this.wi.GetWidth()/2 - 100;
+			}else if(this.closeAnimation == 5){ //SlideRight
+				X = viewport.getRight() + this.wi.GetWidth()/2 + 100;
+			}
+	
+			return {x:X,y:Y};
+		}
+	
+		close(){
+			//console.log("%cDIALOG %d : Close","color:blue", this.inst.uid);
+			//Can't be closed if: already closed or opening or closing
+			if(!this.isOpen || this.tween["isPlaying"]){
+				return;
+			}
+			this.isOpen = false;
+			this.aekiro_dialogManager.removeDialog(this.GetObjectInstance());
+			this.Trigger(C3.Behaviors.aekiro_dialog.Cnds.onDialogClosed);
+		
+			//**************************************	
+			//None|Reverse|SlideDown|SlideUp|SlideLeft|SlideRight|ScaleDown|ScaleUp
+			//*******************************************
+			var target = this.getCloseTargetPosition();
+			var targetX = target.x;
+			var targetY = target.y;
+	
+	
+			if(this.closeAnimDuration == 0){ //If anim duration = 0 then we set animation to "no animation", otherwise wierd bug emerge
+				this.closeAnimation = 0;
+			}
+	
+			this.isScaleAnimation = false;
+			this.tweenObject.x = this.wi.GetX();
+			this.tweenObject.y = this.wi.GetY();
+			this.tweenObject.scale = this.wi.GetLayer().GetOwnScale();
+			this.tweenObject.opacity = this.wi.GetLayer().GetOpacity();
+			this.tween["setObject"](this.tweenObject);
+			this.tween["easing"](this.tweenFunctions[this.closeAnimTweenFunction]);
+			this.tween["onComplete"](this.postClose,this);
+	
+			if(this.closeAnimation==2 || this.closeAnimation==3){ //SlideDown|SlideUp
+				this.tween["to"]({ y: targetY }, this.closeAnimDuration);
+			}else if(this.closeAnimation == 4 || this.closeAnimation == 5){ //SlideLeft|SlideRight
+				this.tween["to"]({ x: targetX }, this.closeAnimDuration);
+			}else if(this.closeAnimation == 6 || this.closeAnimation == 7){ //ScaleDown|ScaleUp
+				if(this.closeAnimation == 6){ //ScaleDown
+					this.tween["to"]({ scale: 0.2 }, this.closeAnimDuration);
+				}else{ //ScaleUp
+					this.tween["to"]({ scale: 2 }, this.closeAnimDuration);
+				}
+				
+				this.tween_opacity["setObject"](this.tweenObject);
+				this.tween_opacity["to"]({ opacity: 0 }, 300);
+				this.tween_opacity["easing"](self["TWEEN"]["Easing"]["Quartic"]["Out"]);
+				
+				this.isScaleAnimation = true;
+				this.outLayers = []; //layers of childrens not on the same layer (like a scrollview)
+				
+			}else if(this.closeAnimation==1){ //Reverse
+				this.tween["to"](this.reverseTweenObject, this.openAnimDuration);
+	
+				if(this.openAnimation == 5 || this.openAnimation == 6){ //ScaleDown|ScaleUp
+					this.isScaleAnimation = true;
+					this.tween_opacity["to"]({ opacity: 0 }, 300);
+				}
+			}
+			//*******************************************
+	
+	
+			if(this.closeAnimation==0 || (this.openAnimation==0 && this.closeAnimation==1) ) { //Reverse
+				this.postClose();
+			}else if(this.closeAnimation==1){ //None
+				if(this.openAnimation == 5 || this.openAnimation == 6){ //ScaleDown|ScaleUp
+					this.tween_opacity["start"](this.GetRuntime().GetWallTime()*1000);
+				}
+				this.tween["start"](this.GetRuntime().GetWallTime()*1000);
+				this._StartTicking();
+			}else{ //SlideDown|SlideUp|SlideLeft|SlideRight|ScaleDown|ScaleUp
+				this.tween["start"](this.GetRuntime().GetWallTime()*1000);
+				if(this.closeAnimation == 6 || this.closeAnimation == 7){ //ScaleDown|ScaleUp
+					this.tween_opacity["start"](this.GetRuntime().GetWallTime()*1000);
+				}
+				this._StartTicking();
+			}
+	
+			//Play Sound
+			this.audioSources.close.play();
+			
+		}
+		
+		postClose(){
+			var layer = this.wi.GetLayer();
+			var viewport = layer.GetViewport();
+			this.SetOwnScale(1);
+			this.SetOpacity(1);
+			this.setVisible(false);
+			//this.GetRuntime().UpdateRender();
+	
+			var x = (viewport.getLeft() + viewport.getRight())/2;
+			var y = viewport.getTop() - this.wi.GetHeight()/2 -100;
+			this.wi.SetX(x);
+			this.wi.SetY(y);
+			this.wi.SetBboxChanged();
+			
+			this._StopTicking();
+		}
+		
+	
+		Tick(){
+			
+			var layer;
+			if(this.tween["isPlaying"]){
+				this.tween["update"](this.GetRuntime().GetWallTime()*1000);
+				
+				if(this.isScaleAnimation){ //ScaleDown|ScaleUp
+					layer = this.wi.GetLayer();
+					layer.SetOwnScale(this.tweenObject.scale);
+					for (var i = 0, l = this.outLayers.length; i < l; i++) {
+						this.outLayers[i].SetOwnScale(this.tweenObject.scale);
+					}
+				}else{
+					this.wi.SetXY(this.tweenObject.x,this.tweenObject.y);
+					this.wi.SetBboxChanged();
+				}
+			}
+	
+			//used only with ScaleDown|ScaleUp
+			if(this.tween_opacity["isPlaying"]){
+				this.tween_opacity["update"](this.GetRuntime().GetWallTime()*1000);
+				layer.SetOpacity(this.tweenObject.opacity);
+				
+				for (var i = 0, l = this.outLayers.length; i < l; i++) {
+					this.outLayers[i].SetOpacity(this.tweenObject.opacity);
+				}
+			}
+	
+			//console.log("tick");
+			if(!this.tween["isPlaying"]){
+				this._StopTicking();
+			}
+		}
+	
+		Release(){
+			this.aekiro_dialogManager.removeDialog(this.GetObjectInstance());
+			
+			super.Release();
+		}
+	
+		SaveToJson(){
+			return {
+				"openAnimation": this.openAnimation,
+				"openAnimTweenFunction": this.openAnimTweenFunction,
+				"openAnimDuration": this.openAnimDuration,
+				"openSound": this.openSound,
+				"closeAnimation": this.closeAnimation,
+				"closeAnimTweenFunction": this.closeAnimTweenFunction,
+				"closeAnimDuration": this.closeAnimDuration,
+				"closeSound": this.closeSound,
+				"closeButtonUID":this.closeButtonUID,
+				"isModal": this.isModal
+			};
+		}
+	
+		LoadFromJson(o){
+			this.openAnimation = o["openAnimation"];
+			this.openAnimTweenFunction = o["openAnimTweenFunction"];
+			this.openAnimDuration = o["openAnimDuration"];
+			this.openSound = o["openSound"];
+			this.closeAnimation = o["closeAnimation"];
+			this.closeAnimTweenFunction = o["closeAnimTweenFunction"];
+			this.closeAnimDuration = o["closeAnimDuration"];
+			this.closeSound = o["closeSound"];
+			this.closeButtonUID = o["closeButtonUID"];
+			this.isModal = o["isModal"];
+		}
+	
+	
+	}
+	
+}
+
+
+
+"use strict";
+
+{
+	C3.Behaviors.aekiro_dialog.Cnds = {
+		onDialogOpened(){ return true; },
+		onDialogClosed(){ return true; },
+		isOpened(){ return true; }
+	};
+	
+}
+
+
+"use strict";
+
+{
+	C3.Behaviors.aekiro_dialog.Acts = {
+		Open(targetX,targetY,isCentered){
+			this.open(targetX,targetY,isCentered);
+		},
+		Close(){
+			this.close();
+		},
+		SetOpenSoundVolume(v){
+			this.audioSources.open.setVolume(v);
+		},
+		SetCloseSoundVolume(v){
+			this.audioSources.close.setVolume(v);
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	C3.Behaviors.aekiro_dialog.Exps =
+	{
+	};
+}
 
 
 "use strict";
@@ -6708,6 +12582,138 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 }
 
 
+'use strict';{const C3=self.C3;C3.Behaviors.Tween=class TweenBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Tween.Type=class TweenType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;const NAMESPACE=C3.Behaviors.Tween;const ENABLED=0;NAMESPACE.Instance=class TweenInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this._allowMultiple=false;this._enabled=true;if(properties){this._allowMultiple=false;this._enabled=!!properties[ENABLED]}this._activeTweens=new Map;this._disabledTweens=[];this._waitingForReleaseTweens=new Map;this._finishingTween=null;this._activeTweensJson=null;this._disabledTweensJson=null;this._waitingForReleaseTweensJson=
+null;this._finishingTweenName="";if(this._enabled)this._StartTicking2();this._afterLoad=e=>this._OnAfterLoad(e);this.GetRuntime().Dispatcher().addEventListener("afterload",this._afterLoad)}Release(){this.GetRuntime().Dispatcher().removeEventListener("afterload",this._afterLoad);this._afterLoad=null;if(this._finishingTween){this.ReleaseAndCompleteTween(this._finishingTween);this._finishingTween=null}this.ReleaseAndCompleteTweens();this._tweens=null;this.ClearDisabledList();this._disabledTweens=null;
+this._ReleaseWaitingTweens();this._waitingForReleaseTweens=null;super.Release()}SetEnabled(e){this._enabled=e;if(this._enabled)this._StartTicking2();else this._StopTicking2()}GetEnabled(){return this._enabled}AddToDisabledList(tween){this._disabledTweens.push(tween)}IsInDisabledList(tween){return this._disabledTweens.includes(tween)}ClearDisabledList(){C3.clearArray(this._disabledTweens)}GetFinishingTween(){return this._finishingTween}IsInstanceValid(){const inst=this.GetObjectInstance();if(!inst)return false;
+return!inst.IsDestroyed()}GetTween(tags,property,includeWaitingForRelease=false){const tweens=property?this.PropertyTweens(property,includeWaitingForRelease):this.AllTweens(includeWaitingForRelease);if(!tweens||!tweens.length)return;for(const tween of tweens)if(tween.HasTags(tags))return tween}GetTweenIncludingWaitingForRelease(tags,property){return this.GetTween(tags,property,true)}*GetTweens(tags,property,includeWaitingForRelease=false){const tweens=property?this.PropertyTweens(property,includeWaitingForRelease):
+this.AllTweens(includeWaitingForRelease);if(tweens&&tweens.length)for(const tween of tweens)if(tween.HasTags(tags))yield tween}*GetTweensIncludingWaitingForRelease(tags,property){yield*this.GetTweens(tags,property,true)}PropertyTweens(property,includeWaitingForRelease){if(includeWaitingForRelease){let active=this._activeTweens.get(property);let waitingForRelease=this._waitingForReleaseTweens.get(property);if(!active)active=[];if(!waitingForRelease)waitingForRelease=[];return active.concat(waitingForRelease).filter(t=>
+t)}else{let active=this._activeTweens.get(property);if(!active)active=[];return active.filter(t=>t)}}AllTweens(includeWaitingForRelease){if(includeWaitingForRelease){const active=[...this._activeTweens.values()].flat();const waitingForRelease=[...this._waitingForReleaseTweens.values()].flat();return active.concat(waitingForRelease).filter(t=>t)}else{const active=[...this._activeTweens.values()].flat();return active.filter(t=>t)}}AllTweensIncludingWaitingForRelease(){return this.AllTweens(true)}SaveToJson(){return{"s":false,
+"e":!!this._enabled,"at":this._SaveActiveTweensToJson(),"dt":this._SaveDisabledTweensToJson(),"wt":this._SaveWaitingForReleaseTweensToJson(),"ft":this._SaveFinishingTweenToJson()}}LoadFromJson(o){if(!o)return;this._activeTweensJson=o["at"];this._disabledTweensJson=o["dt"];this._waitingForReleaseTweensJson=o["wt"];this._finishingTweenName=o["ft"];this._allowMultiple=false;this._enabled=!!o["e"]}_OnAfterLoad(e){const timelineManager=this.GetRuntime().GetTimelineManager();this._PopulateTweenMap(this._activeTweensJson,
+this._activeTweens,timelineManager);if(this._disabledTweensJson){C3.clearArray(this._disabledTweens);for(const tweenName of this._disabledTweensJson)this._PopulateTweenArray(this._disabledTweens,tweenName,timelineManager)}this._PopulateTweenMap(this._waitingForReleaseTweensJson,this._waitingForReleaseTweens,timelineManager);this._finishingTween=this._GetTween(this._finishingTweenName,timelineManager);this._enabled?this._StartTicking2():this._StopTicking2()}_PopulateTweenMap(restoreJson,map,timelineManager){if(!restoreJson)return;
+for(const property in restoreJson){let tweens=map.get(property);tweens?C3.clearArray(tweens):tweens=[];const tweensJson=restoreJson[property];for(const tweenJson of tweensJson){const success=this._PopulateTweenArray(tweens,tweenJson["name"],timelineManager);if(!success){const tween=C3.Tween.Build({runtime:this.GetRuntime(),json:tweenJson});tween.AddCompletedCallback(tween=>this._FinishTriggers(tween));timelineManager.AddScheduledTimeline(tween);this._PopulateTweenArray(tweens,tween,timelineManager)}else this._LoadTweenFromJson(tweenJson["name"],
+tweenJson,timelineManager)}map.set(property,tweens)}}_GetTween(name,timelineManager){return timelineManager.GetScheduledOrPlayingTimelineByName(name)}_PopulateTweenArray(collection,tweenOrName,timelineManager){if(typeof tweenOrName==="string"){const tween=this._GetTween(tweenOrName,timelineManager);if(tween)return!!collection.push(tween)}else return!!collection.push(tweenOrName);return false}_LoadTweenFromJson(tweenOrName,tweenJson,timelineManager){if(typeof tweenOrName==="string"){const tween=this._GetTween(tweenOrName,
+timelineManager);if(tween)tween._LoadFromJson(tweenJson)}else tweenOrName._LoadFromJson(tweenJson)}_SaveActiveTweensToJson(){const ret={};for(const [property,tweens]of this._activeTweens)ret[property]=tweens.map(tween=>tween._SaveToJson());return ret}_SaveDisabledTweensToJson(){return this._disabledTweens.map(tween=>tween.GetName())}_SaveWaitingForReleaseTweensToJson(){const ret={};for(const [property,tweens]of this._waitingForReleaseTweens)ret[property]=tweens.map(tween=>tween._SaveToJson());return ret}_SaveFinishingTweenToJson(){return this._finishingTween?
+this._finishingTween.GetName():""}Tick2(){this._ReleaseWaitingTweens()}CreateTween(args){const propertyTracksConfig=NAMESPACE.Config.GetPropertyTracksConfig(args.property,args.startValue,args.endValue,args.ease,args.resultMode,this.GetObjectInstance());const tweenId=NAMESPACE.Maps.GetPropertyFromIndex(args.property);if(!NAMESPACE.Maps.IsValueId(tweenId))this.ReleaseTweens(args.property);const tween=C3.Tween.Build({runtime:this.GetRuntime(),id:tweenId,tags:args.tags,time:args.time,instance:this.GetObjectInstance(),
+releaseOnComplete:!!args.releaseOnComplete,loop:!!args.loop,pingPong:!!args.pingPong,initialValueMode:args.initialValueMode,propertyTracksConfig:propertyTracksConfig});tween.AddCompletedCallback(tween=>this._FinishTriggers(tween));this._AddTween(tween,args.property);return tween}ReleaseTween(tween,complete=false){const id=tween.GetId();if(this._activeTweens.has(id)){const tweenArray=this._activeTweens.get(id);if(tweenArray){const index=tweenArray.indexOf(tween);if(index!==-1)tweenArray.splice(index,
+1)}}if(tween.IsReleased())return;if(this._IsInWaitingList(tween))return;tween.Stop(complete);this._AddToWaitingList(tween)}ReleaseTweens(indexProperty,complete=false){if(C3.IsFiniteNumber(indexProperty)){const stringProperty=NAMESPACE.Maps.GetPropertyFromIndex(indexProperty);if(!this._activeTweens.has(stringProperty))return;const tweenArray=this._activeTweens.get(stringProperty);const finishingTween=this.GetFinishingTween();for(const tween of tweenArray){if(tween===finishingTween)continue;if(tween.IsReleased())continue;
+if(this._IsInWaitingList(tween))continue;tween.Stop(complete);tween.Release()}C3.clearArray(tweenArray)}else{const finishingTween=this.GetFinishingTween();for(const tween of this.AllTweens()){if(tween===finishingTween)continue;if(tween.IsReleased())continue;if(this._IsInWaitingList(tween))continue;tween.Stop(complete);tween.Release()}for(const property of this._activeTweens.keys()){C3.clearArray(this._activeTweens.get(property));this._activeTweens.delete(property)}this._activeTweens.clear()}}ReleaseAndCompleteTween(tween){this.ReleaseTween(tween,
+true)}ReleaseAndCompleteTweens(){this.ReleaseTweens(NaN,true)}GetPropertyValueByIndex(index){switch(index){case ENABLED:return this._enabled}}SetPropertyValueByIndex(index,value){switch(index){case ENABLED:this._enabled=!!value;break}}_GetBehaviorType(tween){const instance=tween.GetInstance();const behaviorInstances=instance.GetBehaviorInstances();for(const behaviorInstance of behaviorInstances){const behaviorType=behaviorInstance.GetBehaviorType();if(behaviorType.GetInstanceSdkCtor()===this.constructor)return behaviorType}}Trigger(method,
+runtime,inst,behaviorType){if(this._runtime)return super.Trigger(method);else return runtime.Trigger(method,inst,behaviorType)}_FinishTriggers(tween){this._finishingTween=tween;NAMESPACE.Cnds.SetFinishingTween(tween);let instance;let runtime;if(!this.GetRuntime()){instance=tween.GetInstance();if(!instance)return;if(instance&&instance.IsDestroyed())return;runtime=instance.GetRuntime();const behaviorType=this._GetBehaviorType(tween);this.Trigger(NAMESPACE.Cnds.OnTweensFinished,runtime,instance,behaviorType);
+this.Trigger(NAMESPACE.Cnds.OnAnyTweensFinished,runtime,instance,behaviorType);tween.Stop()}else{instance=this._inst;runtime=this._runtime;this.Trigger(NAMESPACE.Cnds.OnTweensFinished);this.Trigger(NAMESPACE.Cnds.OnAnyTweensFinished);this.ReleaseTween(tween)}this._finishingTween=null;NAMESPACE.Cnds.SetFinishingTween(null);if(tween.GetDestroyInstanceOnComplete())runtime.DestroyInstance(instance)}_AddTween(tween,indexProperty){const stringProperty=NAMESPACE.Maps.GetPropertyFromIndex(indexProperty);
+if(!this._activeTweens.has(stringProperty))this._activeTweens.set(stringProperty,[]);const tweenArray=this._activeTweens.get(stringProperty);tweenArray.push(tween)}_AddToWaitingList(tween){const id=tween.GetId();if(!this._waitingForReleaseTweens.has(id))this._waitingForReleaseTweens.set(id,[]);this._waitingForReleaseTweens.get(id).push(tween)}_IsInWaitingList(tween){const id=tween.GetId();if(!this._waitingForReleaseTweens.has(id))return false;return this._waitingForReleaseTweens.get(id).includes(tween)}_ReleaseWaitingTweens(){if(!this._waitingForReleaseTweens.size)return;
+for(const tweenArray of this._waitingForReleaseTweens.values()){for(const tween of tweenArray){if(tween.IsReleased())continue;tween.Release()}C3.clearArray(tweenArray)}this._waitingForReleaseTweens.clear()}}};
+
+
+'use strict';{const C3=self.C3;let finishingTween=null;C3.Behaviors.Tween.Cnds={SetFinishingTween(tween){finishingTween=tween},OnTweensFinished(tags){return finishingTween.HasTags(tags)},OnAnyTweensFinished(){return true},IsPlaying(tags){const tweens=[...this.GetTweensIncludingWaitingForRelease(tags)];if(!tweens)return false;if(!tweens.length)return false;return tweens.some(C3.Tween.IsPlaying)},IsAnyPlaying(){const tweens=[...this.AllTweensIncludingWaitingForRelease()];if(!tweens)return false;if(!tweens.length)return false;
+return tweens.some(C3.Tween.IsPlaying)},IsPaused(tags){const tweens=[...this.GetTweensIncludingWaitingForRelease(tags)];if(!tweens)return false;if(!tweens.length)return false;return tweens.some(C3.Tween.IsPaused)},IsAnyPaused(){const tweens=[...this.AllTweensIncludingWaitingForRelease()];if(!tweens)return false;if(!tweens.length)return false;return tweens.some(C3.Tween.IsPaused)}}};
+
+
+'use strict';{const C3=self.C3;const Ease=self.Ease;const NAMESPACE=C3.Behaviors.Tween;NAMESPACE.Acts={SetEnabled(enable){this.SetEnabled(!!enable);for(const tween of this.AllTweens())if(!!enable){if(this.IsInDisabledList(tween))tween.Resume()}else{if(tween.IsPlaying()||tween.IsScheduled())this.AddToDisabledList(tween);tween.Stop()}if(enable)this.ClearDisabledList()},async TweenOneProperty(...args){if(!this.GetEnabled()||!this.IsInstanceValid())return;const tween=this.CreateTween(NAMESPACE.TweenArguments.OneProperty(this,
+...args));if(tween.Play())await tween.GetPlayPromise()},async TweenTwoProperties(...args){if(!this.GetEnabled()||!this.IsInstanceValid())return;const tween=this.CreateTween(NAMESPACE.TweenArguments.TwoProperties(this,...args));if(tween.Play())await tween.GetPlayPromise()},async TweenValue(...args){if(!this.GetEnabled()||!this.IsInstanceValid())return;const tween=this.CreateTween(NAMESPACE.TweenArguments.ValueProperty(this,...args));if(tween.Play())await tween.GetPlayPromise()},PauseTweens(tags){if(!this.GetEnabled()||
+!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags))tween.Stop()},PauseAllTweens(){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.AllTweens())tween.Stop()},ResumeTweens(tags){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags))tween.Resume()},ResumeAllTweens(){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.AllTweens())tween.Resume()},StopTweens(tags){if(!this.GetEnabled()||!this.IsInstanceValid())return;
+for(const tween of this.GetTweens(tags))this.ReleaseTween(tween)},StopAllTweens(){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.AllTweens())this.ReleaseTween(tween)},SetOnePropertyTweensEndValue(tags,endValue,property){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags)){tween.BeforeSetEndValues([property]);tween.SetEndValue(endValue,property)}},SetTwoPropertiesTweensEndValue(tags,property,endValueX,endValueY){if(!this.GetEnabled()||
+!this.IsInstanceValid())return;const properties=C3.Behaviors.Tween.Maps.GetRealProperties(property);for(const tween of this.GetTweens(tags)){tween.BeforeSetEndValues(properties);tween.SetEndValue(endValueX,properties[0]);tween.SetEndValue(endValueY,properties[1])}},SetValuePropertyTweensStartValue(tags,startValue){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags,"value"))tween.SetStartValue(startValue,"value")},SetValuePropertyTweensEndValue(tags,endValue){if(!this.GetEnabled()||
+!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags,"value")){tween.BeforeSetEndValues(["value"]);tween.SetEndValue(endValue,"value")}},SetTweensEase(tags,easeIndex){if(!this.GetEnabled()||!this.IsInstanceValid())return;const ease=Ease.GetEaseFromIndex(easeIndex);for(const tween of this.GetTweens(tags))tween.SetEase(ease)},SetAllTweensEase(easeIndex){if(!this.GetEnabled()||!this.IsInstanceValid())return;const ease=Ease.GetEaseFromIndex(easeIndex);for(const tween of this.AllTweens())tween.SetEase(ease)},
+SetTweensTime(tags,time){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags))tween.SetTime(time)},SetAllTweensTime(time){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.AllTweens())tween.SetTime(time)},SetTweensPlaybackRate(tags,rate){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags))tween.SetPlaybackRate(rate)},SetAllTweensPlaybackRate(rate){if(!this.GetEnabled()||!this.IsInstanceValid())return;
+for(const tween of this.AllTweens())tween.SetPlaybackRate(rate)},SetTweensDestroyOnComplete(tags,destroyOnComplete){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags))tween.SetDestroyInstanceOnComplete(!!destroyOnComplete)},SetAllTweensDestroyOnComplete(destroyOnComplete){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.AllTweens())tween.SetDestroyInstanceOnComplete(!!destroyOnComplete)}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Tween.Exps={Time(tags){const tween=this.GetTweenIncludingWaitingForRelease(tags);if(!tween)return 0;return tween.GetTime()},Progress(tags){const tween=this.GetTweenIncludingWaitingForRelease(tags);if(!tween)return 0;return tween.GetTime()/tween.GetTotalTime()},Value(tags){const tween=this.GetTweenIncludingWaitingForRelease(tags,"value");if(!tween)return 0;return tween.GetPropertyTrack("value").GetSourceAdapterValue()},Tags(){if(!this.GetFinishingTween())return"";
+return this.GetFinishingTween().GetStringTags()}}};
+
+
+'use strict';{const C3=self.C3;const Ease=self.Ease;const PAIR_PROPERTIES=["position","size","scale"];const SINGLE_PROPERTIES=["offsetX","offsetY","offsetWidth","offsetHeight","offsetAngle","offsetOpacity","offsetColor","offsetZElevation","offsetScaleX","offsetScaleY"];const VALUE_PROPERTIES=["value"];const PROPERTY_INDEX_TO_NAME=[].concat(PAIR_PROPERTIES).concat(SINGLE_PROPERTIES).concat(VALUE_PROPERTIES);const PROPERTY_PAIR_TO_REAL_PROPERTIES={"position":["offsetX","offsetY"],"size":["offsetWidth",
+"offsetHeight"],"scale":["offsetScaleX","offsetScaleY"]};const ALL_REAL_PROPERTIES=Object.assign({},PROPERTY_INDEX_TO_NAME.reduce((o,key)=>Object.assign({},o,{[key]:[key]}),{}),PROPERTY_PAIR_TO_REAL_PROPERTIES);C3.Behaviors.Tween.Maps=class Maps{constructor(){}static GetEases(){return[...Ease.GetRuntimeEaseNames()]}static GetEaseFromIndex(index){return[...Ease.GetRuntimeEaseNames()][index]}static GetPropertyFromIndex(index){return PROPERTY_INDEX_TO_NAME[index]}static GetPropertyIndexFromName(name){return PROPERTY_INDEX_TO_NAME.indexOf(name)}static GetPairPropertyFromIndex(index){return PAIR_PROPERTIES[index]}static GetSinglePropertyFromIndex(index){return SINGLE_PROPERTIES[index]}static GetValuePropertyFromIndex(index){return VALUE_PROPERTIES[index]}static GetPairProperties(pairId){return PROPERTY_PAIR_TO_REAL_PROPERTIES[pairId]}static GetRealProperties(id){if(C3.IsString(id))return ALL_REAL_PROPERTIES[id];
+else return ALL_REAL_PROPERTIES[PROPERTY_INDEX_TO_NAME[id]]}static IsPairId(id){return!!PROPERTY_PAIR_TO_REAL_PROPERTIES[id]}static IsColorId(id){return id==="offsetColor"}static IsAngleId(id){return id==="offsetAngle"}static IsOpacityId(id){return id==="offsetOpacity"}static IsValueId(id){return id==="value"}}};
+
+
+'use strict';{const C3=self.C3;const NAMESPACE=C3.Behaviors.Tween;const TWEEN_CONFIGURATIONS=new Map;NAMESPACE.Config=class Config{constructor(){}static GetPropertyTracksConfig(property,startValue,endValue,ease,resultMode,instance){if(TWEEN_CONFIGURATIONS.size===0)this._CreateConfigObjects();const propertyType=NAMESPACE.PropertyTypes.Pick(property);let config=TWEEN_CONFIGURATIONS.get(propertyType);if(C3.IsFiniteNumber(property))property=NAMESPACE.Maps.GetPropertyFromIndex(property);return this._GetConfig(config,
+property,startValue,endValue,ease,resultMode,instance)}static TransformValue(property,value){const configFunctionObject=C3.Behaviors.Tween.GetPropertyTracksConfig(property);return configFunctionObject.valueGetter(value)}static _CreateConfigObjects(){const types=NAMESPACE.PropertyTypes;const getters=NAMESPACE.ValueGetters;this._AddConfigObject(types.PAIR,this._GetPairConfig,getters._GetPropertyValue);this._AddConfigObject(types.COLOR,this._GetColorConfig,getters._GetColorPropertyValue);this._AddConfigObject(types.ANGLE,
+this._GetAngleConfig,getters._GetPropertyAngleValue);this._AddConfigObject(types.VALUE,this._GetValueConfig,getters._GetPropertyValue);this._AddConfigObject(types.OTHER,this._GetCommonConfig,getters._GetPropertyValue)}static _AddConfigObject(name,configGetter,valueGetter){TWEEN_CONFIGURATIONS.set(name,this._CreateConfigObject(name,configGetter,valueGetter))}static _CreateConfigObject(name,configFunc,valueGetter){return{name:name,configFunc:configFunc,valueGetter:valueGetter}}static _GetConfig(config,
+property,startValue,endValue,ease,resultMode,instance){return config.configFunc(property,config.valueGetter(startValue),config.valueGetter(endValue),ease,resultMode,instance)}static _GetPairConfig(property,startValues,endValues,ease,resultMode,instance){const properties=NAMESPACE.Maps.GetPairProperties(property);return properties.map((property,index)=>{return{sourceId:"world-instance",property:property,type:"float",valueType:"numeric",startValue:startValues[index],endValue:endValues[index],ease:NAMESPACE.Maps.GetEaseFromIndex(ease),
+resultMode:resultMode}})}static _GetColorConfig(property,startValue,endValue,ease,resultMode,instance){if(C3.Plugins.Text&&instance.GetPlugin()instanceof C3.Plugins.Text)return{sourceId:"plugin",sourceArgs:[7],property:"color",type:"color",valueType:"color",startValue:startValue,endValue:endValue,ease:NAMESPACE.Maps.GetEaseFromIndex(ease),resultMode:resultMode};else return{sourceId:"world-instance",property:property,type:"color",valueType:"color",startValue:startValue,endValue:endValue,ease:NAMESPACE.Maps.GetEaseFromIndex(ease),
+resultMode:resultMode}}static _GetAngleConfig(property,startValue,endValue,ease,resultMode,instance){return{sourceId:"world-instance",property:property,type:"angle",valueType:"angle",startValue:startValue,endValue:endValue,ease:NAMESPACE.Maps.GetEaseFromIndex(ease),resultMode:resultMode}}static _GetCommonConfig(property,startValue,endValue,ease,resultMode,instance){return{sourceId:"world-instance",property:property,type:"float",valueType:"numeric",startValue:startValue,endValue:endValue,ease:NAMESPACE.Maps.GetEaseFromIndex(ease),
+resultMode:resultMode}}static _GetValueConfig(property,startValue,endValue,ease,resultMode,instance){return{sourceId:"value",property:property,type:"float",valueType:"numeric",startValue:startValue,endValue:endValue,ease:NAMESPACE.Maps.GetEaseFromIndex(ease),resultMode:resultMode}}}};
+
+
+'use strict';{const C3=self.C3;const NAMESPACE=C3.Behaviors.Tween;const COMMON_FIXED_ARGS={resultMode:"absolute"};const COMMON_VARIABLE_ARGS=Object.assign({},COMMON_FIXED_ARGS,{tags:"",property:"",time:0,ease:0,releaseOnComplete:0,loop:false,pingPong:false});const ONE_PROPERTY_ARGS=Object.assign({},COMMON_VARIABLE_ARGS,{initialValueMode:"current-state",startValue:0,endValue:0});const TWO_PROPERTIES_ARGS=Object.assign({},COMMON_VARIABLE_ARGS,{initialValueMode:"current-state",startValue:[0,0],endValue:[0,
+0]});const COLOR_PROPERTY_ARGS=Object.assign({},COMMON_VARIABLE_ARGS,{initialValueMode:"current-state",startValue:[0,0,0],endValue:[0,0,0]});const VALUE_PROPERTY_ARGS=Object.assign({},ONE_PROPERTY_ARGS,{initialValueMode:"start-value"});const X=0;const Y=1;const R=0;const G=1;const B=2;NAMESPACE.TweenArguments=class TweenArguments{constructor(){}static _SetCommonProperties(argsObject,tags,time,ease,destroyOnComplete,loop,pingPong){argsObject.tags=tags;argsObject.time=time;argsObject.ease=ease;argsObject.releaseOnComplete=
+destroyOnComplete;argsObject.loop=loop;argsObject.pingPong=pingPong}static OneProperty(inst,tags,property,endValue,time,ease,destroyOnComplete,loop,pingPong){const propertyName=NAMESPACE.Maps.GetSinglePropertyFromIndex(property);const args=NAMESPACE.Maps.IsColorId(propertyName)?COLOR_PROPERTY_ARGS:ONE_PROPERTY_ARGS;this._SetCommonProperties(args,tags,time,ease,destroyOnComplete,loop,pingPong);if(NAMESPACE.Maps.IsColorId(propertyName)){COLOR_PROPERTY_ARGS.endValue[R]=C3.GetRValue(endValue);COLOR_PROPERTY_ARGS.endValue[G]=
+C3.GetGValue(endValue);COLOR_PROPERTY_ARGS.endValue[B]=C3.GetBValue(endValue);COLOR_PROPERTY_ARGS.property=NAMESPACE.Maps.GetPropertyIndexFromName(propertyName)}else if(NAMESPACE.Maps.IsOpacityId(propertyName))ONE_PROPERTY_ARGS.endValue=endValue/100;else ONE_PROPERTY_ARGS.endValue=endValue;args.property=NAMESPACE.Maps.GetPropertyIndexFromName(propertyName);return args}static TwoProperties(inst,tags,property,endValueX,endValueY,time,ease,destroyOnComplete,loop,pingPong){this._SetCommonProperties(TWO_PROPERTIES_ARGS,
+tags,time,ease,destroyOnComplete,loop,pingPong);const pairName=NAMESPACE.Maps.GetPairPropertyFromIndex(property);TWO_PROPERTIES_ARGS.endValue[X]=endValueX;TWO_PROPERTIES_ARGS.endValue[Y]=endValueY;TWO_PROPERTIES_ARGS.property=NAMESPACE.Maps.GetPropertyIndexFromName(pairName);return TWO_PROPERTIES_ARGS}static ValueProperty(inst,tags,startValue,endValue,time,ease,destroyOnComplete,loop,pingPong){this._SetCommonProperties(VALUE_PROPERTY_ARGS,tags,time,ease,destroyOnComplete,loop,pingPong);VALUE_PROPERTY_ARGS.startValue=
+startValue;VALUE_PROPERTY_ARGS.endValue=endValue;VALUE_PROPERTY_ARGS.property=NAMESPACE.Maps.GetPropertyIndexFromName("value");return VALUE_PROPERTY_ARGS}}};
+
+
+'use strict';{const C3=self.C3;const NAMESPACE=C3.Behaviors.Tween;const TYPE_CHECK_OBJECTS=[];NAMESPACE.PropertyTypes=class PropertyTypes{constructor(){}static Pick(property){if(TYPE_CHECK_OBJECTS.length===0){const arr=TYPE_CHECK_OBJECTS;arr.push({checkFunc:NAMESPACE.Maps.IsPairId,result:this.PAIR});arr.push({checkFunc:NAMESPACE.Maps.IsColorId,result:this.COLOR});arr.push({checkFunc:NAMESPACE.Maps.IsAngleId,result:this.ANGLE});arr.push({checkFunc:NAMESPACE.Maps.IsValueId,result:this.VALUE});arr.push({checkFunc:()=>
+true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tween.Maps.GetPropertyFromIndex(property);for(const propertyTypeFunctionObject of TYPE_CHECK_OBJECTS)if(propertyTypeFunctionObject.checkFunc(property))return propertyTypeFunctionObject.result}static get PAIR(){return"pair"}static get COLOR(){return"color"}static get ANGLE(){return"angle"}static get VALUE(){return"value"}static get OTHER(){return"other"}}};
+
+
+'use strict';{const C3=self.C3;const NAMESPACE=C3.Behaviors.Tween;NAMESPACE.ValueGetters=class ValueGetters{constructor(){}static _GetPropertyAngleValue(value){const r=C3.toRadians(parseFloat(value));return C3.clampAngle(r)}static _GetColorPropertyValue(value){return value.slice(0)}static _GetPropertyValue(value){return value}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.DragnDrop=class DragnDropBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts);const rt=this._runtime.Dispatcher();this._disposables=new C3.CompositeDisposable(C3.Disposable.From(rt,"pointerdown",e=>this._OnPointerDown(e.data)),C3.Disposable.From(rt,"pointermove",e=>this._OnPointerMove(e.data)),C3.Disposable.From(rt,"pointerup",e=>this._OnPointerUp(e.data,false)),C3.Disposable.From(rt,"pointercancel",e=>this._OnPointerUp(e.data,true)))}Release(){this._disposables.Release();
+this._disposables=null;super.Release()}_OnPointerDown(e){if(e["pointerType"]==="mouse"&&e["button"]!==0)return;this._OnInputDown(e["pointerId"].toString(),e["pageX"]-this._runtime.GetCanvasClientX(),e["pageY"]-this._runtime.GetCanvasClientY())}_OnPointerMove(e){if((e["lastButtons"]&1)!==0&&(e["buttons"]&1)===0)this._OnInputUp(e["pointerId"].toString());else this._OnInputMove(e["pointerId"].toString(),e["pageX"]-this._runtime.GetCanvasClientX(),e["pageY"]-this._runtime.GetCanvasClientY())}_OnPointerUp(e,
+isCancel){if(e["pointerType"]==="mouse"&&e["button"]!==0)return;this._OnInputUp(e["pointerId"].toString())}async _OnInputDown(src,clientX,clientY){const myInstances=this.GetInstances();let topMost=null;let topBehInst=null;let topX=0;let topY=0;for(const inst of myInstances){const behInst=inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.DragnDrop);if(!behInst.IsEnabled()||behInst.IsDragging())continue;const wi=inst.GetWorldInfo();const layer=wi.GetLayer();const [lx,ly]=layer.CanvasCssToLayer(clientX,
+clientY,wi.GetTotalZElevation());if(!wi.ContainsPoint(lx,ly))continue;if(!topMost){topMost=inst;topBehInst=behInst;topX=lx;topY=ly;continue}const topWi=topMost.GetWorldInfo();if(layer.GetIndex()>topWi.GetLayer().GetIndex()||layer.GetIndex()===topWi.GetLayer().GetIndex()&&wi.GetZIndex()>topWi.GetZIndex()){topMost=inst;topBehInst=behInst;topX=lx;topY=ly}}if(topMost)await topBehInst._OnDown(src,topX,topY)}_OnInputMove(src,clientX,clientY){const myInstances=this.GetInstances();for(const inst of myInstances){const behInst=
+inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.DragnDrop);if(!behInst.IsEnabled()||!behInst.IsDragging()||behInst.IsDragging()&&behInst.GetDragSource()!==src)continue;const wi=inst.GetWorldInfo();const layer=wi.GetLayer();const [lx,ly]=layer.CanvasCssToLayer(clientX,clientY,wi.GetTotalZElevation());behInst._OnMove(lx,ly)}}async _OnInputUp(src){const myInstances=this.GetInstances();for(const inst of myInstances){const behInst=inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.DragnDrop);if(behInst.IsDragging()&&
+behInst.GetDragSource()===src)await behInst._OnUp()}}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.DragnDrop.Type=class DragnDropType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;const AXES=0;const ENABLE=1;C3.Behaviors.DragnDrop.Instance=class DragnDropInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this._isDragging=false;this._dx=0;this._dy=0;this._dragSource="<none>";this._axes=0;this._isEnabled=true;if(properties){this._axes=properties[AXES];this._isEnabled=properties[ENABLE]}}Release(){super.Release()}SaveToJson(){return{"a":this._axes,"e":this._isEnabled}}LoadFromJson(o){this._axes=o["a"];this._isEnabled=
+o["e"];this._isDragging=false}IsEnabled(){return this._isEnabled}IsDragging(){return this._isDragging}GetDragSource(){return this._dragSource}async _OnDown(src,x,y){const wi=this.GetWorldInfo();this._dx=x-wi.GetX();this._dy=y-wi.GetY();this._isDragging=true;this._dragSource=src;await this.TriggerAsync(C3.Behaviors.DragnDrop.Cnds.OnDragStart)}_OnMove(x,y){const wi=this.GetWorldInfo();const newX=x-this._dx;const newY=y-this._dy;if(this._axes===0){if(wi.GetX()!==newX||wi.GetY()!==newY){wi.SetXY(newX,
+newY);wi.SetBboxChanged()}}else if(this._axes===1){if(wi.GetX()!==newX){wi.SetX(newX);wi.SetBboxChanged()}}else if(this._axes===2)if(wi.GetY()!==newY){wi.SetY(newY);wi.SetBboxChanged()}}async _OnUp(){this._isDragging=false;await this.TriggerAsync(C3.Behaviors.DragnDrop.Cnds.OnDrop)}GetPropertyValueByIndex(index){switch(index){case AXES:return this._axes;case ENABLE:return this._isEnabled}}SetPropertyValueByIndex(index,value){switch(index){case AXES:this._axes=value;break;case ENABLE:this._isEnabled=
+!!value;break}}GetDebuggerProperties(){const prefix="behaviors.dragndrop";return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:prefix+".debugger.is-dragging",value:this._isDragging},{name:prefix+".properties.enabled.name",value:this._isEnabled,onedit:v=>this._isEnabled=v}]}]}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.DragnDrop.Cnds={IsDragging(){return this._isDragging},OnDragStart(){return true},OnDrop(){return true},IsEnabled(){return this._isEnabled}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.DragnDrop.Acts={SetEnabled(e){this._isEnabled=!!e;if(!this._isEnabled)this._isDragging=false},SetAxes(a){this._axes=a},Drop(){if(this._isDragging)this._OnUp()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.DragnDrop.Exps={}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Sin=class SinBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Sin.Type=class SinType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;const MOVEMENT=0;const WAVE=1;const PERIOD=2;const PERIOD_RANDOM=3;const PERIOD_OFFSET=4;const PERIOD_OFFSET_RANDOM=5;const MAGNITUDE=6;const MAGNITUDE_RANDOM=7;const ENABLE=8;const HORIZONTAL=0;const VERTICAL=1;const SIZE=2;const WIDTH=3;const HEIGHT=4;const ANGLE=5;const OPACITY=6;const VALUE=7;const FORWARDS_BACKWARDS=8;const ZELEVATION=9;const SINE=0;const TRIANGLE=1;const SAWTOOTH=2;const REVERSE_SAWTOOTH=3;const SQUARE=4;const _2pi=2*Math.PI;const _pi_2=Math.PI/
+2;const _3pi_2=3*Math.PI/2;const MOVEMENT_LOOKUP=[0,1,8,3,4,2,5,6,9,7];C3.Behaviors.Sin.Instance=class SinInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this._i=0;this._movement=0;this._wave=0;this._period=0;this._mag=0;this._isEnabled=true;this._basePeriod=0;this._basePeriodOffset=0;this._baseMag=0;this._periodRandom=0;this._periodOffsetRandom=0;this._magnitudeRandom=0;this._initialValue=0;this._initialValue2=0;this._lastKnownValue=0;this._lastKnownValue2=
+0;this._ratio=0;if(properties){this._movement=MOVEMENT_LOOKUP[properties[MOVEMENT]];this._wave=properties[WAVE];this._periodRandom=this._runtime.Random()*properties[PERIOD_RANDOM];this._basePeriod=properties[PERIOD];this._period=properties[PERIOD];this._period+=this._periodRandom;this._basePeriodOffset=properties[PERIOD_OFFSET];if(this._period!==0){this._periodOffsetRandom=this._runtime.Random()*properties[PERIOD_OFFSET_RANDOM];this._i=properties[PERIOD_OFFSET]/this._period*_2pi;this._i+=this._periodOffsetRandom/
+this._period*_2pi}this._magnitudeRandom=this._runtime.Random()*properties[MAGNITUDE_RANDOM];this._baseMag=properties[MAGNITUDE];this._mag=properties[MAGNITUDE];this._mag+=this._magnitudeRandom;this._isEnabled=!!properties[ENABLE]}if(this._movement===ANGLE)this._mag=C3.toRadians(this._mag);this.Init();if(this._isEnabled)this._StartTicking()}Release(){super.Release()}SaveToJson(){return{"i":this._i,"e":this._isEnabled,"mv":this._movement,"w":this._wave,"p":this._period,"mag":this._mag,"iv":this._initialValue,
+"iv2":this._initialValue2,"r":this._ratio,"lkv":this._lastKnownValue,"lkv2":this._lastKnownValue2}}LoadFromJson(o){this._i=o["i"];this._SetEnabled(o["e"]);this._movement=o["mv"];this._wave=o["w"];this._period=o["p"];this._mag=o["mag"];this._initialValue=o["iv"];this._initialValue2=o["iv2"];this._ratio=o["r"];this._lastKnownValue=o["lkv"];this._lastKnownValue2=o["lkv2"]}Init(){const wi=this._inst.GetWorldInfo();switch(this._movement){case HORIZONTAL:this._initialValue=wi.GetX();break;case VERTICAL:this._initialValue=
+wi.GetY();break;case SIZE:this._initialValue=wi.GetWidth();this._ratio=wi.GetHeight()/wi.GetWidth();break;case WIDTH:this._initialValue=wi.GetWidth();break;case HEIGHT:this._initialValue=wi.GetHeight();break;case ANGLE:this._initialValue=wi.GetAngle();break;case OPACITY:this._initialValue=wi.GetOpacity();break;case VALUE:this._initialValue=0;break;case FORWARDS_BACKWARDS:this._initialValue=wi.GetX();this._initialValue2=wi.GetY();break;case ZELEVATION:this._initialValue=wi.GetZElevation();break;default:}this._lastKnownValue=
+this._initialValue;this._lastKnownValue2=this._initialValue2}WaveFunc(x){x=x%_2pi;switch(this._wave){case SINE:return Math.sin(x);case TRIANGLE:if(x<=_pi_2)return x/_pi_2;else if(x<=_3pi_2)return 1-2*(x-_pi_2)/Math.PI;else return(x-_3pi_2)/_pi_2-1;case SAWTOOTH:return 2*x/_2pi-1;case REVERSE_SAWTOOTH:return-2*x/_2pi+1;case SQUARE:return x<Math.PI?-1:1}return 0}Tick(){const dt=this._runtime.GetDt(this._inst);if(!this._isEnabled||dt===0)return;if(this._period===0)this._i=0;else this._i=(this._i+dt/
+this._period*_2pi)%_2pi;this._UpdateFromPhase()}_UpdateFromPhase(){const wi=this._inst.GetWorldInfo();switch(this._movement){case HORIZONTAL:if(wi.GetX()!==this._lastKnownValue)this._initialValue+=wi.GetX()-this._lastKnownValue;wi.SetX(this._initialValue+this.WaveFunc(this._i)*this._mag);this._lastKnownValue=wi.GetX();break;case VERTICAL:if(wi.GetY()!==this._lastKnownValue)this._initialValue+=wi.GetY()-this._lastKnownValue;wi.SetY(this._initialValue+this.WaveFunc(this._i)*this._mag);this._lastKnownValue=
+wi.GetY();break;case SIZE:wi.SetWidth(this._initialValue+this.WaveFunc(this._i)*this._mag);wi.SetHeight(wi.GetWidth()*this._ratio);break;case WIDTH:wi.SetWidth(this._initialValue+this.WaveFunc(this._i)*this._mag);break;case HEIGHT:wi.SetHeight(this._initialValue+this.WaveFunc(this._i)*this._mag);break;case ANGLE:if(wi.GetAngle()!==this._lastKnownValue)this._initialValue=C3.clampAngle(this._initialValue+(wi.GetAngle()-this._lastKnownValue));wi.SetAngle(this._initialValue+this.WaveFunc(this._i)*this._mag);
+this._lastKnownValue=wi.GetAngle();break;case OPACITY:wi.SetOpacity(this._initialValue+this.WaveFunc(this._i)*this._mag/100);break;case FORWARDS_BACKWARDS:if(wi.GetX()!==this._lastKnownValue)this._initialValue+=wi.GetX()-this._lastKnownValue;if(wi.GetY()!==this._lastKnownValue2)this._initialValue2+=wi.GetY()-this._lastKnownValue2;wi.SetX(this._initialValue+Math.cos(wi.GetAngle())*this.WaveFunc(this._i)*this._mag);wi.SetY(this._initialValue2+Math.sin(wi.GetAngle())*this.WaveFunc(this._i)*this._mag);
+this._lastKnownValue=wi.GetX();this._lastKnownValue2=wi.GetY();break;case ZELEVATION:wi.SetZElevation(this._initialValue+this.WaveFunc(this._i)*this._mag);break}wi.SetBboxChanged()}_OnSpriteFrameChanged(prevFrame,nextFrame){}_SetEnabled(e){this._isEnabled=!!e;if(this._isEnabled)this._StartTicking();else this._StopTicking()}GetPropertyValueByIndex(index){switch(index){case MOVEMENT:return this._movement;case WAVE:return this._wave;case PERIOD:return this._basePeriod;case MAGNITUDE:return this._baseMag;
+case ENABLE:return this._isEnabled}}SetPropertyValueByIndex(index,value){switch(index){case MOVEMENT:this._movement=MOVEMENT_LOOKUP[value];this.Init();break;case WAVE:this._wave=value;break;case PERIOD:this._basePeriod=value;this._period=this._basePeriod+this._periodRandom;if(!this._isEnabled)if(this._period!==0){this._i=this._basePeriodOffset/this._period*_2pi;this._i+=this._periodOffsetRandom/this._period*_2pi}else this._i=0;break;case MAGNITUDE:this._baseMag=value;this._mag=this._baseMag+this._magnitudeRandom;
+if(this._movement===ANGLE)this._mag=C3.toRadians(this._mag);break;case ENABLE:this._isEnabled=!!value;break}}GetDebuggerProperties(){const prefix="behaviors.sin";return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:prefix+".properties.enabled.name",value:this._isEnabled,onedit:v=>this._SetEnabled(v)},{name:prefix+".properties.period.name",value:this._period,onedit:v=>this._period=v},{name:prefix+".properties.magnitude.name",value:this._mag,onedit:v=>this._mag=v},{name:prefix+".debugger.value",
+value:this.WaveFunc(this._i)*this._mag}]}]}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Sin.Cnds={IsEnabled(){return this._isEnabled},CompareMovement(m){return this._movement===m},ComparePeriod(cmp,v){return C3.compare(this._period,cmp,v)},CompareMagnitude(cmp,v){if(this._movement===5)return C3.compare(this._mag,cmp,C3.toRadians(v));else return C3.compare(this._mag,cmp,v)},CompareWave(w){return this._wave===w}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Sin.Acts={SetEnabled(e){this._SetEnabled(e!==0)},SetPeriod(x){this._period=x},SetMagnitude(x){this._mag=x;if(this._movement===5)this._mag=C3.toRadians(this._mag)},SetMovement(m){if(this._movement===5&&m!==5)this._mag=C3.toDegrees(this._mag);this._movement=m;this.Init()},SetWave(w){this._wave=w},SetPhase(x){const _2pi=Math.PI*2;this._i=x*_2pi%_2pi;this._UpdateFromPhase()},UpdateInitialState(){this.Init()}}};
+
+
+'use strict';{const C3=self.C3;C3.Behaviors.Sin.Exps={CyclePosition(){return this._i/(2*Math.PI)},Period(){return this._period},Magnitude(){if(this._movement===5)return C3.toDegrees(this._mag);else return this._mag},Value(){return this.WaveFunc(this._i)*this._mag}}};
+
+
 "use strict";
 
 {
@@ -7074,583 +13080,6 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 				return v;
 			}
 		}
-	};
-}
-
-
-"use strict";
-
-{
-	C3.Behaviors.aekiro_dialog = class aekiro_dialogBehavior extends C3.SDKBehaviorBase
-	{
-		constructor(opts)
-		{
-			super(opts);
-		}
-		
-		Release()
-		{
-			super.Release();
-		}
-	};
-}
-
-
-"use strict";
-
-{
-	C3.Behaviors.aekiro_dialog.Type = class aekiro_dialogType extends C3.SDKBehaviorTypeBase
-	{
-		constructor(behaviorType)
-		{
-			super(behaviorType);
-		}
-		
-		Release()
-		{
-			super.Release();
-		}
-		
-		OnCreate()
-		{	
-		}
-	};
-}
-
-
-"use strict";
-
-{
-	C3.Behaviors.aekiro_dialog.Instance = class aekiro_dialogInstance extends C3.SDKBehaviorInstanceBase {
-		constructor(behInst, properties)
-		{
-			super(behInst);
-	
-			//properties
-			if (properties)
-			{
-				this.openAnimation = properties[0];
-				this.openAnimTweenFunction = properties[1];
-				this.openAnimDuration = properties[2];
-				this.openSound = properties[3];
-				this.closeAnimation = properties[4];
-				this.closeAnimTweenFunction = properties[5];
-				this.closeAnimDuration = properties[6];
-				this.closeSound = properties[7];
-				this.closeButtonUID = properties[8];
-				this.isModal = properties[9];
-			}
-	
-			//********************
-			this.proui = this.GetRuntime().GetSingleGlobalObjectClassByCtor(C3.Plugins.aekiro_proui);
-			if(this.proui){
-				this.proui = this.proui.GetSingleGlobalInstance().GetSdkInstance();
-			}
-			this.GetObjectInstance().GetUnsavedDataMap().aekiro_dialog = this;
-			this.wi = this.GetWorldInfo();
-			this.inst = this.GetObjectInstance();
-			this.aekiro_dialogManager = globalThis["aekiro_dialogManager"];
-			this.goManager = globalThis["aekiro_goManager"];
-		
-			//*****************************
-			this.isInit = false;
-			this.isOpen = false;
-			this.tween = new self["TWEEN"]["Tween"]();
-			this.tween_opacity = new self["TWEEN"]["Tween"](); //a separate tween for opacity: we don't want the opacity to be tweened by elastic 
-			this.tweenObject = {};
-			this.reverseTweenObject = {};
-			
-			this.tweenFunctions = [
-				self["TWEEN"]["Easing"]["Linear"]["None"],
-				self["TWEEN"]["Easing"]["Quadratic"]["Out"],
-				self["TWEEN"]["Easing"]["Quartic"]["Out"],
-				self["TWEEN"]["Easing"]["Exponential"]["Out"],
-				self["TWEEN"]["Easing"]["Circular"]["Out"],
-				self["TWEEN"]["Easing"]["Back"]["Out"],
-				self["TWEEN"]["Easing"]["Elastic"]["Out"],
-				self["TWEEN"]["Easing"]["Bounce"]["Out"]
-			];
-	
-			this.goManager.eventManager.on("childrenRegistred",() =>{				
-				this.setCloseButton();
-				this.onCreateInit();	
-			},{"once":true}); 
-		}
-	
-		PostCreate(){
-			this.aekiro_gameobject = this.GetObjectInstance().GetUnsavedDataMap().aekiro_gameobject;
-			//console.log("PostCreate dialog");
-		}
-	
-		onCreateInit(){
-			//if(this.isInit)return;
-	
-			
-			var map = this.GetObjectInstance().GetUnsavedDataMap();
-			if(!map.audioSources){
-				map.audioSources = {};
-			}
-			this.audioSources = map.audioSources;
-			this.audioSources.open = new AudioSource(this.openSound,this.GetRuntime());
-			this.audioSources.close = new AudioSource(this.closeSound,this.GetRuntime());
-			
-			this.setVisible(false);
-			//this.wi.SetX(this.wi.GetLayer().GetViewport().getLeft() - this.wi.GetWidth() - 100);
-			this.wi.SetX(this.wi.GetLayer().GetViewport().getLeft());
-			this.wi.SetBboxChanged();
-			this.isInit = true;
-		}
-		
-		setCloseButton(){
-			if(!this.closeButtonUID)return;
-	
-			this.closeButton = this.goManager.gos[this.closeButtonUID];
-			if(!this.closeButton){
-				console.error("ProUI-Dialog: Close button not found; Please check its name !");
-				return;
-			}
-			
-			if(!this.closeButton.GetUnsavedDataMap().aekiro_button){
-				console.error("ProUI-Dialog: The close button needs to have a button behavior !");
-				return;
-			}
-	
-			var self = this;
-			this.closeButton.GetUnsavedDataMap().aekiro_button.callbacks.push(function(){
-				self.close();
-			});
-		}
-		
-		SetOwnScale(scale){
-			var layers = this.getOutLayers();
-			layers.push(this.wi.GetLayer());
-			
-			for (var i = 0, l= layers.length; i < l; i++) {
-				layers[i].SetOwnScale(scale);
-			}
-		}
-		
-		SetOpacity(opacity){
-			var layers = this.getOutLayers();
-			layers.push(this.wi.GetLayer());
-			
-			for (var i = 0, l= layers.length; i < l; i++) {
-				layers[i].SetOpacity(opacity);
-			}
-		}
-			
-		setVisible(isVisible){
-			var layers = this.getOutLayers();
-			layers.push(this.wi.GetLayer());
-			//console.log(layers);
-			
-			for (var i = 0, l= layers.length; i < l; i++) {
-				layers[i].SetVisible(isVisible);
-			}
-		}
-		
-		getOutLayers(){
-			var mylayer = this.wi.GetLayer();
-			var insts = this.aekiro_gameobject.hierarchyToArray();
-			var layers = [];
-			
-			var layer;
-			for (var i = 0, l= insts.length; i < l; i++) {
-				layer = insts[i].GetWorldInfo().GetLayer();
-				if(layer!=mylayer && layers.indexOf(layer)==-1){
-					layers.push(layer);
-				}
-			}
-			
-			return layers;
-		}
-		
-		setInitialState(targetX,targetY,center){
-			//None|SlideDown|SlideUp|SlideLeft|SlideRight|ScaleDown|ScaleUp
-			var initX,initY;
-			var viewport = this.wi.GetLayer().GetViewport();
-			
-			if(this.openAnimation == 0 || this.openAnimation == 5 || this.openAnimation == 6){ //None/ScaleDown|ScaleUp
-				initX = targetX;
-				initY = targetY;
-				if(center){
-					initY = (viewport.getTop() + viewport.getBottom())/2;
-					initX = (viewport.getLeft() + viewport.getRight())/2;
-				}
-	
-				if(this.openAnimation == 5 || this.openAnimation == 6){//ScaleDown|ScaleUp
-					if(this.openAnimation == 5){ //ScaleDown
-						this.wi.GetLayer().SetOwnScale(2);
-					}else{ //ScaleUp
-						this.wi.GetLayer().SetOwnScale(0.2);
-					}
-					this.wi.GetLayer().SetOpacity(0);
-					//this.GetRuntime().UpdateRender();
-				}
-			}else if(this.openAnimation == 1){ //SlideDown
-				initY =  viewport.getTop() - this.wi.GetHeight()/2 - 100;
-				if(center){
-					initX = (viewport.getLeft() + viewport.getRight())/2;
-				}else{
-					initX = targetX;
-				}
-			}else if(this.openAnimation == 2){ //SlideUp
-				initY = viewport.getBottom() + this.wi.GetHeight()/2 + 100;
-				if(center){
-					initX = (viewport.getLeft() + viewport.getRight())/2;
-				}else{
-					initX = targetX;
-				}
-			}else if(this.openAnimation == 3){ //SlideLeft
-				initX = viewport.getRight() + this.wi.GetWidth()/2 + 100;
-				if(center){
-					initY = (viewport.getTop() + viewport.getBottom())/2;
-				}else{
-					initY = targetY;
-				}
-			}else if(this.openAnimation == 4){ //SlideRight
-				initX = viewport.getLeft() - this.wi.GetWidth()/2 - 100;
-				if(center){
-					initY = (viewport.getTop() + viewport.getBottom())/2;
-				}else{
-					initY = targetY;
-				}
-			}
-	
-			this.wi.SetX(initX);
-			this.wi.SetY(initY);
-			this.wi.SetBboxChanged();
-			//console.log(initX+"******"+initY);
-	
-		}
-		
-		open(_targetX,_targetY,center){
-			//Can't be opened if: already opened or opening
-			if(this.isOpen){//|| (this.isOpen && this.tween["isPlaying"]) ??
-				return;
-			}
-			//Cant' be opened if a modal dialog is already opened
-			if(this.aekiro_dialogManager.isModalDialogOpened()){
-				console.log("ProUI-Dialog: Can not open dialog because modal dialog is already opened");
-				return;
-			}
-			//console.log("ProUI-Dialog: open");
-	
-			//If it's closing, we stop the closing animation
-			if(!this.isOpen && this.tween["isPlaying"]){
-				//this.tween["isPlaying"] = false;
-				this.tween["stop"]();
-				this.postClose();
-			}
-	
-			this.aekiro_dialogManager.addDialog(this.GetObjectInstance());
-	
-			//console.log("%cDIALOG %d : Open","color:blue", this.inst.uid);
-			this.isOpen = true;
-			this.Trigger(C3.Behaviors.aekiro_dialog.Cnds.onDialogOpened);
-			//in case the timescale of the game is not 1 (paused)
-			if(this.GetRuntime().GetTimeScale() != 1){
-				this.aekiro_gameobject.setTimeScale(1);
-			}
-			//set the start position of the dialog, which depends on the type of the open animation
-			this.setInitialState(_targetX,_targetY,center);
-			this.setVisible(true);
-	
-			//*******************************************
-			var targetX = _targetX;
-			var targetY = _targetY;
-			var viewport = this.wi.GetLayer().GetViewport();
-			//target = center of viewport
-			if(center){
-				targetX = (viewport.getLeft() + viewport.getRight())/2;
-				targetY = (viewport.getTop() + viewport.getBottom())/2;
-			}
-	
-			if(this.openAnimDuration == 0){ //If anim duration = 0 then we set animation to "no animation", otherwise wierd bug emerge
-				this.openAnimation = 0;
-			}
-	
-			
-			this.isScaleAnimation = false;
-			this.tweenObject.x = this.wi.GetX();
-			this.tweenObject.y = this.wi.GetY();
-			this.tweenObject.scale = this.wi.GetLayer().GetOwnScale();
-			this.tweenObject.opacity = this.wi.GetLayer().GetOpacity();
-			this.tween["setObject"](this.tweenObject);
-			this.tween["easing"](this.tweenFunctions[this.openAnimTweenFunction]);
-			this.tween["onComplete"](this.postOpen,this);
-			//None|SlideDown|SlideUp|SlideLeft|SlideRight|ScaleDown|ScaleUp
-			if(this.openAnimation == 1 || this.openAnimation == 2){ //SlideDown|SlideUp
-				this.tween["to"]({y: targetY }, this.openAnimDuration);
-				this.reverseTweenObject.y = this.wi.GetY();
-			}else if(this.openAnimation == 3 || this.openAnimation == 4){ //SlideLeft|SlideRight
-				this.tween["to"]({x: targetX }, this.openAnimDuration);
-				this.reverseTweenObject.x = this.wi.GetX();
-			}else if(this.openAnimation == 5 || this.openAnimation == 6){ //ScaleDown|ScaleUp
-				this.tween["to"]({ scale: 1 }, this.openAnimDuration);
-				this.reverseTweenObject.scale = this.wi.GetLayer().GetOwnScale();
-				
-				this.tween_opacity["setObject"](this.tweenObject);
-				this.tween_opacity["to"]({ opacity: 1 }, 300);
-				this.tween_opacity["easing"](self["TWEEN"]["Easing"]["Quartic"]["Out"]);
-				
-				this.isScaleAnimation = true;
-				this.outLayers = this.getOutLayers(); //layers of childrens not on the same layer (like a scrollview)
-			}
-			//*******************************************
-	
-			if(this.openAnimation>0){
-				this.tween["start"](this.GetRuntime().GetWallTime()*1000);
-				this._StartTicking();
-		
-				if(this.openAnimation == 5 || this.openAnimation == 6){ //ScaleDown|ScaleUp
-					this.tween_opacity["start"](this.GetRuntime().GetWallTime()*1000);
-				}
-			}else{
-				this.wi.SetXY(targetX,targetY);
-				this.wi.SetBboxChanged();
-			}
-	
-			//*******************************************
-			//Play Sound
-			this.audioSources.open.play();
-		}
-	
-	
-		postOpen(){
-			//this.showOverlay();
-		}
-		
-		getCloseTargetPosition(){
-			//None|Reverse|SlideDown|SlideUp|SlideLeft|SlideRight|ScaleDown|ScaleUp
-			var viewport = this.wi.GetLayer().GetViewport();
-			var X = this.wi.GetX();
-			var Y = this.wi.GetY();
-			
-			if(this.closeAnimation == 2){ //SlideDown
-				Y = viewport.getBottom() + this.wi.GetHeight()/2 + 100;
-			}else if(this.closeAnimation == 3){ //SlideUp
-				Y = viewport.getTop() - this.wi.GetHeight()/2 - 100;
-			}else if(this.closeAnimation == 4){ //SlideLeft
-				X = viewport.getLeft() - this.wi.GetWidth()/2 - 100;
-			}else if(this.closeAnimation == 5){ //SlideRight
-				X = viewport.getRight() + this.wi.GetWidth()/2 + 100;
-			}
-	
-			return {x:X,y:Y};
-		}
-	
-		close(){
-			//console.log("%cDIALOG %d : Close","color:blue", this.inst.uid);
-			//Can't be closed if: already closed or opening or closing
-			if(!this.isOpen || this.tween["isPlaying"]){
-				return;
-			}
-			this.isOpen = false;
-			this.aekiro_dialogManager.removeDialog(this.GetObjectInstance());
-			this.Trigger(C3.Behaviors.aekiro_dialog.Cnds.onDialogClosed);
-		
-			//**************************************	
-			//None|Reverse|SlideDown|SlideUp|SlideLeft|SlideRight|ScaleDown|ScaleUp
-			//*******************************************
-			var target = this.getCloseTargetPosition();
-			var targetX = target.x;
-			var targetY = target.y;
-	
-	
-			if(this.closeAnimDuration == 0){ //If anim duration = 0 then we set animation to "no animation", otherwise wierd bug emerge
-				this.closeAnimation = 0;
-			}
-	
-			this.isScaleAnimation = false;
-			this.tweenObject.x = this.wi.GetX();
-			this.tweenObject.y = this.wi.GetY();
-			this.tweenObject.scale = this.wi.GetLayer().GetOwnScale();
-			this.tweenObject.opacity = this.wi.GetLayer().GetOpacity();
-			this.tween["setObject"](this.tweenObject);
-			this.tween["easing"](this.tweenFunctions[this.closeAnimTweenFunction]);
-			this.tween["onComplete"](this.postClose,this);
-	
-			if(this.closeAnimation==2 || this.closeAnimation==3){ //SlideDown|SlideUp
-				this.tween["to"]({ y: targetY }, this.closeAnimDuration);
-			}else if(this.closeAnimation == 4 || this.closeAnimation == 5){ //SlideLeft|SlideRight
-				this.tween["to"]({ x: targetX }, this.closeAnimDuration);
-			}else if(this.closeAnimation == 6 || this.closeAnimation == 7){ //ScaleDown|ScaleUp
-				if(this.closeAnimation == 6){ //ScaleDown
-					this.tween["to"]({ scale: 0.2 }, this.closeAnimDuration);
-				}else{ //ScaleUp
-					this.tween["to"]({ scale: 2 }, this.closeAnimDuration);
-				}
-				
-				this.tween_opacity["setObject"](this.tweenObject);
-				this.tween_opacity["to"]({ opacity: 0 }, 300);
-				this.tween_opacity["easing"](self["TWEEN"]["Easing"]["Quartic"]["Out"]);
-				
-				this.isScaleAnimation = true;
-				this.outLayers = []; //layers of childrens not on the same layer (like a scrollview)
-				
-			}else if(this.closeAnimation==1){ //Reverse
-				this.tween["to"](this.reverseTweenObject, this.openAnimDuration);
-	
-				if(this.openAnimation == 5 || this.openAnimation == 6){ //ScaleDown|ScaleUp
-					this.isScaleAnimation = true;
-					this.tween_opacity["to"]({ opacity: 0 }, 300);
-				}
-			}
-			//*******************************************
-	
-	
-			if(this.closeAnimation==0 || (this.openAnimation==0 && this.closeAnimation==1) ) { //Reverse
-				this.postClose();
-			}else if(this.closeAnimation==1){ //None
-				if(this.openAnimation == 5 || this.openAnimation == 6){ //ScaleDown|ScaleUp
-					this.tween_opacity["start"](this.GetRuntime().GetWallTime()*1000);
-				}
-				this.tween["start"](this.GetRuntime().GetWallTime()*1000);
-				this._StartTicking();
-			}else{ //SlideDown|SlideUp|SlideLeft|SlideRight|ScaleDown|ScaleUp
-				this.tween["start"](this.GetRuntime().GetWallTime()*1000);
-				if(this.closeAnimation == 6 || this.closeAnimation == 7){ //ScaleDown|ScaleUp
-					this.tween_opacity["start"](this.GetRuntime().GetWallTime()*1000);
-				}
-				this._StartTicking();
-			}
-	
-			//Play Sound
-			this.audioSources.close.play();
-			
-		}
-		
-		postClose(){
-			var layer = this.wi.GetLayer();
-			var viewport = layer.GetViewport();
-			this.SetOwnScale(1);
-			this.SetOpacity(1);
-			this.setVisible(false);
-			//this.GetRuntime().UpdateRender();
-	
-			var x = (viewport.getLeft() + viewport.getRight())/2;
-			var y = viewport.getTop() - this.wi.GetHeight()/2 -100;
-			this.wi.SetX(x);
-			this.wi.SetY(y);
-			this.wi.SetBboxChanged();
-			
-			this._StopTicking();
-		}
-		
-	
-		Tick(){
-			
-			var layer;
-			if(this.tween["isPlaying"]){
-				this.tween["update"](this.GetRuntime().GetWallTime()*1000);
-				
-				if(this.isScaleAnimation){ //ScaleDown|ScaleUp
-					layer = this.wi.GetLayer();
-					layer.SetOwnScale(this.tweenObject.scale);
-					for (var i = 0, l = this.outLayers.length; i < l; i++) {
-						this.outLayers[i].SetOwnScale(this.tweenObject.scale);
-					}
-				}else{
-					this.wi.SetXY(this.tweenObject.x,this.tweenObject.y);
-					this.wi.SetBboxChanged();
-				}
-			}
-	
-			//used only with ScaleDown|ScaleUp
-			if(this.tween_opacity["isPlaying"]){
-				this.tween_opacity["update"](this.GetRuntime().GetWallTime()*1000);
-				layer.SetOpacity(this.tweenObject.opacity);
-				
-				for (var i = 0, l = this.outLayers.length; i < l; i++) {
-					this.outLayers[i].SetOpacity(this.tweenObject.opacity);
-				}
-			}
-	
-			//console.log("tick");
-			if(!this.tween["isPlaying"]){
-				this._StopTicking();
-			}
-		}
-	
-		Release(){
-			this.aekiro_dialogManager.removeDialog(this.GetObjectInstance());
-			
-			super.Release();
-		}
-	
-		SaveToJson(){
-			return {
-				"openAnimation": this.openAnimation,
-				"openAnimTweenFunction": this.openAnimTweenFunction,
-				"openAnimDuration": this.openAnimDuration,
-				"openSound": this.openSound,
-				"closeAnimation": this.closeAnimation,
-				"closeAnimTweenFunction": this.closeAnimTweenFunction,
-				"closeAnimDuration": this.closeAnimDuration,
-				"closeSound": this.closeSound,
-				"closeButtonUID":this.closeButtonUID,
-				"isModal": this.isModal
-			};
-		}
-	
-		LoadFromJson(o){
-			this.openAnimation = o["openAnimation"];
-			this.openAnimTweenFunction = o["openAnimTweenFunction"];
-			this.openAnimDuration = o["openAnimDuration"];
-			this.openSound = o["openSound"];
-			this.closeAnimation = o["closeAnimation"];
-			this.closeAnimTweenFunction = o["closeAnimTweenFunction"];
-			this.closeAnimDuration = o["closeAnimDuration"];
-			this.closeSound = o["closeSound"];
-			this.closeButtonUID = o["closeButtonUID"];
-			this.isModal = o["isModal"];
-		}
-	
-	
-	}
-	
-}
-
-
-
-"use strict";
-
-{
-	C3.Behaviors.aekiro_dialog.Cnds = {
-		onDialogOpened(){ return true; },
-		onDialogClosed(){ return true; },
-		isOpened(){ return true; }
-	};
-	
-}
-
-
-"use strict";
-
-{
-	C3.Behaviors.aekiro_dialog.Acts = {
-		Open(targetX,targetY,isCentered){
-			this.open(targetX,targetY,isCentered);
-		},
-		Close(){
-			this.close();
-		},
-		SetOpenSoundVolume(v){
-			this.audioSources.open.setVolume(v);
-		},
-		SetCloseSoundVolume(v){
-			this.audioSources.close.setVolume(v);
-		}
-	};
-}
-
-
-"use strict";
-
-{
-	C3.Behaviors.aekiro_dialog.Exps =
-	{
 	};
 }
 
@@ -9508,81 +14937,6 @@ d},Unpin(){this._SetPinInst(null);this._mode="";this._propSet.clear();this._pinI
 'use strict';{const C3=self.C3;C3.Behaviors.Pin.Exps={PinnedUID(){return this._pinInst?this._pinInst.GetUID():-1}}};
 
 
-'use strict';{const C3=self.C3;C3.Behaviors.Tween=class TweenBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.Tween.Type=class TweenType extends C3.SDKBehaviorTypeBase{constructor(behaviorType){super(behaviorType)}Release(){super.Release()}OnCreate(){}}};
-
-
-'use strict';{const C3=self.C3;const NAMESPACE=C3.Behaviors.Tween;const ENABLED=0;NAMESPACE.Instance=class TweenInstance extends C3.SDKBehaviorInstanceBase{constructor(behInst,properties){super(behInst);this._allowMultiple=false;this._enabled=true;if(properties){this._allowMultiple=false;this._enabled=!!properties[ENABLED]}this._activeTweens=new Map;this._disabledTweens=[];this._waitingForReleaseTweens=new Map;this._finishingTween=null;this._activeTweensJson=null;this._disabledTweensJson=null;this._waitingForReleaseTweensJson=
-null;this._finishingTweenName="";if(this._enabled)this._StartTicking2();this._afterLoad=e=>this._OnAfterLoad(e);this.GetRuntime().Dispatcher().addEventListener("afterload",this._afterLoad)}Release(){this.GetRuntime().Dispatcher().removeEventListener("afterload",this._afterLoad);this._afterLoad=null;if(this._finishingTween){this.ReleaseAndCompleteTween(this._finishingTween);this._finishingTween=null}this.ReleaseAndCompleteTweens();this._tweens=null;this.ClearDisabledList();this._disabledTweens=null;
-this._ReleaseWaitingTweens();this._waitingForReleaseTweens=null;super.Release()}SetEnabled(e){this._enabled=e;if(this._enabled)this._StartTicking2();else this._StopTicking2()}GetEnabled(){return this._enabled}AddToDisabledList(tween){this._disabledTweens.push(tween)}IsInDisabledList(tween){return this._disabledTweens.includes(tween)}ClearDisabledList(){C3.clearArray(this._disabledTweens)}GetFinishingTween(){return this._finishingTween}IsInstanceValid(){const inst=this.GetObjectInstance();if(!inst)return false;
-return!inst.IsDestroyed()}GetTween(tags,property,includeWaitingForRelease=false){const tweens=property?this.PropertyTweens(property,includeWaitingForRelease):this.AllTweens(includeWaitingForRelease);if(!tweens||!tweens.length)return;for(const tween of tweens)if(tween.HasTags(tags))return tween}GetTweenIncludingWaitingForRelease(tags,property){return this.GetTween(tags,property,true)}*GetTweens(tags,property,includeWaitingForRelease=false){const tweens=property?this.PropertyTweens(property,includeWaitingForRelease):
-this.AllTweens(includeWaitingForRelease);if(tweens&&tweens.length)for(const tween of tweens)if(tween.HasTags(tags))yield tween}*GetTweensIncludingWaitingForRelease(tags,property){yield*this.GetTweens(tags,property,true)}PropertyTweens(property,includeWaitingForRelease){if(includeWaitingForRelease){let active=this._activeTweens.get(property);let waitingForRelease=this._waitingForReleaseTweens.get(property);if(!active)active=[];if(!waitingForRelease)waitingForRelease=[];return active.concat(waitingForRelease).filter(t=>
-t)}else{let active=this._activeTweens.get(property);if(!active)active=[];return active.filter(t=>t)}}AllTweens(includeWaitingForRelease){if(includeWaitingForRelease){const active=[...this._activeTweens.values()].flat();const waitingForRelease=[...this._waitingForReleaseTweens.values()].flat();return active.concat(waitingForRelease).filter(t=>t)}else{const active=[...this._activeTweens.values()].flat();return active.filter(t=>t)}}AllTweensIncludingWaitingForRelease(){return this.AllTweens(true)}SaveToJson(){return{"s":false,
-"e":!!this._enabled,"at":this._SaveActiveTweensToJson(),"dt":this._SaveDisabledTweensToJson(),"wt":this._SaveWaitingForReleaseTweensToJson(),"ft":this._SaveFinishingTweenToJson()}}LoadFromJson(o){if(!o)return;this._activeTweensJson=o["at"];this._disabledTweensJson=o["dt"];this._waitingForReleaseTweensJson=o["wt"];this._finishingTweenName=o["ft"];this._allowMultiple=false;this._enabled=!!o["e"]}_OnAfterLoad(e){const timelineManager=this.GetRuntime().GetTimelineManager();this._PopulateTweenMap(this._activeTweensJson,
-this._activeTweens,timelineManager);if(this._disabledTweensJson){C3.clearArray(this._disabledTweens);for(const tweenName of this._disabledTweensJson)this._PopulateTweenArray(this._disabledTweens,tweenName,timelineManager)}this._PopulateTweenMap(this._waitingForReleaseTweensJson,this._waitingForReleaseTweens,timelineManager);this._finishingTween=this._GetTween(this._finishingTweenName,timelineManager);this._enabled?this._StartTicking2():this._StopTicking2()}_PopulateTweenMap(restoreJson,map,timelineManager){if(!restoreJson)return;
-for(const property in restoreJson){let tweens=map.get(property);tweens?C3.clearArray(tweens):tweens=[];const tweensJson=restoreJson[property];for(const tweenJson of tweensJson){const success=this._PopulateTweenArray(tweens,tweenJson["name"],timelineManager);if(!success){const tween=C3.Tween.Build({runtime:this.GetRuntime(),json:tweenJson});tween.AddCompletedCallback(tween=>this._FinishTriggers(tween));timelineManager.AddScheduledTimeline(tween);this._PopulateTweenArray(tweens,tween,timelineManager)}else this._LoadTweenFromJson(tweenJson["name"],
-tweenJson,timelineManager)}map.set(property,tweens)}}_GetTween(name,timelineManager){return timelineManager.GetScheduledOrPlayingTimelineByName(name)}_PopulateTweenArray(collection,tweenOrName,timelineManager){if(typeof tweenOrName==="string"){const tween=this._GetTween(tweenOrName,timelineManager);if(tween)return!!collection.push(tween)}else return!!collection.push(tweenOrName);return false}_LoadTweenFromJson(tweenOrName,tweenJson,timelineManager){if(typeof tweenOrName==="string"){const tween=this._GetTween(tweenOrName,
-timelineManager);if(tween)tween._LoadFromJson(tweenJson)}else tweenOrName._LoadFromJson(tweenJson)}_SaveActiveTweensToJson(){const ret={};for(const [property,tweens]of this._activeTweens)ret[property]=tweens.map(tween=>tween._SaveToJson());return ret}_SaveDisabledTweensToJson(){return this._disabledTweens.map(tween=>tween.GetName())}_SaveWaitingForReleaseTweensToJson(){const ret={};for(const [property,tweens]of this._waitingForReleaseTweens)ret[property]=tweens.map(tween=>tween._SaveToJson());return ret}_SaveFinishingTweenToJson(){return this._finishingTween?
-this._finishingTween.GetName():""}Tick2(){this._ReleaseWaitingTweens()}CreateTween(args){const propertyTracksConfig=NAMESPACE.Config.GetPropertyTracksConfig(args.property,args.startValue,args.endValue,args.ease,args.resultMode,this.GetObjectInstance());const tweenId=NAMESPACE.Maps.GetPropertyFromIndex(args.property);if(!NAMESPACE.Maps.IsValueId(tweenId))this.ReleaseTweens(args.property);const tween=C3.Tween.Build({runtime:this.GetRuntime(),id:tweenId,tags:args.tags,time:args.time,instance:this.GetObjectInstance(),
-releaseOnComplete:!!args.releaseOnComplete,loop:!!args.loop,pingPong:!!args.pingPong,initialValueMode:args.initialValueMode,propertyTracksConfig:propertyTracksConfig});tween.AddCompletedCallback(tween=>this._FinishTriggers(tween));this._AddTween(tween,args.property);return tween}ReleaseTween(tween,complete=false){const id=tween.GetId();if(this._activeTweens.has(id)){const tweenArray=this._activeTweens.get(id);if(tweenArray){const index=tweenArray.indexOf(tween);if(index!==-1)tweenArray.splice(index,
-1)}}if(tween.IsReleased())return;if(this._IsInWaitingList(tween))return;tween.Stop(complete);this._AddToWaitingList(tween)}ReleaseTweens(indexProperty,complete=false){if(C3.IsFiniteNumber(indexProperty)){const stringProperty=NAMESPACE.Maps.GetPropertyFromIndex(indexProperty);if(!this._activeTweens.has(stringProperty))return;const tweenArray=this._activeTweens.get(stringProperty);const finishingTween=this.GetFinishingTween();for(const tween of tweenArray){if(tween===finishingTween)continue;if(tween.IsReleased())continue;
-if(this._IsInWaitingList(tween))continue;tween.Stop(complete);tween.Release()}C3.clearArray(tweenArray)}else{const finishingTween=this.GetFinishingTween();for(const tween of this.AllTweens()){if(tween===finishingTween)continue;if(tween.IsReleased())continue;if(this._IsInWaitingList(tween))continue;tween.Stop(complete);tween.Release()}for(const property of this._activeTweens.keys()){C3.clearArray(this._activeTweens.get(property));this._activeTweens.delete(property)}this._activeTweens.clear()}}ReleaseAndCompleteTween(tween){this.ReleaseTween(tween,
-true)}ReleaseAndCompleteTweens(){this.ReleaseTweens(NaN,true)}GetPropertyValueByIndex(index){switch(index){case ENABLED:return this._enabled}}SetPropertyValueByIndex(index,value){switch(index){case ENABLED:this._enabled=!!value;break}}_GetBehaviorType(tween){const instance=tween.GetInstance();const behaviorInstances=instance.GetBehaviorInstances();for(const behaviorInstance of behaviorInstances){const behaviorType=behaviorInstance.GetBehaviorType();if(behaviorType.GetInstanceSdkCtor()===this.constructor)return behaviorType}}Trigger(method,
-runtime,inst,behaviorType){if(this._runtime)return super.Trigger(method);else return runtime.Trigger(method,inst,behaviorType)}_FinishTriggers(tween){this._finishingTween=tween;NAMESPACE.Cnds.SetFinishingTween(tween);let instance;let runtime;if(!this.GetRuntime()){instance=tween.GetInstance();if(!instance)return;if(instance&&instance.IsDestroyed())return;runtime=instance.GetRuntime();const behaviorType=this._GetBehaviorType(tween);this.Trigger(NAMESPACE.Cnds.OnTweensFinished,runtime,instance,behaviorType);
-this.Trigger(NAMESPACE.Cnds.OnAnyTweensFinished,runtime,instance,behaviorType);tween.Stop()}else{instance=this._inst;runtime=this._runtime;this.Trigger(NAMESPACE.Cnds.OnTweensFinished);this.Trigger(NAMESPACE.Cnds.OnAnyTweensFinished);this.ReleaseTween(tween)}this._finishingTween=null;NAMESPACE.Cnds.SetFinishingTween(null);if(tween.GetDestroyInstanceOnComplete())runtime.DestroyInstance(instance)}_AddTween(tween,indexProperty){const stringProperty=NAMESPACE.Maps.GetPropertyFromIndex(indexProperty);
-if(!this._activeTweens.has(stringProperty))this._activeTweens.set(stringProperty,[]);const tweenArray=this._activeTweens.get(stringProperty);tweenArray.push(tween)}_AddToWaitingList(tween){const id=tween.GetId();if(!this._waitingForReleaseTweens.has(id))this._waitingForReleaseTweens.set(id,[]);this._waitingForReleaseTweens.get(id).push(tween)}_IsInWaitingList(tween){const id=tween.GetId();if(!this._waitingForReleaseTweens.has(id))return false;return this._waitingForReleaseTweens.get(id).includes(tween)}_ReleaseWaitingTweens(){if(!this._waitingForReleaseTweens.size)return;
-for(const tweenArray of this._waitingForReleaseTweens.values()){for(const tween of tweenArray){if(tween.IsReleased())continue;tween.Release()}C3.clearArray(tweenArray)}this._waitingForReleaseTweens.clear()}}};
-
-
-'use strict';{const C3=self.C3;let finishingTween=null;C3.Behaviors.Tween.Cnds={SetFinishingTween(tween){finishingTween=tween},OnTweensFinished(tags){return finishingTween.HasTags(tags)},OnAnyTweensFinished(){return true},IsPlaying(tags){const tweens=[...this.GetTweensIncludingWaitingForRelease(tags)];if(!tweens)return false;if(!tweens.length)return false;return tweens.some(C3.Tween.IsPlaying)},IsAnyPlaying(){const tweens=[...this.AllTweensIncludingWaitingForRelease()];if(!tweens)return false;if(!tweens.length)return false;
-return tweens.some(C3.Tween.IsPlaying)},IsPaused(tags){const tweens=[...this.GetTweensIncludingWaitingForRelease(tags)];if(!tweens)return false;if(!tweens.length)return false;return tweens.some(C3.Tween.IsPaused)},IsAnyPaused(){const tweens=[...this.AllTweensIncludingWaitingForRelease()];if(!tweens)return false;if(!tweens.length)return false;return tweens.some(C3.Tween.IsPaused)}}};
-
-
-'use strict';{const C3=self.C3;const Ease=self.Ease;const NAMESPACE=C3.Behaviors.Tween;NAMESPACE.Acts={SetEnabled(enable){this.SetEnabled(!!enable);for(const tween of this.AllTweens())if(!!enable){if(this.IsInDisabledList(tween))tween.Resume()}else{if(tween.IsPlaying()||tween.IsScheduled())this.AddToDisabledList(tween);tween.Stop()}if(enable)this.ClearDisabledList()},async TweenOneProperty(...args){if(!this.GetEnabled()||!this.IsInstanceValid())return;const tween=this.CreateTween(NAMESPACE.TweenArguments.OneProperty(this,
-...args));if(tween.Play())await tween.GetPlayPromise()},async TweenTwoProperties(...args){if(!this.GetEnabled()||!this.IsInstanceValid())return;const tween=this.CreateTween(NAMESPACE.TweenArguments.TwoProperties(this,...args));if(tween.Play())await tween.GetPlayPromise()},async TweenValue(...args){if(!this.GetEnabled()||!this.IsInstanceValid())return;const tween=this.CreateTween(NAMESPACE.TweenArguments.ValueProperty(this,...args));if(tween.Play())await tween.GetPlayPromise()},PauseTweens(tags){if(!this.GetEnabled()||
-!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags))tween.Stop()},PauseAllTweens(){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.AllTweens())tween.Stop()},ResumeTweens(tags){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags))tween.Resume()},ResumeAllTweens(){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.AllTweens())tween.Resume()},StopTweens(tags){if(!this.GetEnabled()||!this.IsInstanceValid())return;
-for(const tween of this.GetTweens(tags))this.ReleaseTween(tween)},StopAllTweens(){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.AllTweens())this.ReleaseTween(tween)},SetOnePropertyTweensEndValue(tags,endValue,property){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags)){tween.BeforeSetEndValues([property]);tween.SetEndValue(endValue,property)}},SetTwoPropertiesTweensEndValue(tags,property,endValueX,endValueY){if(!this.GetEnabled()||
-!this.IsInstanceValid())return;const properties=C3.Behaviors.Tween.Maps.GetRealProperties(property);for(const tween of this.GetTweens(tags)){tween.BeforeSetEndValues(properties);tween.SetEndValue(endValueX,properties[0]);tween.SetEndValue(endValueY,properties[1])}},SetValuePropertyTweensStartValue(tags,startValue){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags,"value"))tween.SetStartValue(startValue,"value")},SetValuePropertyTweensEndValue(tags,endValue){if(!this.GetEnabled()||
-!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags,"value")){tween.BeforeSetEndValues(["value"]);tween.SetEndValue(endValue,"value")}},SetTweensEase(tags,easeIndex){if(!this.GetEnabled()||!this.IsInstanceValid())return;const ease=Ease.GetEaseFromIndex(easeIndex);for(const tween of this.GetTweens(tags))tween.SetEase(ease)},SetAllTweensEase(easeIndex){if(!this.GetEnabled()||!this.IsInstanceValid())return;const ease=Ease.GetEaseFromIndex(easeIndex);for(const tween of this.AllTweens())tween.SetEase(ease)},
-SetTweensTime(tags,time){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags))tween.SetTime(time)},SetAllTweensTime(time){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.AllTweens())tween.SetTime(time)},SetTweensPlaybackRate(tags,rate){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags))tween.SetPlaybackRate(rate)},SetAllTweensPlaybackRate(rate){if(!this.GetEnabled()||!this.IsInstanceValid())return;
-for(const tween of this.AllTweens())tween.SetPlaybackRate(rate)},SetTweensDestroyOnComplete(tags,destroyOnComplete){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.GetTweens(tags))tween.SetDestroyInstanceOnComplete(!!destroyOnComplete)},SetAllTweensDestroyOnComplete(destroyOnComplete){if(!this.GetEnabled()||!this.IsInstanceValid())return;for(const tween of this.AllTweens())tween.SetDestroyInstanceOnComplete(!!destroyOnComplete)}}};
-
-
-'use strict';{const C3=self.C3;C3.Behaviors.Tween.Exps={Time(tags){const tween=this.GetTweenIncludingWaitingForRelease(tags);if(!tween)return 0;return tween.GetTime()},Progress(tags){const tween=this.GetTweenIncludingWaitingForRelease(tags);if(!tween)return 0;return tween.GetTime()/tween.GetTotalTime()},Value(tags){const tween=this.GetTweenIncludingWaitingForRelease(tags,"value");if(!tween)return 0;return tween.GetPropertyTrack("value").GetSourceAdapterValue()},Tags(){if(!this.GetFinishingTween())return"";
-return this.GetFinishingTween().GetStringTags()}}};
-
-
-'use strict';{const C3=self.C3;const Ease=self.Ease;const PAIR_PROPERTIES=["position","size","scale"];const SINGLE_PROPERTIES=["offsetX","offsetY","offsetWidth","offsetHeight","offsetAngle","offsetOpacity","offsetColor","offsetZElevation","offsetScaleX","offsetScaleY"];const VALUE_PROPERTIES=["value"];const PROPERTY_INDEX_TO_NAME=[].concat(PAIR_PROPERTIES).concat(SINGLE_PROPERTIES).concat(VALUE_PROPERTIES);const PROPERTY_PAIR_TO_REAL_PROPERTIES={"position":["offsetX","offsetY"],"size":["offsetWidth",
-"offsetHeight"],"scale":["offsetScaleX","offsetScaleY"]};const ALL_REAL_PROPERTIES=Object.assign({},PROPERTY_INDEX_TO_NAME.reduce((o,key)=>Object.assign({},o,{[key]:[key]}),{}),PROPERTY_PAIR_TO_REAL_PROPERTIES);C3.Behaviors.Tween.Maps=class Maps{constructor(){}static GetEases(){return[...Ease.GetRuntimeEaseNames()]}static GetEaseFromIndex(index){return[...Ease.GetRuntimeEaseNames()][index]}static GetPropertyFromIndex(index){return PROPERTY_INDEX_TO_NAME[index]}static GetPropertyIndexFromName(name){return PROPERTY_INDEX_TO_NAME.indexOf(name)}static GetPairPropertyFromIndex(index){return PAIR_PROPERTIES[index]}static GetSinglePropertyFromIndex(index){return SINGLE_PROPERTIES[index]}static GetValuePropertyFromIndex(index){return VALUE_PROPERTIES[index]}static GetPairProperties(pairId){return PROPERTY_PAIR_TO_REAL_PROPERTIES[pairId]}static GetRealProperties(id){if(C3.IsString(id))return ALL_REAL_PROPERTIES[id];
-else return ALL_REAL_PROPERTIES[PROPERTY_INDEX_TO_NAME[id]]}static IsPairId(id){return!!PROPERTY_PAIR_TO_REAL_PROPERTIES[id]}static IsColorId(id){return id==="offsetColor"}static IsAngleId(id){return id==="offsetAngle"}static IsOpacityId(id){return id==="offsetOpacity"}static IsValueId(id){return id==="value"}}};
-
-
-'use strict';{const C3=self.C3;const NAMESPACE=C3.Behaviors.Tween;const TWEEN_CONFIGURATIONS=new Map;NAMESPACE.Config=class Config{constructor(){}static GetPropertyTracksConfig(property,startValue,endValue,ease,resultMode,instance){if(TWEEN_CONFIGURATIONS.size===0)this._CreateConfigObjects();const propertyType=NAMESPACE.PropertyTypes.Pick(property);let config=TWEEN_CONFIGURATIONS.get(propertyType);if(C3.IsFiniteNumber(property))property=NAMESPACE.Maps.GetPropertyFromIndex(property);return this._GetConfig(config,
-property,startValue,endValue,ease,resultMode,instance)}static TransformValue(property,value){const configFunctionObject=C3.Behaviors.Tween.GetPropertyTracksConfig(property);return configFunctionObject.valueGetter(value)}static _CreateConfigObjects(){const types=NAMESPACE.PropertyTypes;const getters=NAMESPACE.ValueGetters;this._AddConfigObject(types.PAIR,this._GetPairConfig,getters._GetPropertyValue);this._AddConfigObject(types.COLOR,this._GetColorConfig,getters._GetColorPropertyValue);this._AddConfigObject(types.ANGLE,
-this._GetAngleConfig,getters._GetPropertyAngleValue);this._AddConfigObject(types.VALUE,this._GetValueConfig,getters._GetPropertyValue);this._AddConfigObject(types.OTHER,this._GetCommonConfig,getters._GetPropertyValue)}static _AddConfigObject(name,configGetter,valueGetter){TWEEN_CONFIGURATIONS.set(name,this._CreateConfigObject(name,configGetter,valueGetter))}static _CreateConfigObject(name,configFunc,valueGetter){return{name:name,configFunc:configFunc,valueGetter:valueGetter}}static _GetConfig(config,
-property,startValue,endValue,ease,resultMode,instance){return config.configFunc(property,config.valueGetter(startValue),config.valueGetter(endValue),ease,resultMode,instance)}static _GetPairConfig(property,startValues,endValues,ease,resultMode,instance){const properties=NAMESPACE.Maps.GetPairProperties(property);return properties.map((property,index)=>{return{sourceId:"world-instance",property:property,type:"float",valueType:"numeric",startValue:startValues[index],endValue:endValues[index],ease:NAMESPACE.Maps.GetEaseFromIndex(ease),
-resultMode:resultMode}})}static _GetColorConfig(property,startValue,endValue,ease,resultMode,instance){if(C3.Plugins.Text&&instance.GetPlugin()instanceof C3.Plugins.Text)return{sourceId:"plugin",sourceArgs:[7],property:"color",type:"color",valueType:"color",startValue:startValue,endValue:endValue,ease:NAMESPACE.Maps.GetEaseFromIndex(ease),resultMode:resultMode};else return{sourceId:"world-instance",property:property,type:"color",valueType:"color",startValue:startValue,endValue:endValue,ease:NAMESPACE.Maps.GetEaseFromIndex(ease),
-resultMode:resultMode}}static _GetAngleConfig(property,startValue,endValue,ease,resultMode,instance){return{sourceId:"world-instance",property:property,type:"angle",valueType:"angle",startValue:startValue,endValue:endValue,ease:NAMESPACE.Maps.GetEaseFromIndex(ease),resultMode:resultMode}}static _GetCommonConfig(property,startValue,endValue,ease,resultMode,instance){return{sourceId:"world-instance",property:property,type:"float",valueType:"numeric",startValue:startValue,endValue:endValue,ease:NAMESPACE.Maps.GetEaseFromIndex(ease),
-resultMode:resultMode}}static _GetValueConfig(property,startValue,endValue,ease,resultMode,instance){return{sourceId:"value",property:property,type:"float",valueType:"numeric",startValue:startValue,endValue:endValue,ease:NAMESPACE.Maps.GetEaseFromIndex(ease),resultMode:resultMode}}}};
-
-
-'use strict';{const C3=self.C3;const NAMESPACE=C3.Behaviors.Tween;const COMMON_FIXED_ARGS={resultMode:"absolute"};const COMMON_VARIABLE_ARGS=Object.assign({},COMMON_FIXED_ARGS,{tags:"",property:"",time:0,ease:0,releaseOnComplete:0,loop:false,pingPong:false});const ONE_PROPERTY_ARGS=Object.assign({},COMMON_VARIABLE_ARGS,{initialValueMode:"current-state",startValue:0,endValue:0});const TWO_PROPERTIES_ARGS=Object.assign({},COMMON_VARIABLE_ARGS,{initialValueMode:"current-state",startValue:[0,0],endValue:[0,
-0]});const COLOR_PROPERTY_ARGS=Object.assign({},COMMON_VARIABLE_ARGS,{initialValueMode:"current-state",startValue:[0,0,0],endValue:[0,0,0]});const VALUE_PROPERTY_ARGS=Object.assign({},ONE_PROPERTY_ARGS,{initialValueMode:"start-value"});const X=0;const Y=1;const R=0;const G=1;const B=2;NAMESPACE.TweenArguments=class TweenArguments{constructor(){}static _SetCommonProperties(argsObject,tags,time,ease,destroyOnComplete,loop,pingPong){argsObject.tags=tags;argsObject.time=time;argsObject.ease=ease;argsObject.releaseOnComplete=
-destroyOnComplete;argsObject.loop=loop;argsObject.pingPong=pingPong}static OneProperty(inst,tags,property,endValue,time,ease,destroyOnComplete,loop,pingPong){const propertyName=NAMESPACE.Maps.GetSinglePropertyFromIndex(property);const args=NAMESPACE.Maps.IsColorId(propertyName)?COLOR_PROPERTY_ARGS:ONE_PROPERTY_ARGS;this._SetCommonProperties(args,tags,time,ease,destroyOnComplete,loop,pingPong);if(NAMESPACE.Maps.IsColorId(propertyName)){COLOR_PROPERTY_ARGS.endValue[R]=C3.GetRValue(endValue);COLOR_PROPERTY_ARGS.endValue[G]=
-C3.GetGValue(endValue);COLOR_PROPERTY_ARGS.endValue[B]=C3.GetBValue(endValue);COLOR_PROPERTY_ARGS.property=NAMESPACE.Maps.GetPropertyIndexFromName(propertyName)}else if(NAMESPACE.Maps.IsOpacityId(propertyName))ONE_PROPERTY_ARGS.endValue=endValue/100;else ONE_PROPERTY_ARGS.endValue=endValue;args.property=NAMESPACE.Maps.GetPropertyIndexFromName(propertyName);return args}static TwoProperties(inst,tags,property,endValueX,endValueY,time,ease,destroyOnComplete,loop,pingPong){this._SetCommonProperties(TWO_PROPERTIES_ARGS,
-tags,time,ease,destroyOnComplete,loop,pingPong);const pairName=NAMESPACE.Maps.GetPairPropertyFromIndex(property);TWO_PROPERTIES_ARGS.endValue[X]=endValueX;TWO_PROPERTIES_ARGS.endValue[Y]=endValueY;TWO_PROPERTIES_ARGS.property=NAMESPACE.Maps.GetPropertyIndexFromName(pairName);return TWO_PROPERTIES_ARGS}static ValueProperty(inst,tags,startValue,endValue,time,ease,destroyOnComplete,loop,pingPong){this._SetCommonProperties(VALUE_PROPERTY_ARGS,tags,time,ease,destroyOnComplete,loop,pingPong);VALUE_PROPERTY_ARGS.startValue=
-startValue;VALUE_PROPERTY_ARGS.endValue=endValue;VALUE_PROPERTY_ARGS.property=NAMESPACE.Maps.GetPropertyIndexFromName("value");return VALUE_PROPERTY_ARGS}}};
-
-
-'use strict';{const C3=self.C3;const NAMESPACE=C3.Behaviors.Tween;const TYPE_CHECK_OBJECTS=[];NAMESPACE.PropertyTypes=class PropertyTypes{constructor(){}static Pick(property){if(TYPE_CHECK_OBJECTS.length===0){const arr=TYPE_CHECK_OBJECTS;arr.push({checkFunc:NAMESPACE.Maps.IsPairId,result:this.PAIR});arr.push({checkFunc:NAMESPACE.Maps.IsColorId,result:this.COLOR});arr.push({checkFunc:NAMESPACE.Maps.IsAngleId,result:this.ANGLE});arr.push({checkFunc:NAMESPACE.Maps.IsValueId,result:this.VALUE});arr.push({checkFunc:()=>
-true,result:this.OTHER})}if(C3.IsFiniteNumber(property))property=C3.Behaviors.Tween.Maps.GetPropertyFromIndex(property);for(const propertyTypeFunctionObject of TYPE_CHECK_OBJECTS)if(propertyTypeFunctionObject.checkFunc(property))return propertyTypeFunctionObject.result}static get PAIR(){return"pair"}static get COLOR(){return"color"}static get ANGLE(){return"angle"}static get VALUE(){return"value"}static get OTHER(){return"other"}}};
-
-
-'use strict';{const C3=self.C3;const NAMESPACE=C3.Behaviors.Tween;NAMESPACE.ValueGetters=class ValueGetters{constructor(){}static _GetPropertyAngleValue(value){const r=C3.toRadians(parseFloat(value));return C3.clampAngle(r)}static _GetColorPropertyValue(value){return value.slice(0)}static _GetPropertyValue(value){return value}}};
-
-
 'use strict';{const C3=self.C3;C3.Behaviors.solid=class SolidBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
 
 
@@ -9778,14 +15132,17 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Plugins.Mouse,
 		C3.Plugins.TextBox,
 		C3.Plugins.Timeline,
+		C3.Plugins.VKBridge,
 		C3.Plugins.NinePatch,
-		C3.Behaviors.Sin,
+		C3.Behaviors.aekiro_dialog,
 		C3.Behaviors.aekiro_gameobject,
+		C3.Behaviors.Tween,
+		C3.Behaviors.DragnDrop,
+		C3.Behaviors.Sin,
 		C3.Behaviors.aekiro_button,
 		C3.Plugins.Spritefont2,
 		C3.Behaviors.aekiro_gridviewbind,
 		C3.Plugins.Sprite,
-		C3.Behaviors.aekiro_dialog,
 		C3.Behaviors.aekiro_gridView,
 		C3.Behaviors.aekiro_scrollView,
 		C3.Plugins.Text,
@@ -9794,7 +15151,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Behaviors.EightDir,
 		C3.Behaviors.Timer,
 		C3.Behaviors.Pin,
-		C3.Behaviors.Tween,
 		C3.Behaviors.solid,
 		C3.Behaviors.Fade,
 		C3.Behaviors.destroy,
@@ -9808,6 +15164,9 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Plugins.Tilemap,
 		C3.Plugins.Audio,
 		C3.Behaviors.MoveTo,
+		C3.Plugins.LocalStorage,
+		C3.Plugins.Browser,
+		C3.Plugins.Particles,
 		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Behaviors.EightDir.Cnds.CompareSpeed,
 		C3.Behaviors.EightDir.Cnds.IsMoving,
@@ -9927,17 +15286,18 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Behaviors.Timer.Cnds.IsTimerRunning,
 		C3.Plugins.Mouse.Exps.X,
 		C3.Plugins.Mouse.Exps.Y,
+		C3.Behaviors.Tween.Acts.TweenOneProperty,
+		C3.Plugins.Sprite.Exps.Angle,
 		C3.Plugins.Sprite.Cnds.OnCollision,
 		C3.Plugins.System.Cnds.Repeat,
 		C3.Plugins.System.Exps.random,
-		C3.Plugins.Sprite.Exps.Angle,
 		C3.Behaviors.Bullet.Acts.SetSpeed,
 		C3.Plugins.Sprite.Cnds.OnCreated,
+		C3.Behaviors.Tween.Cnds.IsAnyPlaying,
 		C3.Plugins.Sprite.Cnds.IsFlipped,
 		C3.Behaviors.aekiro_gameobject.Acts.Destroy,
 		C3.Plugins.NinePatch.Acts.SetVisible,
 		C3.Behaviors.aekiro_button.Acts.setEnabled,
-		C3.Behaviors.Tween.Acts.TweenOneProperty,
 		C3.Plugins.Spritefont2.Acts.SetOpacity,
 		C3.Behaviors.Tween.Cnds.OnTweensFinished,
 		C3.Plugins.System.Acts.SetLayerVisible,
@@ -9993,12 +15353,41 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Behaviors.Sin.Cnds.IsEnabled,
 		C3.Plugins.System.Acts.WaitForPreviousActions,
 		C3.Plugins.System.Exps.layoutname,
+		C3.Behaviors.aekiro_gridviewbind.Exps.index,
+		C3.Plugins.System.Exps.rgbex255,
+		C3.Behaviors.aekiro_button.Cnds.OnMouseEnter,
+		C3.Behaviors.aekiro_gridviewbind.Cnds.IsIndex,
+		C3.Behaviors.aekiro_button.Cnds.OnMouseLeave,
+		C3.Behaviors.Sin.Acts.SetPhase,
+		C3.Behaviors.aekiro_dialog.Cnds.isOpened,
+		C3.Plugins.TextBox.Cnds.IsFocused,
+		C3.Plugins.Json.Exps.GetAsCompactString,
+		C3.Plugins.Mouse.Cnds.OnObjectClicked,
+		C3.Plugins.NinePatch.Cnds.CompareInstanceVar,
+		C3.Plugins.Particles.Acts.SetSpraying,
+		C3.Behaviors.aekiro_scrollView.Acts.ScrollTo,
+		C3.Behaviors.Tween.Exps.Value,
+		C3.Behaviors.Tween.Acts.TweenTwoProperties,
+		C3.Plugins.System.Cnds.PickOverlappingPoint,
+		C3.Behaviors.aekiro_gameobject.Cnds.IsParentName,
+		C3.Behaviors.aekiro_gameobject.Exps.name,
+		C3.Plugins.Particles.Acts.SetOpacity,
+		C3.Plugins.Json.Acts.RemoveValues,
+		C3.Behaviors.aekiro_dialog.Cnds.onDialogOpened,
+		C3.Plugins.VKBridge.Acts.StorageSet,
+		C3.Plugins.Json.Exps.ToCompactString,
 		C3.Plugins.Touch.Exps.TouchCount,
 		C3.Plugins.Touch.Exps.XAt,
 		C3.Plugins.Touch.Exps.YAt,
 		C3.Plugins.Sprite.Acts.MoveAtAngle,
 		C3.Plugins.System.Cnds.IsBetweenAngles,
-		C3.Plugins.System.Acts.SetGroupActive
+		C3.Plugins.System.Acts.SetGroupActive,
+		C3.Plugins.VKBridge.Acts.BridgeConnect,
+		C3.Plugins.VKBridge.Cnds.BridgeConnectSuccess,
+		C3.Plugins.VKBridge.Acts.Authorization,
+		C3.Plugins.VKBridge.Cnds.StorageGetSuccess,
+		C3.Plugins.VKBridge.Exps.StorageData,
+		C3.Plugins.VKBridge.Exps.UserID
 		];
 	};
 	self.C3_JsPropNameTable = [
@@ -10012,8 +15401,21 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{Mouse: 0},
 		{TextInput2: 0},
 		{Timeline: 0},
-		{Sine: 0},
+		{Bridge: 0},
+		{Dialog: 0},
 		{GameObject: 0},
+		{dialog: 0},
+		{dialog_clothes: 0},
+		{Tween: 0},
+		{DragDrop: 0},
+		{dialog_inventory: 0},
+		{index: 0},
+		{title: 0},
+		{dialog_inventory_dop: 0},
+		{item_to_give: 0},
+		{dialog_crate: 0},
+		{dialog_confirm: 0},
+		{Sine: 0},
 		{"9patch": 0},
 		{button_id: 0},
 		{Button: 0},
@@ -10024,9 +15426,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{GridViewDataBind: 0},
 		{buttons_text: 0},
 		{close_dialog: 0},
-		{Dialog: 0},
-		{dialog: 0},
-		{dialog_clothes: 0},
 		{room_name: 0},
 		{grid_item: 0},
 		{GridView: 0},
@@ -10046,6 +15445,32 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{SliderBar: 0},
 		{scroll: 0},
 		{scroll_button: 0},
+		{close_inventory: 0},
+		{used_rifle: 0},
+		{used_knife: 0},
+		{grid_item_inventory: 0},
+		{rare: 0},
+		{name_ru: 0},
+		{name_en: 0},
+		{description_ru: 0},
+		{description_en: 0},
+		{createdby_ru: 0},
+		{createdby_en: 0},
+		{type_ru: 0},
+		{type_en: 0},
+		{Sine2: 0},
+		{weapons_icons: 0},
+		{close_inventory_dop: 0},
+		{which: 0},
+		{inventory_dop_text: 0},
+		{weapons_icons_dop: 0},
+		{grid_view_inventory: 0},
+		{scroll_crate: 0},
+		{grid_view_crate: 0},
+		{grid_item_crate: 0},
+		{weapons_crate: 0},
+		{Sprite_Card: 0},
+		{buttons_confirm: 0},
 		{opened: 0},
 		{chat_background: 0},
 		{chat_icon: 0},
@@ -10074,7 +15499,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{hero: 0},
 		{nickname_id: 0},
 		{Pin: 0},
-		{Tween: 0},
 		{nicknames: 0},
 		{Solid: 0},
 		{Sprite: 0},
@@ -10086,10 +15510,12 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{chat_nick: 0},
 		{ping: 0},
 		{open: 0},
+		{my_frame: 0},
 		{Fade: 0},
 		{knife: 0},
 		{DestroyOutsideLayout: 0},
 		{pet: 0},
+		{Anchor: 0},
 		{debug_text: 0},
 		{role_text: 0},
 		{role_text2: 0},
@@ -10097,10 +15523,8 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{game_end: 0},
 		{heroid: 0},
 		{parent_uid: 0},
-		{Sine2: 0},
 		{Sprite3: 0},
 		{Sprite4: 0},
-		{Anchor: 0},
 		{anchor: 0},
 		{gun: 0},
 		{Bullet: 0},
@@ -10133,6 +15557,23 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{Sprite10: 0},
 		{torch: 0},
 		{Sprite11: 0},
+		{LocalStorage: 0},
+		{JSON_INVENTORY: 0},
+		{"9patch3": 0},
+		{JSON_BIBLI: 0},
+		{Browser: 0},
+		{TextInput3: 0},
+		{JSON_CRATE: 0},
+		{JSON_CRATE_01: 0},
+		{crate_back: 0},
+		{crate_rare_sort: 0},
+		{Particles: 0},
+		{Sprite12: 0},
+		{Sprite13: 0},
+		{Sprite14: 0},
+		{Particles2: 0},
+		{Sprite15: 0},
+		{Sprite16: 0},
 		{arrow: 0},
 		{text: 0},
 		{spritefonts: 0},
@@ -10145,6 +15586,9 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{version: 0},
 		{player_count: 0},
 		{launguage: 0},
+		{crate_bht: 0},
+		{my_gun_frame: 0},
+		{my_knife_frame: 0},
 		{showThumbstick: 0},
 		{dist: 0}
 	];
@@ -10585,6 +16029,16 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			const f4 = p._GetNode(4).GetBoundMethod();
 			return () => and(and(f0(), "_"), C3.toDegrees(C3.angleTo(n1.ExpObject(), n2.ExpObject(), f3(), f4())));
 		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() + 25);
+		},
+		() => 0.3,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() - 25);
+		},
+		() => 0.7,
 		() => "game",
 		() => "hole",
 		p => {
@@ -10593,7 +16047,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			const f2 = p._GetNode(2).GetBoundMethod();
 			return () => f0(f1(f2(), 1, "_"));
 		},
-		() => 0.05,
 		() => -15,
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10634,6 +16087,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		() => "button_start",
 		() => 69,
 		() => "background_start",
+		() => "ui_paral",
 		() => "text_start",
 		() => "end",
 		() => "background_end",
@@ -10718,7 +16172,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		() => 45,
 		() => "die",
 		() => 0.5,
-		() => 179,
 		() => "a",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
@@ -10821,6 +16274,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		() => 150,
 		() => 156,
 		() => "hero_point",
+		() => 400,
 		() => 250,
 		() => "my_steps",
 		p => {
@@ -10831,7 +16285,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		() => "menu_music",
 		() => -100,
 		() => "lobby_music",
-		() => -25,
+		() => -5,
 		() => "lobby_ambient",
 		() => "lightbee",
 		p => {
@@ -10856,13 +16310,16 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0(0, 7);
 		},
+		() => "crate",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
 		},
+		() => "console_text",
 		() => "button_id_2",
 		() => "ws",
 		() => "button_id_3",
+		() => "button_id_4",
 		() => "button_id_1",
 		p => {
 			const n0 = p._GetNode(0);
@@ -10925,7 +16382,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			return () => f0(n1.ExpInstVar());
 		},
 		() => "button_id_11",
-		() => 0.3,
 		() => "button_id_10",
 		() => "button_id_100",
 		() => "menu",
@@ -10935,6 +16391,216 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			const n0 = p._GetNode(0);
 			return () => n0.ExpInstVar_Family();
 		},
+		() => "inventory",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("rare");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("description_ru");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("description_en");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("title_en");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("title_ru");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("createdby_en");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("createdby_ru");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("type_ru");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("type_en");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("title");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("animation");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("icon");
+		},
+		() => "common",
+		() => "Outline",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(158, 158, 158);
+		},
+		() => "unrare",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(61, 47, 47);
+		},
+		() => "rare",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(65, 96, 190);
+		},
+		() => "epic",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(255, 71, 71);
+		},
+		() => "legendary",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(238, 247, 110);
+		},
+		() => "specific",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(91, 116, 88);
+		},
+		() => "open",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() - 200);
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() + 400);
+		},
+		() => "close",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() + 200);
+		},
+		() => "name",
+		() => "description",
+		() => "createdby",
+		() => "type",
+		() => -444504705943551,
+		() => "Обычный",
+		() => "Common",
+		() => -255931246843903,
+		() => "Specific",
+		() => "Специфический",
+		() => -182810302113791,
+		() => "Rare",
+		() => "Редкий",
+		() => -171531884267519,
+		() => "Uncommon",
+		() => "Необычный",
+		() => -717718412812287,
+		() => "Epic",
+		() => "Эпический",
+		() => -695209177079807,
+		() => "Legendary",
+		() => "Легендарный",
+		() => "rifles",
+		() => 1.35,
+		() => "knifes",
+		() => "pets",
+		() => "crates",
+		() => 2.5,
+		() => 0.35,
+		() => 1.3,
+		() => "item_give",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			return () => f0(n1.ExpObject(), 0, "_");
+		},
+		() => "giveitem",
+		() => "inventory_give_item",
+		() => "inventoryclear",
+		() => "done",
+		p => {
+			const n0 = p._GetNode(0);
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const n2 = p._GetNode(2);
+			return () => n0.ExpObject(f1(n2.ExpObject(), 1, "_"));
+		},
+		() => "open_crate_01",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpObject("2");
+		},
+		() => 75,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpObject("1");
+		},
+		() => 76,
+		() => 85,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpObject("0");
+		},
+		() => 86,
+		() => 95,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpObject("4");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpObject("3");
+		},
+		() => "button_id_25",
+		() => "crate_01",
+		() => "dialog_confirm_yes",
+		() => "speed",
+		() => "dialog_confirm_no",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("index_bibli");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			return () => (n0.ExpObject() + n1.ExpBehavior("speed"));
+		},
+		() => "growup",
+		() => "dialog_crate",
+		() => "point",
+		() => 640,
+		() => "reverse",
+		p => {
+			const n0 = p._GetNode(0);
+			return () => n0.ExpBehavior("speed");
+		},
+		() => 28,
+		() => "[\n]",
+		p => {
+			const n0 = p._GetNode(0);
+			const n1 = p._GetNode(1);
+			return () => n0.ExpObject(n1.ExpInstVar());
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(0, 9);
+		},
+		() => "item_use",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			return () => f0(n1.ExpInstVar(), 0, "_");
+		},
+		() => "AudioMenu",
+		() => -25,
+		() => "whoosh",
+		() => "VK-Bridge",
 		() => "joystick",
 		() => "t",
 		p => {
@@ -10942,7 +16608,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			const f1 = p._GetNode(1).GetBoundMethod();
 			return () => f0(f1(), "UI");
 		},
-		() => 400,
 		p => {
 			const n0 = p._GetNode(0);
 			const n1 = p._GetNode(1);
@@ -10987,7 +16652,17 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		() => "Simulate Keyboard Controls",
 		() => 30,
 		() => 210,
-		() => 330
+		() => 330,
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0("user");
+		},
+		() => "user_id",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0("inventory");
+		},
+		() => "start_items"
 	];
 }
 
@@ -11006,4 +16681,9 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 	self.C3.ScriptsInEvents = scriptsInEvents;
 }
 
+
+// User script vkbridge.js
+!function(){"use strict";var a=function(){return(a=Object.assign||function(e){for(var t,n=1,o=arguments.length;n<o;n++)for(var p in t=arguments[n])Object.prototype.hasOwnProperty.call(t,p)&&(e[p]=t[p]);return e}).apply(this,arguments)};function d(){for(var e=0,t=0,n=arguments.length;t<n;t++)e+=arguments[t].length;var o=Array(e),p=0;for(t=0;t<n;t++)for(var r=arguments[t],i=0,a=r.length;i<a;i++,p++)o[p]=r[i];return o}function s(r,e){var o,p,i=(o={current:0,next:function(){return++this.current}},p={},{add:function(e,t){var n=null!=t?t:o.next();return p[n]=e,n},resolve:function(e,t,n){var o=p[e];o&&(n(t)?o.resolve(t):o.reject(t),p[e]=null)}});return e(function(e){if(e.detail&&e.detail.data&&"object"==typeof e.detail.data&&"request_id"in e.detail.data){var t=e.detail.data,n=t.request_id,o=function(e,t){var n={};for(var o in e)Object.prototype.hasOwnProperty.call(e,o)&&t.indexOf(o)<0&&(n[o]=e[o]);if(null!=e&&"function"==typeof Object.getOwnPropertySymbols){var p=0;for(o=Object.getOwnPropertySymbols(e);p<o.length;p++)t.indexOf(o[p])<0&&Object.prototype.propertyIsEnumerable.call(e,o[p])&&(n[o[p]]=e[o[p]])}return n}(t,["request_id"]);n&&i.resolve(n,o,function(e){return!("error_type"in e)})}}),function(o,p){return void 0===p&&(p={}),new Promise(function(e,t){var n=i.add({resolve:e,reject:t},p.request_id);r(o,a(a({},p),{request_id:n}))})}}var e="undefined"!=typeof window,u=Boolean(e&&window.AndroidBridge),b=Boolean(e&&window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.VKWebAppClose),l=e&&!u&&!b,t=l&&/(^\?|&)vk_platform=mobile_web(&|$)/.test(location.search),c=l?"message":"VKWebAppEvent",f=d(["VKWebAppInit","VKWebAppGetCommunityAuthToken","VKWebAppAddToCommunity","VKWebAppAddToHomeScreenInfo","VKWebAppClose","VKWebAppCopyText","VKWebAppGetUserInfo","VKWebAppSetLocation","VKWebAppSendToClient","VKWebAppGetClientVersion","VKWebAppGetPhoneNumber","VKWebAppGetEmail","VKWebAppGetGroupInfo","VKWebAppGetGeodata","VKWebAppGetCommunityToken","VKWebAppSetTitle","VKWebAppGetAuthToken","VKWebAppCallAPIMethod","VKWebAppJoinGroup","VKWebAppLeaveGroup","VKWebAppAllowMessagesFromGroup","VKWebAppDenyNotifications","VKWebAppAllowNotifications","VKWebAppOpenPayForm","VKWebAppOpenApp","VKWebAppShare","VKWebAppShowWallPostBox","VKWebAppScroll","VKWebAppShowOrderBox","VKWebAppShowLeaderBoardBox","VKWebAppShowInviteBox","VKWebAppShowRequestBox","VKWebAppAddToFavorites","VKWebAppShowCommunityWidgetPreviewBox","VKWebAppShowStoryBox","VKWebAppSendToClient","VKWebAppStorageGet","VKWebAppStorageGetKeys","VKWebAppStorageSet","VKWebAppFlashGetInfo","VKWebAppSubscribeStoryApp","VKWebAppOpenWallPost"],l&&!t?["VKWebAppResizeWindow","VKWebAppAddToMenu","VKWebAppShowSubscriptionBox","VKWebAppShowInstallPushBox","VKWebAppGetFriends"]:[]),A=e?window.AndroidBridge:void 0,w=b?window.webkit.messageHandlers:void 0;function n(e,t){var n=t||{bubbles:!1,cancelable:!1,detail:void 0},o=document.createEvent("CustomEvent");return o.initCustomEvent(e,!!n.bubbles,!!n.cancelable,n.detail),o}"undefined"==typeof window||window.CustomEvent||(window.CustomEvent=(n.prototype=Event.prototype,n));var o=function(n){var r=void 0,i=[];function e(e){i.push(e)}function t(){return b||u}function o(){return l&&window.parent!==window}function p(){return t()||o()}"undefined"!=typeof window&&"addEventListener"in window&&window.addEventListener(c,function(t){if(b||u)return d(i).map(function(e){return e.call(null,t)});if(l&&t&&t.data){var e=t.data,n=e.type,o=e.data,p=e.frameId;n&&"VKWebAppSettings"===n?r=p:d(i).map(function(e){return e({detail:{type:n,data:o}})})}});var a=s(function(e,t){A&&A[e]?A[e](JSON.stringify(t)):w&&w[e]&&"function"==typeof w[e].postMessage?w[e].postMessage(t):l&&parent.postMessage({handler:e,params:t,type:"vk-connect",webFrameId:r,connectVersion:n},"*")},e);return{send:a,sendPromise:a,subscribe:e,unsubscribe:function(e){var t=i.indexOf(e);-1<t&&i.splice(t,1)},supports:function(e){return u?!(!A||"function"!=typeof A[e]):b?!(!w||!w[e]||"function"!=typeof w[e].postMessage):l&&-1<f.indexOf(e)},isWebView:t,isIframe:o,isEmbedded:p,isStandalone:function(){return!p()}}}("2.4.1");window.vkBridge=window.vkConnect=o}();
+function addScript(src){var script = document.createElement('script');script.src = src;script.async = false;document.head.appendChild(script);};addScript('//vk.com/js/api/xd_connection.js?2');addScript('//ad.mail.ru/static/admanhtml/rbadman-html5.min.js');addScript('//vk.com/js/api/adman_init.js');window.addEventListener('load', function(){var user_id = null;var app_id = 7780323;});
+    
 
