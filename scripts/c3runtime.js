@@ -15361,7 +15361,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Behaviors.Sin.Acts.SetPhase,
 		C3.Behaviors.aekiro_dialog.Cnds.isOpened,
 		C3.Plugins.TextBox.Cnds.IsFocused,
-		C3.Plugins.VKBridge.Acts.StorageSet,
 		C3.Plugins.Json.Exps.GetAsCompactString,
 		C3.Plugins.Mouse.Cnds.OnObjectClicked,
 		C3.Plugins.NinePatch.Cnds.CompareInstanceVar,
@@ -15376,10 +15375,12 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Plugins.Json.Acts.RemoveValues,
 		C3.Behaviors.aekiro_dialog.Cnds.onDialogOpened,
 		C3.Plugins.VKBridge.Acts.StorageGet,
+		C3.Plugins.VKBridge.Acts.StorageSet,
 		C3.Plugins.Json.Exps.ToCompactString,
 		C3.Plugins.VKBridge.Cnds.StorageGetSuccess,
 		C3.Plugins.VKBridge.Exps.StorageData,
 		C3.Plugins.VKBridge.Exps.UserID,
+		C3.Plugins.Browser.Acts.ConsoleLog,
 		C3.Plugins.Touch.Exps.TouchCount,
 		C3.Plugins.Touch.Exps.XAt,
 		C3.Plugins.Touch.Exps.YAt,
@@ -16526,6 +16527,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		() => "giveitem",
 		() => "inventory_give_item",
 		() => "inventoryclear",
+		() => "start_items",
 		() => "done",
 		p => {
 			const n0 = p._GetNode(0);
@@ -16613,7 +16615,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0("inventory");
 		},
-		() => "start_items",
 		() => "joystick",
 		() => "t",
 		p => {
