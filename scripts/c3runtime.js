@@ -15375,12 +15375,12 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Plugins.Json.Acts.RemoveValues,
 		C3.Behaviors.aekiro_dialog.Cnds.onDialogOpened,
 		C3.Plugins.VKBridge.Acts.StorageGet,
-		C3.Plugins.VKBridge.Acts.StorageSet,
-		C3.Plugins.Json.Exps.ToCompactString,
 		C3.Plugins.VKBridge.Cnds.StorageGetSuccess,
 		C3.Plugins.VKBridge.Exps.StorageData,
+		C3.Plugins.VKBridge.Acts.StorageSet,
 		C3.Plugins.VKBridge.Exps.UserID,
 		C3.Plugins.Browser.Acts.ConsoleLog,
+		C3.Plugins.Json.Exps.ToCompactString,
 		C3.Plugins.Touch.Exps.TouchCount,
 		C3.Plugins.Touch.Exps.XAt,
 		C3.Plugins.Touch.Exps.YAt,
@@ -15592,6 +15592,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{crate_bht: 0},
 		{my_gun_frame: 0},
 		{my_knife_frame: 0},
+		{inventory_loaded: 0},
 		{showThumbstick: 0},
 		{dist: 0}
 	];
