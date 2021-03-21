@@ -15361,8 +15361,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Behaviors.Sin.Acts.SetPhase,
 		C3.Behaviors.aekiro_dialog.Cnds.isOpened,
 		C3.Plugins.TextBox.Cnds.IsFocused,
-		C3.Plugins.VKBridge.Acts.StorageGet,
-		C3.Plugins.VKBridge.Acts.StorageSet,
 		C3.Plugins.Json.Exps.GetAsCompactString,
 		C3.Plugins.Mouse.Cnds.OnObjectClicked,
 		C3.Plugins.NinePatch.Cnds.CompareInstanceVar,
@@ -15376,7 +15374,9 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Plugins.Particles.Acts.SetOpacity,
 		C3.Plugins.Json.Acts.RemoveValues,
 		C3.Behaviors.aekiro_dialog.Cnds.onDialogOpened,
+		C3.Plugins.VKBridge.Acts.StorageSet,
 		C3.Plugins.Json.Exps.ToCompactString,
+		C3.Plugins.VKBridge.Acts.StorageGet,
 		C3.Plugins.VKBridge.Cnds.StorageGetSuccess,
 		C3.Plugins.VKBridge.Exps.StorageData,
 		C3.Plugins.VKBridge.Exps.UserID,
@@ -16527,7 +16527,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		},
 		() => "giveitem",
 		() => "inventory_give_item",
-		() => "inventoryclear",
 		p => {
 			const n0 = p._GetNode(0);
 			const f1 = p._GetNode(1).GetBoundMethod();
@@ -16617,6 +16616,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		},
 		() => "start_items",
 		() => "inventory_show",
+		() => "inventoryclear",
 		() => "joystick",
 		() => "t",
 		p => {
