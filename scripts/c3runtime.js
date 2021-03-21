@@ -16616,6 +16616,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			return () => f0("inventory");
 		},
 		() => "start_items",
+		() => "inventory_show",
 		() => "joystick",
 		() => "t",
 		p => {
