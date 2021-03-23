@@ -15592,7 +15592,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{crate_bht: 0},
 		{my_gun_frame: 0},
 		{my_knife_frame: 0},
-		{inventory_loaded: 0},
 		{showThumbstick: 0},
 		{dist: 0}
 	];
@@ -16615,7 +16614,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			return () => f0("inventory");
 		},
 		() => "start_items",
-		() => "inventory_show",
 		() => "inventoryclear",
 		() => "joystick",
 		() => "t",
