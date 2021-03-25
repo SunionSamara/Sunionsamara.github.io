@@ -4519,6 +4519,9 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 			// Storage
 			this.storage_keys		= "";
 			this.storage_data		= [];
+			// Leaderboard
+			this.leaderboard_count	= 0;
+			this.leaderboard_data	= [];
         }
 		
         Release(){
@@ -4582,7 +4585,19 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 		// Advertising success
 		ShowAdsSuccess()					{console.log("Advertising success");															return true;},
 		// Advertising failed
-		ShowAdsFailed()						{console.log("Advertising failed");																return true;}
+		ShowAdsFailed()						{console.log("Advertising failed");																return true;},
+		// Advertising mobile success
+		AdsMobileSuccess()					{console.log("Advertising mobile success");														return true;},
+		// Advertising mobile failed
+		AdsMobileFailed()					{console.log("Advertising mobile failed");														return true;},
+		// Leaderboard success
+		LeaderBoardSuccess()				{console.log("Leaderboard success");															return true;},
+		// Leaderboard failed
+		LeaderBoardFailed()					{console.log("Leaderboard failed");																return true;},
+		// Leadersave success
+		LeaderSaveSuccess()					{console.log("Leadersave success");																return true;},
+		// Leadersave failed
+		LeaderSaveFailed()					{console.log("Leadersave failed");																return true;}
 	};
 }
 
@@ -4737,10 +4752,7 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 			addScript('https://ad.mail.ru/static/admanhtml/rbadman-html5.min.js');
 			addScript('https://vk.com/js/api/adman_init.js');
 
-			window.addEventListener('load', function(){
-				var user_id = this.user_id;
-				var app_id = this.app_id;
-			});
+			window.addEventListener('load', function(){var user_id = this.user_id; var app_id = this.app_id;});
 		},
 		// Show ads
 		async ShowAds(format){
@@ -4767,6 +4779,53 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 			};
 			
 			function onNoAds(){console.log("Failed");};
+		},
+		// Advertising mobile
+		AdsMobile(format){
+			
+			var ads_format = "interstitial";
+			if (format === 0) ads_format = "preloader";
+			else if (format === 1) ads_format = "reward";
+			
+			vkBridge
+				.send("VKWebAppShowNativeAds", {"ad_format": ads_format})
+				.then(data => {
+					this.Trigger(this.conditions.AdsMobileSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.AdsMobileFailed);
+				});				
+		},
+		// Leaderboard
+		LeaderBoard(type, global){
+			var leader_type = "score";
+			if (type === 0) leader_type = "level";
+			
+			vkBridge
+				.send("VKWebAppCallAPIMethod", {"method": "apps.getLeaderboard", "request_id": "leader", "params": {"type": leader_type, "global": global, "extended": 1, "v": "5.130", "access_token": this.user_token}})
+				.then(data => {
+					var data = data.response;
+					this.leaderboard_count = data.count;
+					this.leaderboard_data = data.items;
+					this.Trigger(this.conditions.LeaderBoardSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.LeaderBoardFailed);
+				});				
+		},
+		// Save leaderboard
+		LeaderSave(activ, value){
+			vkBridge
+				.send("VKWebAppCallAPIMethod", {"method": "secure.addAppEvent", "request_id": "leader", "params": {"user_id": this.user_id, "activity_id": activ+1, "value": value, "v": "5.130", "access_token": this.app_service_key}})
+				.then(data => {
+					this.Trigger(this.conditions.LeaderSaveSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.LeaderSaveFailed);
+				});				
 		}
 	};
 }
@@ -4784,7 +4843,10 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 		FriendsCount()						{return this.friends_count;},
 		FriendsData(number, type, data)		{if (this.friends_data[number]){data = this.friends_data[number];if (data[type]){return data[type];};};},
 		// Storage
-		StorageData(keys)					{for (let i = 0; i < this.storage_data.length; i++){if (this.storage_data[i].key === keys){return this.storage_data[i].value;break;};};}
+		StorageData(keys)					{for (let i = 0; i < this.storage_data.length; i++){if (this.storage_data[i].key === keys){return this.storage_data[i].value;break;};};},
+		// Leaderboard
+		BoardCount()						{return this.leaderboard_count;},
+		BoardData(user)					{if (this.leaderboard_data[user]){return this.leaderboard_data[user]};}
 	};
 }
 
@@ -6923,6 +6985,8 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.Sprite.Acts.SetCollisions,
 		C3.Plugins.Sprite.Cnds.OnCollision,
 		C3.Plugins.Sprite.Acts.SetAngle,
+		C3.Plugins.Sprite.Acts.SetY,
+		C3.Plugins.Sprite.Exps.Y,
 		C3.Plugins.Sprite.Cnds.IsBoolInstanceVarSet,
 		C3.Plugins.Sprite.Cnds.IsOverlapping,
 		C3.Behaviors.Pin.Acts.PinByProperties,
@@ -6937,7 +7001,6 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.System.Acts.CreateObjectByName,
 		C3.Plugins.System.Exps.choose,
 		C3.Plugins.Sprite.Exps.X,
-		C3.Plugins.Sprite.Exps.Y,
 		C3.Behaviors.Pin.Acts.Unpin,
 		C3.Plugins.TiledBg.Acts.SetX,
 		C3.Plugins.Sprite.Cnds.IsOutsideLayout,
@@ -6959,14 +7022,13 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.Sprite.Acts.SetAnimFrame,
 		C3.Plugins.Audio.Acts.SetMuted,
 		C3.Plugins.System.Cnds.Else,
-		C3.Plugins.VKBridge.Acts.ShowAds,
+		C3.Plugins.VKBridge.Acts.AdsMobile,
 		C3.Plugins.VKBridge.Acts.StorageSet,
 		C3.Behaviors.aekiro_dialog.Cnds.onDialogClosed,
 		C3.Plugins.System.Acts.SubVar,
-		C3.Plugins.VKBridge.Cnds.ShowAdsSuccess,
 		C3.Plugins.System.Acts.SetTimescale,
-		C3.Plugins.VKBridge.Cnds.ShowAdsFailed,
-		C3.Plugins.VKBridge.Cnds.ShowAdsStart,
+		C3.Plugins.VKBridge.Cnds.AdsMobileSuccess,
+		C3.Plugins.VKBridge.Cnds.AdsMobileFailed,
 		C3.Plugins.TiledBg.Cnds.OnCreated,
 		C3.Plugins.VKBridge.Acts.BridgeConnect,
 		C3.Plugins.System.Acts.GoToLayout,
@@ -7161,6 +7223,10 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 			return () => (100 + (v0.GetValue() * 50));
 		},
 		() => 3,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() - 334);
+		},
 		() => -15,
 		() => "powerup",
 		() => -396,
