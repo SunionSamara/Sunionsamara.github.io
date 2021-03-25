@@ -2422,20 +2422,10 @@ true;const result=await this._runtime.PostComponentMessageToDOMAsync("runtime","
 
 
 self["C3_Shaders"] = {};
-self["C3_Shaders"]["glowvertical"] = {
-	src: "varying mediump vec2 vTex;\nuniform mediump sampler2D samplerFront;\nuniform mediump vec2 pixelSize;\nuniform mediump float intensity;\nvoid main(void)\n{\nmediump vec4 sum = vec4(0.0);\nmediump float pixelHeight = pixelSize.y;\nmediump float halfPixelHeight = pixelHeight / 2.0;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 7.0 + halfPixelHeight)) * 0.06;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 5.0 + halfPixelHeight)) * 0.10;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 3.0 + halfPixelHeight)) * 0.13;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 1.0 + halfPixelHeight)) * 0.16;\nmediump vec4 front = texture2D(samplerFront, vTex);\nsum += front * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 1.0 + halfPixelHeight)) * 0.16;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 3.0 + halfPixelHeight)) * 0.13;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 5.0 + halfPixelHeight)) * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 7.0 + halfPixelHeight)) * 0.06;\ngl_FragColor = mix(front, max(front, sum), intensity);\n}",
+self["C3_Shaders"]["blurvertical"] = {
+	src: "varying mediump vec2 vTex;\nuniform mediump sampler2D samplerFront;\nuniform mediump vec2 pixelSize;\nuniform mediump float intensity;\nvoid main(void)\n{\nmediump vec4 sum = vec4(0.0);\nmediump float pixelHeight = pixelSize.y;\nmediump float halfPixelHeight = pixelHeight / 2.0;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 7.0 + halfPixelHeight)) * 0.06;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 5.0 + halfPixelHeight)) * 0.10;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 3.0 + halfPixelHeight)) * 0.13;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 1.0 + halfPixelHeight)) * 0.16;\nmediump vec4 front = texture2D(samplerFront, vTex);\nsum += front * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 1.0 + halfPixelHeight)) * 0.16;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 3.0 + halfPixelHeight)) * 0.13;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 5.0 + halfPixelHeight)) * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 7.0 + halfPixelHeight)) * 0.06;\ngl_FragColor = mix(front, sum, intensity);\n}",
 	extendBoxHorizontal: 0,
 	extendBoxVertical: 8,
-	crossSampling: false,
-	mustPreDraw: false,
-	preservesOpaqueness: false,
-	animated: false,
-	parameters: [["intensity",0,"percent"]]
-};
-self["C3_Shaders"]["glowhorizontal"] = {
-	src: "varying mediump vec2 vTex;\nuniform mediump sampler2D samplerFront;\nuniform mediump vec2 pixelSize;\nuniform mediump float intensity;\nvoid main(void)\n{\nmediump vec4 sum = vec4(0.0);\nmediump float pixelWidth = pixelSize.x;\nmediump float halfPixelWidth = pixelWidth / 2.0;\nsum += texture2D(samplerFront, vTex - vec2(pixelWidth * 7.0 + halfPixelWidth, 0.0)) * 0.06;\nsum += texture2D(samplerFront, vTex - vec2(pixelWidth * 5.0 + halfPixelWidth, 0.0)) * 0.10;\nsum += texture2D(samplerFront, vTex - vec2(pixelWidth * 3.0 + halfPixelWidth, 0.0)) * 0.13;\nsum += texture2D(samplerFront, vTex - vec2(pixelWidth * 1.0 + halfPixelWidth, 0.0)) * 0.16;\nmediump vec4 front = texture2D(samplerFront, vTex);\nsum += front * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(pixelWidth * 1.0 + halfPixelWidth, 0.0)) * 0.16;\nsum += texture2D(samplerFront, vTex + vec2(pixelWidth * 3.0 + halfPixelWidth, 0.0)) * 0.13;\nsum += texture2D(samplerFront, vTex + vec2(pixelWidth * 5.0 + halfPixelWidth, 0.0)) * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(pixelWidth * 7.0 + halfPixelWidth, 0.0)) * 0.06;\ngl_FragColor = mix(front, max(front, sum), intensity);\n}",
-	extendBoxHorizontal: 8,
-	extendBoxVertical: 0,
 	crossSampling: false,
 	mustPreDraw: false,
 	preservesOpaqueness: false,
@@ -2452,10 +2442,20 @@ self["C3_Shaders"]["blurhorizontal"] = {
 	animated: false,
 	parameters: [["intensity",0,"percent"]]
 };
-self["C3_Shaders"]["blurvertical"] = {
-	src: "varying mediump vec2 vTex;\nuniform mediump sampler2D samplerFront;\nuniform mediump vec2 pixelSize;\nuniform mediump float intensity;\nvoid main(void)\n{\nmediump vec4 sum = vec4(0.0);\nmediump float pixelHeight = pixelSize.y;\nmediump float halfPixelHeight = pixelHeight / 2.0;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 7.0 + halfPixelHeight)) * 0.06;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 5.0 + halfPixelHeight)) * 0.10;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 3.0 + halfPixelHeight)) * 0.13;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 1.0 + halfPixelHeight)) * 0.16;\nmediump vec4 front = texture2D(samplerFront, vTex);\nsum += front * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 1.0 + halfPixelHeight)) * 0.16;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 3.0 + halfPixelHeight)) * 0.13;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 5.0 + halfPixelHeight)) * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 7.0 + halfPixelHeight)) * 0.06;\ngl_FragColor = mix(front, sum, intensity);\n}",
+self["C3_Shaders"]["glowvertical"] = {
+	src: "varying mediump vec2 vTex;\nuniform mediump sampler2D samplerFront;\nuniform mediump vec2 pixelSize;\nuniform mediump float intensity;\nvoid main(void)\n{\nmediump vec4 sum = vec4(0.0);\nmediump float pixelHeight = pixelSize.y;\nmediump float halfPixelHeight = pixelHeight / 2.0;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 7.0 + halfPixelHeight)) * 0.06;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 5.0 + halfPixelHeight)) * 0.10;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 3.0 + halfPixelHeight)) * 0.13;\nsum += texture2D(samplerFront, vTex - vec2(0.0, pixelHeight * 1.0 + halfPixelHeight)) * 0.16;\nmediump vec4 front = texture2D(samplerFront, vTex);\nsum += front * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 1.0 + halfPixelHeight)) * 0.16;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 3.0 + halfPixelHeight)) * 0.13;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 5.0 + halfPixelHeight)) * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(0.0, pixelHeight * 7.0 + halfPixelHeight)) * 0.06;\ngl_FragColor = mix(front, max(front, sum), intensity);\n}",
 	extendBoxHorizontal: 0,
 	extendBoxVertical: 8,
+	crossSampling: false,
+	mustPreDraw: false,
+	preservesOpaqueness: false,
+	animated: false,
+	parameters: [["intensity",0,"percent"]]
+};
+self["C3_Shaders"]["glowhorizontal"] = {
+	src: "varying mediump vec2 vTex;\nuniform mediump sampler2D samplerFront;\nuniform mediump vec2 pixelSize;\nuniform mediump float intensity;\nvoid main(void)\n{\nmediump vec4 sum = vec4(0.0);\nmediump float pixelWidth = pixelSize.x;\nmediump float halfPixelWidth = pixelWidth / 2.0;\nsum += texture2D(samplerFront, vTex - vec2(pixelWidth * 7.0 + halfPixelWidth, 0.0)) * 0.06;\nsum += texture2D(samplerFront, vTex - vec2(pixelWidth * 5.0 + halfPixelWidth, 0.0)) * 0.10;\nsum += texture2D(samplerFront, vTex - vec2(pixelWidth * 3.0 + halfPixelWidth, 0.0)) * 0.13;\nsum += texture2D(samplerFront, vTex - vec2(pixelWidth * 1.0 + halfPixelWidth, 0.0)) * 0.16;\nmediump vec4 front = texture2D(samplerFront, vTex);\nsum += front * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(pixelWidth * 1.0 + halfPixelWidth, 0.0)) * 0.16;\nsum += texture2D(samplerFront, vTex + vec2(pixelWidth * 3.0 + halfPixelWidth, 0.0)) * 0.13;\nsum += texture2D(samplerFront, vTex + vec2(pixelWidth * 5.0 + halfPixelWidth, 0.0)) * 0.10;\nsum += texture2D(samplerFront, vTex + vec2(pixelWidth * 7.0 + halfPixelWidth, 0.0)) * 0.06;\ngl_FragColor = mix(front, max(front, sum), intensity);\n}",
+	extendBoxHorizontal: 8,
+	extendBoxVertical: 0,
 	crossSampling: false,
 	mustPreDraw: false,
 	preservesOpaqueness: false,
@@ -6895,6 +6895,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.System.Cnds.CompareBoolVar,
 		C3.Plugins.Audio.Acts.Play,
+		C3.Plugins.TiledBg.Acts.SetWidth,
 		C3.Plugins.System.Acts.SetGroupActive,
 		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Plugins.Touch.Cnds.IsInTouch,
@@ -6903,12 +6904,15 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.System.Acts.SetBoolVar,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Acts.AddVar,
+		C3.Plugins.System.Cnds.CompareVar,
+		C3.Plugins.TiledBg.Exps.Width,
 		C3.Plugins.Touch.Cnds.OnTouchEnd,
 		C3.Behaviors.Timer.Acts.StartTimer,
 		C3.Plugins.Audio.Acts.FadeVolume,
 		C3.Plugins.Sprite.Acts.Spawn,
 		C3.Plugins.Particles.Acts.SetAngle,
 		C3.Plugins.Sprite.Acts.ZMoveToObject,
+		C3.Behaviors.Tween.Acts.TweenOneProperty,
 		C3.Behaviors.Bullet.Acts.SetGravity,
 		C3.Plugins.System.Acts.Wait,
 		C3.Behaviors.Bullet.Acts.SetAngleOfMotion,
@@ -6917,14 +6921,12 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.Sprite.Cnds.IsOverlappingOffset,
 		C3.Behaviors.solid.Acts.SetEnabled,
 		C3.Plugins.Sprite.Acts.SetCollisions,
-		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.Sprite.Cnds.OnCollision,
 		C3.Plugins.Sprite.Acts.SetAngle,
 		C3.Plugins.Sprite.Cnds.IsBoolInstanceVarSet,
 		C3.Plugins.Sprite.Cnds.IsOverlapping,
 		C3.Behaviors.Pin.Acts.PinByProperties,
 		C3.Plugins.System.Cnds.ForEach,
-		C3.Behaviors.Tween.Acts.TweenOneProperty,
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.System.Exps.random,
 		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
@@ -6965,6 +6967,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.System.Acts.SetTimescale,
 		C3.Plugins.VKBridge.Cnds.ShowAdsFailed,
 		C3.Plugins.VKBridge.Cnds.ShowAdsStart,
+		C3.Plugins.TiledBg.Cnds.OnCreated,
 		C3.Plugins.VKBridge.Acts.BridgeConnect,
 		C3.Plugins.VKBridge.Cnds.BridgeConnectSuccess,
 		C3.Plugins.VKBridge.Acts.Authorization,
@@ -7021,6 +7024,9 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		{Sprite4: 0},
 		{Sprite5: 0},
 		{Sprite6: 0},
+		{"9patch2": 0},
+		{TiledBackground4: 0},
+		{Sprite7: 0},
 		{power: 0},
 		{count: 0},
 		{isintouch: 0},
@@ -7131,25 +7137,30 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 	self.C3_ExpressionFuncs = [
 		() => -5,
 		() => "main_music",
+		() => 0,
 		() => "game",
 		() => "",
 		() => -10,
 		() => 0.1,
 		() => 1,
+		() => 25,
+		() => 0.0125,
+		p => {
+			const n0 = p._GetNode(0);
+			return () => (n0.ExpObject() + 3.32);
+		},
 		() => -100,
 		() => 0.5,
 		() => "jump",
 		() => 120,
 		() => 1500,
 		() => 0.05,
-		() => -45,
+		() => -70,
 		p => {
 			const v0 = p._GetNode(0).GetVar();
-			return () => (100 * v0.GetValue());
+			return () => (100 + (v0.GetValue() * 50));
 		},
-		() => 0,
 		() => 3,
-		() => 25,
 		() => -15,
 		() => "powerup",
 		() => -396,
