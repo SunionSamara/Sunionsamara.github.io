@@ -6988,12 +6988,12 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.Sprite.Acts.SetY,
 		C3.Plugins.Sprite.Exps.Y,
 		C3.Plugins.Sprite.Cnds.IsBoolInstanceVarSet,
+		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
 		C3.Plugins.Sprite.Cnds.IsOverlapping,
 		C3.Behaviors.Pin.Acts.PinByProperties,
 		C3.Plugins.System.Cnds.ForEach,
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.System.Exps.random,
-		C3.Plugins.Sprite.Acts.SetBoolInstanceVar,
 		C3.Plugins.Sprite.Acts.MoveToBottom,
 		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Spritefont2.Acts.SetText,
@@ -7032,7 +7032,6 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.VKBridge.Cnds.AdsMobileFailed,
 		C3.Plugins.TiledBg.Cnds.OnCreated,
 		C3.Plugins.VKBridge.Acts.BridgeConnect,
-		C3.Plugins.System.Acts.GoToLayout,
 		C3.Plugins.VKBridge.Cnds.BridgeConnectSuccess,
 		C3.Plugins.VKBridge.Acts.Authorization,
 		C3.Plugins.VKBridge.Cnds.AuthorizationSuccess,
@@ -7043,6 +7042,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.VKBridge.Acts.FriendsGet,
 		C3.Plugins.VKBridge.Acts.StorageGet,
 		C3.Plugins.VKBridge.Cnds.StorageGetSuccess,
+		C3.Plugins.System.Acts.GoToLayout,
 		C3.Plugins.System.Cnds.Compare,
 		C3.Plugins.VKBridge.Exps.StorageData
 		];
@@ -7056,6 +7056,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		{Timer: 0},
 		{frog: 0},
 		{start: 0},
+		{enabled: 0},
 		{Solid: 0},
 		{DestroyOutsideLayout: 0},
 		{platform: 0},
@@ -7096,7 +7097,8 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		{coin: 0},
 		{game_start: 0},
 		{death_counter: 0},
-		{hiscore: 0}
+		{hiscore: 0},
+		{rewarded: 0}
 	];
 }
 
