@@ -7004,7 +7004,14 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Behaviors.Pin.Acts.Unpin,
 		C3.Plugins.TiledBg.Acts.SetX,
 		C3.Plugins.Sprite.Cnds.IsOutsideLayout,
+		C3.Behaviors.aekiro_gameobject.Cnds.IsName,
+		C3.Behaviors.aekiro_dialog.Acts.Open,
+		C3.Behaviors.aekiro_button.Cnds.OnClicked,
+		C3.Plugins.Sprite.Acts.SetAnimFrame,
+		C3.Plugins.System.Cnds.Else,
 		C3.Plugins.System.Acts.RestartLayout,
+		C3.Plugins.VKBridge.Acts.AdsMobile,
+		C3.Plugins.VKBridge.Acts.ShowWall,
 		C3.Behaviors.Bullet.Cnds.CompareSpeed,
 		C3.Plugins.Sprite.Acts.SetAnim,
 		C3.Behaviors.Bullet.Exps.AngleOfMotion,
@@ -7014,15 +7021,9 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.Sprite.Acts.SetVisible,
 		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.aekiro_proui.Acts.Init,
-		C3.Behaviors.aekiro_gameobject.Cnds.IsName,
-		C3.Behaviors.aekiro_dialog.Acts.Open,
-		C3.Behaviors.aekiro_button.Cnds.OnClicked,
 		C3.Behaviors.aekiro_dialog.Acts.Close,
 		C3.Plugins.Sprite.Cnds.CompareFrame,
-		C3.Plugins.Sprite.Acts.SetAnimFrame,
 		C3.Plugins.Audio.Acts.SetMuted,
-		C3.Plugins.System.Cnds.Else,
-		C3.Plugins.VKBridge.Acts.AdsMobile,
 		C3.Plugins.VKBridge.Acts.StorageSet,
 		C3.Behaviors.aekiro_dialog.Cnds.onDialogClosed,
 		C3.Plugins.System.Acts.SubVar,
@@ -7260,7 +7261,23 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 			const f1 = p._GetNode(1).GetBoundMethod();
 			return () => (n0.ExpObject() - f1(30, 50));
 		},
+		() => "fall_dialog",
+		() => "count_dialog",
+		p => {
+			const v0 = p._GetNode(0).GetVar();
+			return () => and("Твой счет: ", v0.GetValue());
+		},
+		() => "fall_dialog_close",
+		() => "continue_dialog",
 		() => 5,
+		() => 10,
+		() => 2,
+		() => "repost",
+		p => {
+			const v0 = p._GetNode(0).GetVar();
+			return () => (and("Я набрал ", v0.GetValue()) + " очков, слабо набрать больше?");
+		},
+		() => "photo555144095_457245963, https://vk.com/app7802700",
 		() => "idle",
 		() => 200,
 		p => {
@@ -7281,9 +7298,8 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 			return () => (v0.GetValue()).toString();
 		},
 		() => "hiscore",
-		() => "continue_dialog",
-		() => 10,
 		() => "button_continue",
+		() => "continue_dialog_close",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
