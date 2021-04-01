@@ -8,12 +8,12 @@
  */
 
 
-var _Group = function () {
+self._Group = function () {
 	this._tweens = {};
 	this._tweensAddedDuringUpdate = {};
 };
 
-_Group.prototype = {
+self._Group.prototype = {
 	getAll: function () {
 
 		return Object.keys(this._tweens).map(function (tweenId) {
@@ -81,9 +81,14 @@ _Group.prototype = {
 	}
 };
 
-var TWEEN = new _Group();
+//console.log(self._Group);  // this works
 
-TWEEN.Group = _Group;
+self.TWEEN = new self._Group();
+//console.log(self.TWEEN);  // undefined
+const TWEEN = self.TWEEN;
+//console.log(TWEEN);
+
+TWEEN.Group = self._Group;
 TWEEN._nextId = 0;
 TWEEN.nextId = function () {
 	return TWEEN._nextId++;
@@ -931,7 +936,6 @@ TWEEN.Interpolation = {
 
 		// Global variable
 		root.TWEEN = TWEEN;
-
 	}
 
 })(this);
