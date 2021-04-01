@@ -4493,11 +4493,11 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 
 "use strict";
 {
-	C3.Plugins.VKBridge.Instance = class VKBridgeInstance extends C3.SDKInstanceBase {
+    var Instance = class VKBridgeInstance extends C3.SDKInstanceBase {
         constructor(inst, properties = []){
-			super(inst);
-            this.init(properties);
+            super(inst);
             this.conditions = C3.Plugins.VKBridge.Cnds;
+            this.init(properties);
 		}
 		
         async init(properties){
@@ -4522,6 +4522,37 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 			// Leaderboard
 			this.leaderboard_count	= 0;
 			this.leaderboard_data	= [];
+			this.leaderboard_prof	= [];
+			
+			function addScript(src){
+				var script = document.createElement('script');
+				script.src = src;
+				script.async = true;
+				document.head.appendChild(script);
+				script.onload = function(){console.log('Script ' + src + ' loaded');};
+			};
+						
+			addScript('https://vk.com/js/api/xd_connection.js?2');
+			addScript('https://ad.mail.ru/static/admanhtml/rbadman-html5.min.js');
+			addScript('https://vk.com/js/api/adman_init.js');
+							
+			this.AdsReady = function(adman){
+				adman.onStarted(function(){console.log("ShowAdsStart");});
+				adman.onCompleted(function(){console.log("ShowAdsSuccess");});
+				adman.onSkipped(function(){});
+				adman.onClicked(function(){});
+				adman.start('preroll');
+			};
+						
+			this.NoAds = function(){console.log("ShowAdsFailed");};
+			
+			window.addEventListener('load', function(){
+				admanInit({
+					user_id: this.user_id, app_id: this.app_id,
+					// mobile: true,
+					// params: {preview: 1},
+					type: "preloader"}, this.AdsReady, this.NoAds);
+			});
         }
 		
         Release(){
@@ -4539,11 +4570,17 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 			return VKBInstance;
 		}
 	};
+	
+    if (globalThis.C3) {
+        C3.Plugins.VKBridge.Instance = Instance;
+    }
+
+    Instance;
 }
 
 "use strict";
 {
-	C3.Plugins.VKBridge.Cnds = {
+    var Cnds = {
 		// Bridge connected
 		BridgeConnectSuccess()				{console.log("VK Bridge connected");															return true;},
 		// Bridge not connected
@@ -4599,13 +4636,19 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 		// Leadersave failed
 		LeaderSaveFailed()					{console.log("Leadersave failed");																return true;}
 	};
+	
+    if (globalThis.C3) {
+        C3.Plugins.VKBridge.Cnds = Cnds;
+    }
+
+    Cnds;
 }
 
 "use strict";
 {
-	C3.Plugins.VKBridge.Acts = {
+    var Acts = {
 		// Bridge connect
-		BridgeConnect(){
+		BridgeConnect(){			
 			// Подключение VK Bridge
 			vkBridge.send('VKWebAppInit');
 			console.log("Connect VK Bridge");
@@ -4739,46 +4782,17 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 				});				
 		},
 		// Advertising connection
-		ConnectAds(){
-			function addScript(src){
-				var script = document.createElement('script');
-				script.src = src;
-				script.async = true;
-				document.head.appendChild(script);
-				script.onload = function(){console.log('Script ' + src + ' loaded');};
-			};
-
-			addScript('https://vk.com/js/api/xd_connection.js?2');
-			addScript('https://ad.mail.ru/static/admanhtml/rbadman-html5.min.js');
-			addScript('https://vk.com/js/api/adman_init.js');
-
-			window.addEventListener('load', function(){var user_id = this.user_id; var app_id = this.app_id;});
-		},
-		// Show ads
+		ConnectAds(){},
+		// Advertising web
 		async ShowAds(format){
-			
-		//	var ads_start	 = this.Trigger(this.conditions.ShowAdsStart);
-		//	var ads_success	 = this.Trigger(this.conditions.ShowAdsSuccess);
-		//	var ads_failed	 = this.Trigger(this.conditions.ShowAdsFailed);
-			
 			var ads_format = "rewarded";
 			if (format === 0) ads_format = "preloader";
-				
-			admanInit({user_id: this.user_id, app_id: this.app_id,
+			
+			admanInit({
+				user_id: this.user_id, app_id: this.app_id,
 				// mobile: true,
 				// params: {preview: 1},
-				type: ads_format
-			}, onAdsReady, onNoAds);
-			
-			function onAdsReady(adman){
-				adman.onStarted(function(){console.log("Start");});
-				adman.onCompleted(function(){console.log("Success");});
-				adman.onSkipped(function(){});
-				adman.onClicked(function(){});
-				adman.start('preroll');
-			};
-			
-			function onNoAds(){console.log("Failed");};
+				type: ads_format},  this.AdsReady, this.NoAds);
 		},
 		// Advertising mobile
 		AdsMobile(format){
@@ -4808,6 +4822,7 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 					var data = data.response;
 					this.leaderboard_count = data.count;
 					this.leaderboard_data = data.items;
+					this.leaderboard_prof = data.profiles;
 					this.Trigger(this.conditions.LeaderBoardSuccess);
 				})
 				.catch(error => {
@@ -4828,6 +4843,12 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 				});				
 		}
 	};
+	
+    if (globalThis.C3) {
+        C3.Plugins.VKBridge.Acts = Acts;
+    }
+
+    Acts;
 }
 
 "use strict";
@@ -4846,8 +4867,9 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 		StorageData(keys)					{for (let i = 0; i < this.storage_data.length; i++){if (this.storage_data[i].key === keys){return this.storage_data[i].value;break;};};},
 		// Leaderboard
 		BoardCount()						{return this.leaderboard_count;},
-		BoardData(user)					{if (this.leaderboard_data[user]){return this.leaderboard_data[user]};}
-	};
+		BoardData(number, type, data)		{if (this.leaderboard_data[number]){data = this.leaderboard_data[number];if (data[type]){return data[type];};};},
+		BoardProf(number, type, data)		{if (this.leaderboard_prof[number]){data = this.leaderboard_prof[number];if (data[type]){return data[type];};};}
+	}
 }
 
 'use strict';{const C3=self.C3;C3.Plugins.NinePatch=class NinePatchPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}};
@@ -4883,6 +4905,267 @@ null;this._topTexture=null;this._bottomTexture=null;this._sdkType=null;this._ren
 this._renderer.CreateStaticTexture(CloneDrawable(drawable),{sampling});if(re>lm&&be>tm)this._fillTexture=this._renderer.CreateStaticTexture(this._SliceSubImage(CloneDrawable(drawable),lm,tm,re,be),{wrapX:"repeat",wrapY:"repeat",sampling});if(lm>0&&be>tm)this._leftTexture=this._renderer.CreateStaticTexture(this._SliceSubImage(CloneDrawable(drawable),0,tm,lm,be),{wrapY:"repeat",sampling});if(rm>0&&be>tm)this._rightTexture=this._renderer.CreateStaticTexture(this._SliceSubImage(CloneDrawable(drawable),
 re,tm,iw,be),{wrapY:"repeat",sampling});if(tm>0&&re>lm)this._topTexture=this._renderer.CreateStaticTexture(this._SliceSubImage(CloneDrawable(drawable),lm,0,re,tm),{wrapX:"repeat",sampling});if(bm>0&&re>lm)this._bottomTexture=this._renderer.CreateStaticTexture(this._SliceSubImage(CloneDrawable(drawable),lm,be,re,ih),{wrapX:"repeat",sampling})}_SliceSubImage(drawable,x1,y1,x2,y2){const w=x2-x1;const h=y2-y1;const tmpCanvas=C3.CreateCanvas(w,h);const tmpCtx=tmpCanvas.getContext("2d");tmpCtx.drawImage(drawable,
 x1,y1,w,h,0,0,w,h);return tmpCanvas}GetImageWidth(){return this._imageWidth}GetImageHeight(){return this._imageHeight}GetTexture(){return this._texture}GetFillTexture(){return this._fillTexture}GetLeftTexture(){return this._leftTexture}GetRightTexture(){return this._rightTexture}GetTopTexture(){return this._topTexture}GetBottomTexture(){return this._bottomTexture}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Json=class JSONPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Json.Type=class JSONType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;const IInstance=self.IInstance;C3.Plugins.Json.Instance=class JSONInstance extends C3.SDKInstanceBase{constructor(inst,properties){super(inst);this._valueCache=[null,null];this._locationCache=[null,null];this._data={};this._path=[];this._currentKey="";this._currentValue=0}Release(){super.Release()}_InvalidateValueCache(){this._valueCache[0]=null;this._valueCache[1]=null}_HasValueCache(arr,isMutate){const cacheArr=this._valueCache[0];if(arr===null||cacheArr===null)return false;
+if(cacheArr===arr||C3.arraysEqual(cacheArr,arr))return true;if(isMutate&&cacheArr.length>0){for(let i=0,len=Math.min(arr.length,cacheArr.length);i<len;++i)if(arr[i]!==cacheArr[i])return false;return true}else return false}_GetValueCache(){return this._valueCache[1]}_UpdateValueCache(arr,value){this._valueCache[0]=arr;this._valueCache[1]=value}_InvalidateLocationCache(){this._locationCache[0]=null;this._locationCache[1]=null}_HasLocationCache(str){return this._locationCache[0]===str}_GetLocationCache(){return this._locationCache[1]}_UpdateLocationCache(str,
+value){this._locationCache[0]=str;this._locationCache[1]=value}_SetData(obj){this._data=obj;this._InvalidateValueCache()}_GetData(){return this._data}_SetPath(str){this._path=this._ParsePathUnsafe(str);this._InvalidateLocationCache()}_ParsePath(str){return C3.cloneArray(this._ParsePathUnsafe(str))}_ParsePathUnsafe(str){const buffer=[];let escaped=false;let parts;if(this._HasLocationCache(str))return this._GetLocationCache();if(str[0]==="."){parts=C3.cloneArray(this._path);str=str.slice(1)}else parts=
+[];for(const c of str)if(escaped){buffer.push(c);escaped=false}else if(c==="\\")escaped=true;else if(c==="."){parts.push(buffer.join(""));C3.clearArray(buffer)}else buffer.push(c);if(buffer.length!==0)parts.push(buffer.join(""));this._UpdateLocationCache(str,parts);return parts}_GetValueAtFullPath(path,lazyCreate){if(this._HasValueCache(path,false))return this._GetValueCache();let result=this._data;for(const part of path)if(Array.isArray(result)){const index=parseInt(part,10);if(index<0||index>=result.length||
+!isFinite(index)){result=null;break}result=result[index]}else if(typeof result==="object"&&result!==null)if(result.hasOwnProperty(part))result=result[part];else if(lazyCreate){const o={};result[part]=o;result=o}else{result=null;break}else{result=null;break}this._UpdateValueCache(path,result);return result}_GetValue(str){const path=this._ParsePath(str);if(!path.length)return this._data;const key=path.pop();const obj=this._GetValueAtFullPath(path,false);if(Array.isArray(obj)){const index=parseInt(key,
+10);return index>=0&&index<obj.length?obj[index]:null}else if(typeof obj==="object"&&obj!==null)return obj.hasOwnProperty(key)?obj[key]:null;else return null}_JSONTypeOf(val){if(val===null)return"null";else if(Array.isArray(val))return"array";else return typeof val}_GetTypeOf(str){const val=this._GetValue(str);return this._JSONTypeOf(val)}_ToSafeValue(value){const type=typeof value;if(type==="number"||type==="string")return value;else if(type==="boolean")return value?1:0;else return 0}_GetSafeValue(str){return this._ToSafeValue(this._GetValue(str))}_HasKey(str){const path=
+this._ParsePath(str);if(!path.length)return false;const key=path.pop();const obj=this._GetValueAtFullPath(path,false);if(Array.isArray(obj)){const index=parseInt(key,10);return index>=0&&index<obj.length}else if(typeof obj==="object"&&obj!==null)return obj.hasOwnProperty(key);else return false}_SetValue(str,value){const path=this._ParsePath(str);if(!path.length)return false;if(this._HasValueCache(path,true))this._InvalidateValueCache();const key=path.pop();const obj=this._GetValueAtFullPath(path,
+true);if(Array.isArray(obj)){const index=parseInt(key,10);if(!isFinite(index)||index<0||index>=obj.length)return false;obj[index]=value;return true}else if(typeof obj==="object"&&obj!==null){obj[key]=value;return true}return false}_DeleteKey(str){const path=this._ParsePath(str);if(!path.length)return false;if(this._HasValueCache(path,true))this._InvalidateValueCache();const key=path.pop();const obj=this._GetValueAtFullPath(path,false);if(Array.isArray(obj))return false;else if(typeof obj==="object"&&
+obj!==null){delete obj[key];return true}else return false}SaveToJson(){return{"path":this._path,"data":this._data}}LoadFromJson(o){this._InvalidateValueCache();this._InvalidateLocationCache();this._path=o["path"];this._data=o["data"]}_SanitizeValue(val){const type=typeof val;if(type==="number"){if(!isFinite(val))return 0;return val}if(typeof val=="object")return JSON.stringify(val);return val+""}GetDebuggerProperties(){const prefix="plugins.json.debugger";let topLevelData;try{topLevelData=this._SanitizeValue(this._data)}catch(e){topLevelData=
+'"invalid"'}return[{title:prefix+".title",properties:[{name:prefix+".data",value:topLevelData,onedit:v=>{try{const n=JSON.parse(v);this._SetData(n)}catch(e){}}},{name:prefix+".path",value:this._path.map(seg=>seg.replace(/\./g,"\\.")).join(".")}]}]}GetScriptInterfaceClass(){return self.IJSONInstance}};const map=new WeakMap;self.IJSONInstance=class IJSONInstance extends IInstance{constructor(){super();map.set(this,IInstance._GetInitInst().GetSdkInstance())}getJsonDataCopy(){const data=map.get(this)._GetData();
+return JSON.parse(JSON.stringify(data))}setJsonDataCopy(o){try{const o2=JSON.parse(JSON.stringify(o));map.get(this)._SetData(o2)}catch(err){console.error("[JSON plugin] setJsonData: object is not valid JSON: ",err);throw err;}}setJsonString(str){try{const o=JSON.parse(str);map.get(this)._SetData(o)}catch(err){console.error("[JSON plugin] setJsonString: string is not valid JSON: ",err);throw err;}}toCompactString(){return JSON.stringify(map.get(this)._GetData())}toBeautifiedString(){return JSON.stringify(map.get(this)._GetData(),
+null,4)}}};
+
+
+'use strict';{const C3=self.C3;const JSON_TYPES=["null","boolean","number","string","object","array"];C3.Plugins.Json.Cnds={HasKey(str){return this._HasKey(str)},CompareType(str,typeIndex){return this._GetTypeOf(str)===JSON_TYPES[typeIndex]},CompareValue(str,cmp,value){return C3.compare(this._GetSafeValue(str),cmp,value)},IsBooleanSet(str){return this._GetValue(str)===true},ForEach(str){const value=this._GetValue(str);if(typeof value!=="object"||value===null)return false;const runtime=this._runtime;
+const eventSheetManager=runtime.GetEventSheetManager();const currentEvent=runtime.GetCurrentEvent();const solModifiers=currentEvent.GetSolModifiers();const eventStack=runtime.GetEventStack();const oldFrame=eventStack.GetCurrentStackFrame();const newFrame=eventStack.Push(currentEvent);const oldPath=this._path;const oldKey=this._currentKey;const oldValue=this._currentValue;const subPath=this._ParsePathUnsafe(str);runtime.SetDebuggingEnabled(false);for(const [k,v]of Object.entries(value)){this._path=
+C3.cloneArray(subPath);this._path.push(k);this._currentKey=k;this._currentValue=v;eventSheetManager.PushCopySol(solModifiers);currentEvent.Retrigger(oldFrame,newFrame);eventSheetManager.PopSol(solModifiers)}runtime.SetDebuggingEnabled(true);this._path=oldPath;this._currentKey=oldKey;this._currentValue=oldValue;eventStack.Pop();return false},OnParseError(){return true}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Json.Acts={Parse(str){try{this._SetData(JSON.parse(str))}catch(err){console.warn("[JSON plugin] Failed to parse JSON data: ",err);this._SetData({});this.Trigger(C3.Plugins.Json.Cnds.OnParseError)}},SetPath(str){this._SetPath(str)},SetValue(str,value){this._SetValue(str,value)},SetArray(str,size){let value=this._GetValue(str);if(Array.isArray(value))C3.resizeArray(value,size,0);else{value=[];C3.extendArray(value,size,0);this._SetValue(str,value)}},SetObject(str){this._SetValue(str,
+{})},SetJSON(location,value){let obj=null;try{obj=JSON.parse(value)}catch(err){console.warn("[JSON plugin] Failed to parse JSON data: ",err);this.Trigger(C3.Plugins.Json.Cnds.OnParseError)}this._SetValue(location,obj)},SetNull(str){this._SetValue(str,null)},SetBoolean(str,value){this._SetValue(str,value!==0)},ToggleBoolean(str){const value=this._GetValue(str);if(typeof value==="boolean")this._SetValue(str,!value)},AddTo(str,inc){const value=this._GetValue(str);if(typeof value==="number")this._SetValue(str,
+value+inc)},SubtractFrom(str,dec){const value=this._GetValue(str);if(typeof value==="number")this._SetValue(str,value-dec)},DeleteKey(str){this._DeleteKey(str)},PushValue(side,str,value){const parent=this._GetValue(str);if(Array.isArray(parent))side===0?parent.push(value):parent.unshift(value)},PopValue(side,str){const parent=this._GetValue(str);if(Array.isArray(parent))side===0?parent.pop():parent.shift()},InsertValue(value,str,index){const parent=this._GetValue(str);if(Array.isArray(parent))parent.splice(index,
+0,value)},RemoveValues(count,str,index){const parent=this._GetValue(str);if(Array.isArray(parent))parent.splice(index,count)}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Json.Exps={ToCompactString(){try{return JSON.stringify(this._data)}catch(err){return""}},ToBeautifiedString(){try{return JSON.stringify(this._data,null,4)}catch(err){return""}},Get(str){return this._GetSafeValue(str)},GetAsCompactString(str){const value=this._GetValue(str);return JSON.stringify(value)},GetAsBeautifiedString(str){const value=this._GetValue(str);return JSON.stringify(value,null,4)},Front(str){const parent=this._GetValue(str);if(Array.isArray(parent)){const value=
+parent[0];return this._ToSafeValue(value)}else return-1},Back(str){const parent=this._GetValue(str);if(Array.isArray(parent)){const value=parent[parent.length-1];return this._ToSafeValue(value)}else return-1},Type(str){return this._GetTypeOf(str)},ArraySize(str){const value=this._GetValue(str);if(Array.isArray(value))return value.length;else return-1},Path(){return this._path.map(seg=>seg.replace(/\./g,"\\.")).join(".")},CurrentKey(){return this._currentKey},CurrentValue(){return this._ToSafeValue(this._currentValue)},
+CurrentType(){return this._JSONTypeOf(this._currentValue)}}};
+
+
+"use strict";
+{
+    const C3 = self.C3;
+    C3.Plugins.aekiro_remoteSprite = class RemoteSpritePlugin extends C3.SDKPluginBase
+    {
+        constructor(opts)
+        {
+            super(opts);
+        }
+
+        Release()
+        {
+            super.Release();
+        }
+    };
+}
+
+"use strict";
+{
+    const C3 = self.C3;
+    C3.Plugins.aekiro_remoteSprite.Type = class RemoteSpriteType extends C3.SDKTypeBase
+    {
+        constructor(objectClass)
+        {
+            super(objectClass);
+        }
+
+        Release()
+        {
+            super.Release();
+        }
+
+        OnCreate()
+        {
+            this.GetImageInfo().LoadAsset(this._runtime);
+        }
+
+        LoadTextures(renderer)
+        {
+            return this.GetImageInfo().LoadStaticTexture(renderer,
+            {
+                linearSampling: this._runtime.IsLinearSampling()
+            });
+        }
+
+        ReleaseTextures()
+        {
+            this.GetImageInfo().ReleaseTexture();
+        }
+    };
+}
+
+"use strict";
+{
+    const C3 = self.C3;
+    const tempQuad = C3.New(C3.Quad);
+
+    C3.Plugins.aekiro_remoteSprite.Instance = class RemoteSpriteInstance extends C3.SDKWorldInstanceBase
+    {
+        constructor(inst, properties)
+        {
+            super(inst);
+
+            this.texture = null;
+            this.isImageLoaded = false;
+            this.newImageLoaded = false;
+            this.image = new Image();
+            
+        }
+
+        Release()
+        {
+            super.Release();
+        }
+
+        Draw(renderer) {
+            //return;
+			if(!this.isImageLoaded)return;
+			
+			if(this.newImageLoaded){
+				if(this.texture)
+				{
+					renderer.DeleteTexture(this.texture);
+				}
+				this.texture = renderer.CreateDynamicTexture(this.image.width,this.image.height,{mipMap:false});
+                this.newImageLoaded = false;
+                renderer.UpdateTexture(this.image, this.texture, {});
+			}
+            
+            renderer.SetTexture(this.texture);
+
+            const wi = this.GetWorldInfo();
+            const quad = wi.GetBoundingQuad();
+            const rcTex = new C3.Rect(0,0,1,1);
+            
+            if (this._runtime.IsPixelRoundingEnabled())
+            {
+                const ox = Math.round(wi.GetX()) - wi.GetX();
+                const oy = Math.round(wi.GetY()) - wi.GetY();
+                tempQuad.copy(quad);
+                tempQuad.offset(ox, oy);
+                renderer.Quad3(tempQuad, rcTex);
+            }
+            else
+            {
+                renderer.Quad3(quad, rcTex);
+            }
+        }
+
+
+        
+        SaveToJson()
+        {
+            return {
+                // data to be saved for savegames
+            };
+        }
+
+        LoadFromJson(o)
+        {
+            // load state for savegames
+        }
+
+    };
+}
+
+"use strict";
+{
+    const C3 = self.C3;
+    C3.Plugins.aekiro_remoteSprite.Cnds = {
+
+        };
+}
+
+"use strict";
+{
+    const C3 = self.C3;
+    C3.Plugins.aekiro_remoteSprite.Acts = {
+        async LoadFromURL(url,keepCurrentSize) {
+            url = await this._runtime.GetAssetManager().GetProjectFileUrl(url);
+            this.image.src = url;
+
+            this.image.onload = () =>{
+                if(!keepCurrentSize){
+                    const wi = this.GetWorldInfo();
+                    wi.SetWidth(this.image.width,true);
+                    wi.SetHeight(this.image.height,true);
+                    wi.SetBboxChanged();
+                }
+                this.isImageLoaded = true;
+                this.newImageLoaded = true;
+                this._runtime.UpdateRender();
+            };
+        },
+
+        SetEffect(a){
+            this.GetWorldInfo().SetBlendMode(a);
+            this._runtime.UpdateRender();
+        }
+    };
+}
+
+"use strict";
+{
+    const C3 = self.C3;
+    C3.Plugins.aekiro_remoteSprite.Exps = {
+
+        };
+}
+
+'use strict';{const C3=self.C3;C3.Plugins.Keyboard=class KeyboardPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Keyboard.Type=class KeyboardType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}GetScriptInterfaceClass(){return self.IKeyboardObjectType}};let keyboardObjectType=null;function GetKeyboardSdkInstance(){return keyboardObjectType.GetSingleGlobalInstance().GetSdkInstance()}self.IKeyboardObjectType=class IKeyboardObjectType extends self.IObjectClass{constructor(objectType){super(objectType);keyboardObjectType=
+objectType;objectType.GetRuntime()._GetCommonScriptInterfaces().keyboard=this}isKeyDown(keyOrCode){const keyboardInst=GetKeyboardSdkInstance();if(typeof keyOrCode==="string")return keyboardInst.IsKeyDown(keyOrCode);else if(typeof keyOrCode==="number")return keyboardInst.IsKeyCodeDown(keyOrCode);else throw new TypeError("expected string or number");}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Keyboard.Instance=class KeyboardInstance extends C3.SDKInstanceBase{constructor(inst,properties){super(inst);this._keysDownByString=new Set;this._keysDownByWhich=new Set;this._triggerWhich=0;this._triggerString="";this._triggerTypedKey="";const rt=this.GetRuntime().Dispatcher();this._disposables=new C3.CompositeDisposable(C3.Disposable.From(rt,"keydown",e=>this._OnKeyDown(e.data)),C3.Disposable.From(rt,"keyup",e=>this._OnKeyUp(e.data)),C3.Disposable.From(rt,
+"window-blur",()=>this._OnWindowBlur()))}Release(){super.Release()}_OnKeyDown(e){const which=e["which"];const keyString=e["code"]||which.toString();const typedKey=e["key"];if(this._keysDownByString.has(keyString))return;this._keysDownByString.add(keyString);this._keysDownByWhich.add(which);this._triggerString=keyString;this._triggerWhich=which;this._triggerTypedKey=typedKey;this.Trigger(C3.Plugins.Keyboard.Cnds.OnAnyKey);this.Trigger(C3.Plugins.Keyboard.Cnds.OnKey);this.Trigger(C3.Plugins.Keyboard.Cnds.OnLeftRightKeyPressed);
+this.Trigger(C3.Plugins.Keyboard.Cnds.OnKeyCode)}_OnKeyUp(e){const which=e["which"];const keyString=e["code"]||which.toString();const typedKey=e["key"];this._keysDownByString.delete(keyString);this._keysDownByWhich.delete(which);this._triggerString=keyString;this._triggerWhich=which;this._triggerTypedKey=typedKey;this.Trigger(C3.Plugins.Keyboard.Cnds.OnAnyKeyReleased);this.Trigger(C3.Plugins.Keyboard.Cnds.OnKeyReleased);this.Trigger(C3.Plugins.Keyboard.Cnds.OnLeftRightKeyReleased);this.Trigger(C3.Plugins.Keyboard.Cnds.OnKeyCodeReleased)}_OnWindowBlur(){for(const which of this._keysDownByWhich){this._keysDownByWhich.delete(which);
+this._triggerWhich=which;this.Trigger(C3.Plugins.Keyboard.Cnds.OnAnyKeyReleased);this.Trigger(C3.Plugins.Keyboard.Cnds.OnKeyReleased);this.Trigger(C3.Plugins.Keyboard.Cnds.OnKeyCodeReleased)}this._keysDownByString.clear()}IsKeyDown(str){return this._keysDownByString.has(str)}IsKeyCodeDown(which){return this._keysDownByWhich.has(which)}SaveToJson(){return{"tk":this._triggerWhich,"tkk":this._triggerTypedKey}}LoadFromJson(o){this._triggerWhich=o["tk"];if(o.hasOwnProperty("tkk"))this._triggerTypedKey=
+o["tkk"]}GetDebuggerProperties(){const prefix="plugins.keyboard";return[{title:prefix+".name",properties:[{name:prefix+".debugger.last-key-code",value:this._triggerWhich},{name:prefix+".debugger.last-key-string",value:C3.Plugins.Keyboard.Exps.StringFromKeyCode(this._triggerWhich)},{name:prefix+".debugger.last-typed-key",value:this._triggerTypedKey}]}]}}};
+
+
+'use strict';{const C3=self.C3;const LEFTRIGHT_KEY_STRINGS=["ShiftLeft","ShiftRight","ControlLeft","ControlRight","AltLeft","AltRight","MetaLeft","MetaRight"];C3.Plugins.Keyboard.Cnds={IsKeyDown(which){return this._keysDownByWhich.has(which)},OnKey(which){return this._triggerWhich===which},OnAnyKey(){return true},OnAnyKeyReleased(){return true},OnKeyReleased(which){return this._triggerWhich===which},IsKeyCodeDown(which){which=Math.floor(which);return this._keysDownByWhich.has(which)},OnKeyCode(which){return this._triggerWhich===
+which},OnKeyCodeReleased(which){return this._triggerWhich===which},OnLeftRightKeyPressed(index){const keyString=LEFTRIGHT_KEY_STRINGS[index];return this._triggerString===keyString},OnLeftRightKeyReleased(index){const keyString=LEFTRIGHT_KEY_STRINGS[index];return this._triggerString===keyString},IsLeftRightKeyDown(index){const keyString=LEFTRIGHT_KEY_STRINGS[index];return this._keysDownByString.has(keyString)}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Keyboard.Acts={}};
+
+
+'use strict';{const C3=self.C3;function StringFromCharCode(kc){kc=Math.floor(kc);switch(kc){case 8:return"backspace";case 9:return"tab";case 13:return"enter";case 16:return"shift";case 17:return"control";case 18:return"alt";case 19:return"pause";case 20:return"capslock";case 27:return"esc";case 33:return"pageup";case 34:return"pagedown";case 35:return"end";case 36:return"home";case 37:return"\u2190";case 38:return"\u2191";case 39:return"\u2192";case 40:return"\u2193";case 45:return"insert";case 46:return"del";
+case 91:return"left window key";case 92:return"right window key";case 93:return"select";case 96:return"numpad 0";case 97:return"numpad 1";case 98:return"numpad 2";case 99:return"numpad 3";case 100:return"numpad 4";case 101:return"numpad 5";case 102:return"numpad 6";case 103:return"numpad 7";case 104:return"numpad 8";case 105:return"numpad 9";case 106:return"numpad *";case 107:return"numpad +";case 109:return"numpad -";case 110:return"numpad .";case 111:return"numpad /";case 112:return"F1";case 113:return"F2";
+case 114:return"F3";case 115:return"F4";case 116:return"F5";case 117:return"F6";case 118:return"F7";case 119:return"F8";case 120:return"F9";case 121:return"F10";case 122:return"F11";case 123:return"F12";case 144:return"numlock";case 145:return"scroll lock";case 186:return";";case 187:return"=";case 188:return",";case 189:return"-";case 190:return".";case 191:return"/";case 192:return"'";case 219:return"[";case 220:return"\\";case 221:return"]";case 222:return"#";case 223:return"`";default:return String.fromCharCode(kc)}}
+C3.Plugins.Keyboard.Exps={LastKeyCode(){return this._triggerWhich},StringFromKeyCode(kc){return StringFromCharCode(kc)},TypedKey(){return this._triggerTypedKey}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.AJAX=class AJAXPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.AJAX.Type=class AJAXType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.AJAX.Instance=class AJAXInstance extends C3.SDKInstanceBase{constructor(inst,properties){super(inst);this._lastData="";this._curTag="";this._progress=0;this._timeout=-1;this._nextRequestHeaders=new Map;this._nextReponseBinaryData=null;this._nextRequestOverrideMimeType="";this._nwjsFs=null;this._nwjsPath=null;this._nwjsAppFolder=null;this._isNWjs=this._runtime.GetExportType()==="nwjs";if(this._isNWjs){this._nwjsFs=require("fs");this._nwjsPath=require("path");
+const process=self["process"]||nw["process"];this._nwjsAppFolder=this._nwjsPath["dirname"](process["execPath"])+"\\"}}Release(){super.Release()}async _TriggerError(tag,url,err){console.error(`[Construct 3] AJAX request to '${url}' (tag '${tag}') failed: `,err);this._curTag=tag;await this.TriggerAsync(C3.Plugins.AJAX.Cnds.OnAnyError);await this.TriggerAsync(C3.Plugins.AJAX.Cnds.OnError)}async _TriggerComplete(tag){this._curTag=tag;await this.TriggerAsync(C3.Plugins.AJAX.Cnds.OnAnyComplete);await this.TriggerAsync(C3.Plugins.AJAX.Cnds.OnComplete)}async _OnProgress(tag,
+e){if(!e["lengthComputable"])return;this._progress=e["loaded"]/e["total"];this._curTag=tag;await this.TriggerAsync(C3.Plugins.AJAX.Cnds.OnProgress)}_OnError(tag,url,err){if(!this._isNWjs){this._TriggerError(tag,url,err);return}const fs=this._nwjsFs;const filePath=this._nwjsAppFolder+url;if(fs["existsSync"](filePath))fs["readFile"](filePath,{"encoding":"utf8"},(err2,data)=>{if(err2)this._TriggerError(tag,url,err2);else{this._lastData=data.replace(/\r\n/g,"\n");this._TriggerComplete(tag)}});else this._TriggerError(tag,
+url,err)}async _DoCordovaRequest(tag,file){const assetManager=this._runtime.GetAssetManager();const binaryData=this._nextReponseBinaryData;this._nextReponseBinaryData=null;try{if(binaryData){const buffer=await assetManager.CordovaFetchLocalFileAsArrayBuffer(file);binaryData.SetArrayBufferTransfer(buffer);this._lastData="";this._TriggerComplete(tag)}else{const data=await assetManager.CordovaFetchLocalFileAsText(file);this._lastData=data.replace(/\r\n/g,"\n");this._TriggerComplete(tag)}}catch(err){this._TriggerError(tag,
+file,err)}}_DoRequest(tag,url,method,data){return new Promise(resolve=>{const errorFunc=err=>{this._OnError(tag,url,err);resolve()};const binaryData=this._nextReponseBinaryData;this._nextReponseBinaryData=null;try{const request=new XMLHttpRequest;request.onreadystatechange=()=>{if(request.readyState===4){if(binaryData)this._lastData="";else this._lastData=(request.responseText||"").replace(/\r\n/g,"\n");if(request.status>=400)this._TriggerError(tag,url,request.status+request.statusText);else{const hasData=
+this._lastData.length||binaryData&&request.response instanceof ArrayBuffer;if((!this._isNWjs||hasData)&&!(!this._isNWjs&&request.status===0&&!hasData)){if(binaryData)binaryData.SetArrayBufferTransfer(request.response);this._TriggerComplete(tag)}}resolve()}};request.onerror=errorFunc;request.ontimeout=errorFunc;request.onabort=errorFunc;request["onprogress"]=e=>this._OnProgress(tag,e);request.open(method,url);if(this._timeout>=0&&typeof request["timeout"]!=="undefined")request["timeout"]=this._timeout;
+request.responseType=binaryData?"arraybuffer":"text";if(data&&!this._nextRequestHeaders.has("Content-Type"))if(typeof data!=="string")request["setRequestHeader"]("Content-Type","application/octet-stream");else request["setRequestHeader"]("Content-Type","application/x-www-form-urlencoded");for(const [header,value]of this._nextRequestHeaders)try{request["setRequestHeader"](header,value)}catch(err){console.error(`[Construct 3] AJAX: Failed to set header '${header}: ${value}': `,err)}this._nextRequestHeaders.clear();
+if(this._nextRequestOverrideMimeType){try{request["overrideMimeType"](this._nextRequestOverrideMimeType)}catch(err){console.error(`[Construct 3] AJAX: failed to override MIME type: `,err)}this._nextRequestOverrideMimeType=""}if(data)request.send(data);else request.send()}catch(err){errorFunc(err)}})}GetDebuggerProperties(){const prefix="plugins.ajax.debugger";return[{title:prefix+".title",properties:[{name:prefix+".last-data",value:this._lastData}]}]}SaveToJson(){return{"lastData":this._lastData}}LoadFromJson(o){this._lastData=
+o["lastData"];this._curTag="";this._progress=0}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.AJAX.Cnds={OnComplete(tag){return C3.equalsNoCase(this._curTag,tag)},OnAnyComplete(){return true},OnError(tag){return C3.equalsNoCase(this._curTag,tag)},OnAnyError(){return true},OnProgress(tag){return C3.equalsNoCase(this._curTag,tag)}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.AJAX.Acts={async Request(tag,url){if(this._runtime.IsCordova()&&C3.IsRelativeURL(url)&&location.protocol==="file:")await this._DoCordovaRequest(tag,url);else if(this._runtime.IsPreview()&&C3.IsRelativeURL(url)){const localurl=this._runtime.GetAssetManager().GetLocalUrlAsBlobUrl(url.toLowerCase());await this._DoRequest(tag,localurl,"GET",null)}else await this._DoRequest(tag,url,"GET",null)},async RequestFile(tag,file){if(this._runtime.IsCordova()&&location.protocol===
+"file:")await this._DoCordovaRequest(tag,file);else await this._DoRequest(tag,this._runtime.GetAssetManager().GetLocalUrlAsBlobUrl(file),"GET",null)},async Post(tag,url,data,method){await this._DoRequest(tag,url,method,data)},async PostBinary(tag,url,objectClass,method){if(!objectClass)return;const target=objectClass.GetFirstPicked(this._inst);if(!target)return;const sdkInst=target.GetSdkInstance();const buffer=sdkInst.GetArrayBufferReadOnly();await this._DoRequest(tag,url,method,buffer)},SetTimeout(t){this._timeout=
+t*1E3},SetHeader(n,v){this._nextRequestHeaders.set(n,v)},SetResponseBinary(objectClass){if(!objectClass)return;const inst=objectClass.GetFirstPicked(this._inst);if(!inst)return;this._nextReponseBinaryData=inst.GetSdkInstance()},OverrideMIMEType(m){this._nextRequestOverrideMimeType=m}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.AJAX.Exps={LastData(){return this._lastData},Progress(){return this._progress},Tag(){return this._curTag}}};
 
 
 'use strict';{const C3=self.C3;C3.Behaviors.Bullet=class BulletBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
@@ -6930,6 +7213,1503 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 }
 
 
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridviewbind = class aekiro_gridviewbindBehavior extends C3.SDKBehaviorBase
+	{
+		constructor(opts)
+		{
+			super(opts);
+		}
+		
+		Release()
+		{
+			super.Release();
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridviewbind.Type = class aekiro_gridviewbindType extends C3.SDKBehaviorTypeBase
+	{
+		constructor(behaviorType)
+		{
+			super(behaviorType);
+		}
+		
+		Release()
+		{
+			super.Release();
+		}
+		
+		OnCreate()
+		{	
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridviewbind.Instance = class aekiro_bindInstance extends C3.SDKBehaviorInstanceBase
+	{
+		constructor(behInst, properties)
+		{
+			super(behInst);
+			
+			this.GetObjectInstance().GetUnsavedDataMap().aekiro_gridviewbind = this;
+			
+			//*********************************
+			this.index = -1 ;
+			this.gridView = null;
+			this.value = 0;
+		}
+	
+		setValue (value){
+			//console.log("%cLABEL %d : Set value to %s","color:blue", this.inst.uid, value);		
+			this.value = value;
+			//this.Trigger(C3.Behaviors.aekiro_gridviewbind.Cnds.OnChanged); //maybe later
+		}
+		
+		triggerOnGridViewRender(){
+			this.Trigger(C3.Behaviors.aekiro_gridviewbind.Cnds.OnGridViewRender);
+		}
+	
+		Release()
+		{
+			super.Release();
+		}
+	
+		SaveToJson()
+		{
+			return {
+			};
+		}
+	
+		LoadFromJson(o)
+		{
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridviewbind.Cnds = {
+		IsIndex(index){ return (index == this.index); },
+		OnGridViewRender(){ return true; }
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridviewbind.Acts =
+	{
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridviewbind.Exps ={
+		index(){ return this.index; },
+		get(key){ 
+			var v = self["_"]["get"](this.value,key);
+			if(v == undefined){
+				return  "";
+			}else{
+				return v;
+			}
+		}
+	};
+}
+
+
+
+
+"use strict";
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_scrollView = class aekiro_scrollViewBehavior extends C3.SDKBehaviorBase
+	{
+		constructor(a) {
+			super(a);
+			const b = this._runtime.Dispatcher();
+			this._disposables = new C3.CompositeDisposable(
+				C3.Disposable.From(b, "pointerdown", (a)=>this._OnPointerDown(a.data)),
+				C3.Disposable.From(b, "pointermove", (a)=>this._OnPointerMove(a.data)),
+				C3.Disposable.From(b, "pointerup", (a)=>this._OnPointerUp(a.data, !1)),
+				C3.Disposable.From(b, "pointercancel", (a)=>this._OnPointerUp(a.data, !0))),
+				C3.Disposable.From(b, "wheel", (a) => this._OnMouseWheel(a.data))
+		}
+		Release() {
+			this._disposables.Release(),
+			this._disposables = null,
+			super.Release()
+		}
+		_OnPointerDown(a) {
+			this._OnInputDown(a["pointerId"].toString(), a["clientX"] - this._runtime.GetCanvasClientX(), a["clientY"] - this._runtime.GetCanvasClientY())
+		}
+		_OnPointerMove(a) {
+			this._OnInputMove(a["pointerId"].toString(), a["clientX"] - this._runtime.GetCanvasClientX(), a["clientY"] - this._runtime.GetCanvasClientY())
+		}
+		_OnPointerUp(a) {
+			this._OnInputUp(a["pointerId"].toString(), a["clientX"] - this._runtime.GetCanvasClientX(), a["clientY"] - this._runtime.GetCanvasClientY())
+		}
+		_OnMouseWheel(a) {
+			this._OnMouseWheel2(a["deltaY"], a["clientX"] - this._runtime.GetCanvasClientX(), a["clientY"] - this._runtime.GetCanvasClientY())
+		}
+		async _OnInputDown(source, b, c) {
+			const insts = this.GetInstances();
+			for (const inst of insts) {
+				const beh = inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.aekiro_scrollView);
+				const wi = inst.GetWorldInfo(),
+				layer = wi.GetLayer(),
+				[x,y] = layer.CanvasCssToLayer(b, c, wi.GetTotalZElevation());
+				if(beh.OnAnyInputDown)
+					await beh.OnAnyInputDown(x,y,source);
+			}
+		}
+		_OnInputMove(source, b, c) {
+			const insts = this.GetInstances();
+			for (const inst of insts) {
+				const beh = inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.aekiro_scrollView);
+				/*if (!d.IsEnabled() || !d.IsDragging() || d.IsDragging() && d.GetDragSource() !== a)
+					continue;*/
+				const wi = inst.GetWorldInfo() 
+				  , layer = wi.GetLayer()
+				  , [x,y] = layer.CanvasCssToLayer(b, c, wi.GetTotalZElevation());
+				if(beh.OnAnyInputMove)
+					beh.OnAnyInputMove(x, y,source);
+			}
+		}
+		async _OnInputUp(a,b,c) {
+			const insts = this.GetInstances();
+			for (const inst of insts) {
+				const beh = inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.aekiro_scrollView);
+				const wi = inst.GetWorldInfo(),
+				layer = wi.GetLayer(),
+				[x,y] = layer.CanvasCssToLayer(b, c, wi.GetTotalZElevation());
+				
+				if(beh.OnAnyInputUp)
+					await beh.OnAnyInputUp(x,y);
+			}
+		}
+		_OnMouseWheel2(a,b,c) {
+            const insts = this.GetInstances();
+			for (const inst of insts) {
+				const beh = inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.aekiro_scrollView);
+				const wi = inst.GetWorldInfo(),
+				layer = wi.GetLayer(),
+				[x,y] = layer.CanvasCssToLayer(b, c, wi.GetTotalZElevation());
+				if(beh.OnMouseWheel)
+					beh.OnMouseWheel(x,y,a);
+			}
+        }
+	};
+}
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_scrollView.Type = class aekiro_scrollView2Type extends C3.SDKBehaviorTypeBase
+	{
+		constructor(behaviorType)
+		{
+			super(behaviorType);
+		}
+		
+		Release()
+		{
+			super.Release();
+		}
+		
+		OnCreate()
+		{	
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_scrollView.Instance = class aekiro_scrollViewInstance extends C3.SDKBehaviorInstanceBase {
+		constructor(behInst, properties)
+		{
+			super(behInst);
+			this.proui = this.GetRuntime().GetSingleGlobalObjectClassByCtor(C3.Plugins.aekiro_proui);
+			if(this.proui){
+				this.proui = this.proui.GetSingleGlobalInstance().GetSdkInstance();
+			}
+			//**************************
+			this._SetVisible = this.GetObjectInstance().GetPlugin().constructor.Acts.SetVisible;
+			this.runtime = this.GetRuntime();
+			this.aekiro_scrollViewManager = globalThis.aekiro_scrollViewManager;
+			this.aekiro_scrollViewManager.add(this.GetObjectInstance());
+			this.aekiro_dialogManager = globalThis.aekiro_dialogManager;
+			this.goManager = globalThis.aekiro_goManager;
+			this.GetObjectInstance().GetUnsavedDataMap().aekiro_scrollView = this;
+			this.inst = this.GetObjectInstance();
+			this.wi = this.GetWorldInfo();
+			//properties
+			if (properties){
+				//properties
+				this.isEnabled = properties[0];
+				this.direction = properties[1];
+				this.isSwipeScrollEnabled = properties[2];
+				this.isMouseScroll = properties[3];
+				this.inertia = properties[4];
+				this.movement = properties[5]; //0:clamped; 1:elastic		
+				this.contentUID = properties[6];
+				this.vSliderUID = properties[7];
+				this.vScrollBarUID = properties[8];
+				this.hSliderUID = properties[9];
+				this.hScrollBarUID = properties[10];		
+			}
+			
+			if(!this.inertia){ //If there's no inertia, then the movement can't be elastic.
+				this.movement = 0;
+			}
+	
+			this.elasticF = 1;
+			if(this.movement){
+				this.elasticF = 0.4;
+			}
+	
+			//*********************************
+			this.onTouchStarted = false;
+			this.isTouchMoving = false;
+			this.onSliderTouchStarted = false;
+			this.onvSliderTouchStarted = false;
+			this.onhSliderTouchStarted = false;
+	
+			this.content = null;
+			this.vSlider = null;
+			this.vScrollBar = null;
+			this.hSlider = null;
+			this.hScrollBar = null;
+	
+			this.isInit = false;
+			this.isContentScrollableV = true;
+			this.isContentScrollableH = true;
+	
+			this.scroll = {
+				isIdle:true,
+				offsetX:0,
+				offestY:0,
+				scrollRatio:0,
+				
+				decelerationVelocityX:0,
+				decelerationVelocityY:0,
+				scrollToTargetY:null,
+				scrollToTargetX:null,
+				scrollToX:false,
+				scrollToY:false,
+				scrollToSmooth : 0.3
+			};
+	
+			//********************
+
+	
+			this.goManager.eventManager.on("childrenRegistred",() => {
+				this.init();
+			},{"once":true});
+			
+			
+			this.SetForceOwnTextureListener = this.goManager.eventManager.on("childrenRegistred",() => {
+				this.wi.GetLayer().SetForceOwnTexture(true);
+			});
+			
+
+			
+		}
+	
+	
+	
+		
+		init(){
+			if(this.isInit){
+				return;
+			}
+			this.isVScrollEnabled = (this.direction == 0) || (this.direction == 2);
+			this.isHScrollEnabled = (this.direction == 1) || (this.direction == 2);
+
+			this.prevSelfLayerVisible = this.wi.GetLayer().IsVisible();
+			
+			try{
+				this.vSlider = this.getPart(this.vSliderUID,"vertical slider");
+				this.vScrollBar = this.getPart(this.vScrollBarUID,"vertical scrollbar");
+				this.hSlider = this.getPart(this.hSliderUID,"horizontal slider");
+				this.hScrollBar = this.getPart(this.hScrollBarUID,"horizontal scrollbar");
+
+				this.content = this.getPart(this.contentUID,"content",true);	
+				var contentWi = this.content.GetWorldInfo();
+				this.contentWi = this.content.GetWorldInfo();			
+			}catch(e){
+				console.error(e)
+				this.isEnabled = false;
+				return;
+			}
+			
+
+	
+			//listening for content size changes
+			this.content.GetUnsavedDataMap().aekiro_scrollView = this;
+			this.contentWi.SetHeight_old2 = this.contentWi.SetHeight;
+			this.contentWi.SetHeight = function (v,onlyNode){
+				this.SetHeight_old2(v,onlyNode);
+				this.GetInstance().GetUnsavedDataMap().aekiro_scrollView.OnSizeChanged();
+			};
+			this.contentWi.SetWidth_old2 = this.contentWi.SetWidth;
+			this.contentWi.SetWidth = function (v,onlyNode){
+				this.SetWidth_old2(v,onlyNode);
+				this.GetInstance().GetUnsavedDataMap().aekiro_scrollView.OnSizeChanged();
+			};
+	
+			//new items should have the right blend mode
+			this.content.GetUnsavedDataMap().aekiro_gameobject.eventManager.on("childrenAdded",function(inst){
+				if(inst){
+					//inst.GetUnsavedDataMap().aekiro_gameobject.SetBlendMode(9);	
+					inst.GetUnsavedDataMap().aekiro_gameobject.applyActionToHierarchy(inst.GetUnsavedDataMap().aekiro_gameobject.acts.SetEffect,9);
+				}
+			});
+	
+	
+			//Scrolling is deactivated if the content is too small to scroll
+			if(contentWi.GetHeight(true)<=this.wi.GetHeight(true)){
+				this.isContentScrollableV = false;
+			}
+	
+			if(contentWi.GetWidth(true)<=this.wi.GetWidth(true)){
+				this.isContentScrollableH = false;
+			}
+	
+			//snap the content to the top-left of the scrollview
+			contentWi.SetX(this.wi.GetBoundingBox().getLeft() + (contentWi.GetX() - contentWi.GetBoundingBox().getLeft()));
+			contentWi.SetY(this.wi.GetBoundingBox().getTop()  + (contentWi.GetY() - contentWi.GetBoundingBox().getTop()));
+			contentWi.SetBboxChanged();
+	
+			//Masking the content
+			this.wi.GetLayer().SetForceOwnTexture(true);
+			this.GetRuntime().UpdateRender();
+				
+			//this.content.GetUnsavedDataMap().aekiro_gameobject.SetBlendMode(9);	
+			this.content.GetUnsavedDataMap().aekiro_gameobject.applyActionToHierarchy(this.content.GetUnsavedDataMap().aekiro_gameobject.acts.SetEffect,9);
+	
+			//snap the hSlider to the left of the hScrollBar (user is left to manually place hslider verticaly)
+			if(this.hSlider && this.hScrollBar){
+				this.hSliderWi = this.hSlider.GetWorldInfo();
+				this.hScrollBarWi = this.hScrollBar.GetWorldInfo();
+				
+				var x = this.hScrollBarWi.GetBoundingBox().getLeft()+(this.hSliderWi.GetX()-this.hSliderWi.GetBoundingBox().getLeft());
+				this.hSliderWi.SetX(x);
+				this.hSliderWi.SetBboxChanged();
+	
+				this.hScrollBar.GetSdkInstance().CallAction(this.hScrollBar.GetPlugin().constructor.Acts.MoveToTop);
+				this.hSlider.GetSdkInstance().CallAction(this.hSlider.GetPlugin().constructor.Acts.MoveToTop);
+			}
+	
+			//snap the vSlider to the left of the vScrollBar (user is left to manually place vslider horizontaly)
+			if(this.vSlider && this.vScrollBar){
+				this.vSliderWi = this.vSlider.GetWorldInfo();
+				this.vScrollBarWi = this.vScrollBar.GetWorldInfo();
+				
+				var y = this.vScrollBarWi.GetBoundingBox().getTop()+(this.vSliderWi.GetY()-this.vSliderWi.GetBoundingBox().getTop());
+				this.vSliderWi.SetY(y);
+				this.vSliderWi.SetBboxChanged();
+	
+				this.vScrollBar.GetSdkInstance().CallAction(this.vScrollBar.GetPlugin().constructor.Acts.MoveToTop);
+				this.vSlider.GetSdkInstance().CallAction(this.vSlider.GetPlugin().constructor.Acts.MoveToTop);
+			}
+			
+			//console.log("init scrollView");
+			this.isInit = true;
+			
+			this._StartTicking();
+		}
+		
+
+		
+		getPart(name,errorLabel,isRequired){
+			if(!name && !isRequired)return;
+			
+			var invalidName = false;
+			
+			var p = this.goManager.gos[name];
+			if(p){
+				if(!this.proui.isTypeValid(p,[C3.Plugins.Sprite,C3.Plugins.NinePatch,C3.Plugins.TiledBg])){
+					throw new Error("ProUI-ScrollView-UID = "+this.GetObjectInstance().GetUID()+" : The "+errorLabel+" of the scrollView can only be a Sprite, TiledBackground Or 9-patch object.");
+				}
+				return p;
+			}else{
+				invalidName = true;
+			}		
+			
+			if(!name && isRequired){
+				invalidName = true;
+			}
+
+			if(invalidName){
+				throw new Error("ProUI-ScrollView: "+errorLabel+" not found, please check its name");
+			}
+			
+			return;
+		}
+		
+		PostCreate(){
+			this.sdkInstance_callAction = this.GetObjectInstance().GetSdkInstance().CallAction;
+			this.sdkInstance_acts = this.GetObjectInstance().GetPlugin().constructor.Acts;
+			//this.init();
+		}
+		
+		OnMouseWheel(x,y,deltaY){
+			if(this.isEnabled && this.isVScrollEnabled && this.isContentScrollableV && this.isMouseScroll
+			&& this.isInteractible(x,y) && this.wi.ContainsPoint(x,y)){
+				this.scroll.scrollToX = false;
+				this.scroll.scrollToY = false;
+				this.scroll.isIdle = false;
+				this._StartTicking();
+				this.onWheelStarted = true;
+				var dir = (deltaY > 0 ? -1 : 1);
+				
+				if(this.inertia){
+					//this.scroll.decelerationVelocityY = dir*1*this.contentWi.GetHeight(true);
+					this.scroll.decelerationVelocityY = dir*650;
+					
+
+				}else{
+					this.contentWi.OffsetY(30*dir);
+				}
+				
+				this.scroll.decelerationVelocityX = 0;
+				//console.log("mouse wheel");
+			}
+		}
+		
+		isInteractible(x,y){
+			if(this.proui.ignoreInput){
+				return false;
+			}
+			
+			var isUnder = false;
+			if(this.aekiro_dialogManager){
+				isUnder = this.aekiro_dialogManager.isInstanceUnder(this.wi.GetLayer().GetIndex());
+			}
+			
+			//not interactible if there's a scrollview on top
+			var isOverlaped = this.aekiro_scrollViewManager.isOverlaped(this.GetObjectInstance(),x,y);
+	
+			//console.log(isUnder,isOverlaped);
+			return !isUnder && !isOverlaped;
+		}
+		
+		OnAnyInputDown(x, y){
+			if(!this.isEnabled || !this.isInteractible(x,y)){
+				return;
+			}
+			//console.log("_OnInputDown"+x+"***"+y+"***"+source);		
+			if (this.wi.ContainsPoint(x, y)){
+				this.OnInputDown(x,y);
+			}
+			
+			if(this.vSlider && this.vScrollBar && this.isVScrollEnabled && this.isContentScrollableV && this.vSliderWi.ContainsPoint(x,y)){
+				this.OnSliderTouchStart("v",x,y);
+			}
+	
+			if(this.hSlider && this.hScrollBar && this.isHScrollEnabled && this.isContentScrollableH && this.hSliderWi.ContainsPoint(x,y)){
+				this.OnSliderTouchStart("h",x,y);
+			}
+		}
+	
+		OnInputDown(x, y) {
+			if(!this.isEnabled || !this.isSwipeScrollEnabled){
+				return;
+			}
+	
+			this.onTouchStarted = true;
+			this.scroll.startTime = Date.now();
+			//console.log(x,y);
+			if(this.isVScrollEnabled && this.isContentScrollableV){
+				this.scroll.offsetY = y - this.contentWi.GetY();
+				this.scroll.touchStartY = y;
+	
+				this.scroll.isIdle = false;
+				this._StartTicking();
+				this.scroll.scrollToX = false;
+				this.scroll.scrollToY = false;
+			}
+			
+			if(this.isHScrollEnabled && this.isContentScrollableH){
+				this.scroll.offsetX = x - this.contentWi.GetX();
+				this.scroll.touchStartX = x;
+				
+				this.scroll.isIdle = false;
+				this._StartTicking();
+				this.scroll.scrollToX = false;
+				this.scroll.scrollToY = false;
+			}
+	
+			this.touchX = x;
+			this.touchY = y;
+			
+			this.scroll.decelerationVelocityX = 0;
+			this.scroll.decelerationVelocityY = 0;
+		}
+		
+		OnSliderTouchStart(type,x,y){
+			if(type=="v"){
+				this.scroll.offsetY = y - this.vSliderWi.GetY();
+				this.onvSliderTouchStarted = true;
+			}else{
+				this.scroll.offsetX = x - this.hSliderWi.GetX();
+				this.onhSliderTouchStarted = true;
+			}
+	
+			this.onSliderTouchStarted = true;
+			this.scroll.isIdle = true;
+			this._StopTicking();
+	
+			//force content to bound if it's being bounded.
+			this.boundContent();
+	
+			//stop scrollTo
+			this.scroll.scrollToX = false;
+			this.scroll.scrollToY = false;
+	
+			//stop Inertia
+			this.scroll.decelerationVelocityX = 0;
+			this.scroll.decelerationVelocityY = 0;
+		}
+		
+		OnAnyInputUp(x, y) {
+			if(!this.isEnabled){
+				return;
+			}
+			
+			if(this.onTouchStarted){
+				this.OnInputUp(x,y);
+			}
+			this.onTouchStarted = false;
+			this.onSliderTouchStarted = false;
+			this.onvSliderTouchStarted = false;
+			this.onhSliderTouchStarted = false;
+		}
+		
+		OnInputUp(x, y){
+			this.scroll.elapsedTime = (Date.now() - this.scroll.startTime)/1000;
+			//console.log(this.scroll.elapsedTime/1000);
+			if(this.isSwipeScrollEnabled && this.inertia){
+				if(this.isHScrollEnabled && this.isContentScrollableH){
+					this.scroll.decelerationVelocityX = (x-this.scroll.touchStartX)/this.scroll.elapsedTime;
+					if(Math.abs(this.scroll.decelerationVelocityX)<100){
+						this.scroll.decelerationVelocityX = 0;
+					}
+				}
+	
+				if(this.isVScrollEnabled && this.isContentScrollableV){
+					this.scroll.decelerationVelocityY = (y-this.scroll.touchStartY)/this.scroll.elapsedTime;
+					if(Math.abs(this.scroll.decelerationVelocityY)<100){
+						this.scroll.decelerationVelocityY = 0;
+					}	
+				}			
+			}
+	
+			//console.log(this.scroll.decelerationVelocityX,this.scroll.decelerationVelocityY);
+			this.isTouchMoving = false;
+		}
+	
+		OnAnyInputMove(x, y,source) {
+			if(this.onTouchStarted){
+				this.isTouchMoving = true;
+				this.touchX = x;
+				this.touchY = y;
+				/*if(this.isSwipeScrollEnabled && !this.onSliderTouchStarted){ //&& this.isInTouch(this.inst)
+					if(this.isHScrollEnabled && this.isContentScrollableH){
+						this.contentWi.SetX(x - this.scroll.offsetX);
+					}
+					if(this.isVScrollEnabled && this.isContentScrollableV){
+						this.contentWi.SetY(y - this.scroll.offsetY);
+					}
+					this.contentWi.SetBboxChanged();
+				}*/
+			}
+			
+			//VERTICAL SLIDER SCROLLING
+			if(this.onvSliderTouchStarted && this.isVScrollEnabled && this.isContentScrollableV){
+				var newy = y - this.scroll.offsetY;
+				this.vSliderWi.SetY(C3.clamp(newy,this.vScrollBarWi.GetBoundingBox().getTop()+(this.vSliderWi.GetY()-this.vSliderWi.GetBoundingBox().getTop()), this.vScrollBarWi.GetBoundingBox().getBottom()-(this.vSliderWi.GetBoundingBox().getBottom() - this.vSliderWi.GetY())));
+				this.vSliderWi.SetBboxChanged();
+				
+				//scrolling
+				this.contentWi.SetY(this.wi.GetBoundingBox().getTop()+(this.contentWi.GetY()-this.contentWi.GetBoundingBox().getTop())-((this.vSliderWi.GetBoundingBox().getTop()-this.vScrollBarWi.GetBoundingBox().getTop())/(this.vScrollBarWi.GetHeight(true)-this.vSliderWi.GetHeight(true)))*(this.contentWi.GetHeight(true)-this.wi.GetHeight(true)));
+				this.contentWi.SetBboxChanged();
+			}
+	
+			//HORIZONTAL SLIDER SCROLLING
+			if(this.onhSliderTouchStarted && this.isHScrollEnabled && this.isContentScrollableH){
+				var newx = x - this.scroll.offsetX;
+				this.hSliderWi.SetX(C3.clamp(newx,this.hScrollBarWi.GetBoundingBox().getLeft()+(this.hSliderWi.GetX()-this.hSliderWi.GetBoundingBox().getLeft()) , this.hScrollBarWi.GetBoundingBox().getRight()-(this.hSliderWi.GetBoundingBox().getRight()-this.hSliderWi.GetX())));
+				this.hSliderWi.SetBboxChanged();
+	
+				//scrolling
+				this.contentWi.SetX(this.wi.GetBoundingBox().getLeft()+(this.contentWi.GetX()-this.contentWi.GetBoundingBox().getLeft())-((this.hSliderWi.GetBoundingBox().getLeft()-this.hScrollBarWi.GetBoundingBox().getLeft())/(this.hScrollBarWi.GetWidth(true)-this.hSliderWi.GetWidth(true)))*(this.contentWi.GetWidth(true)-this.wi.GetWidth(true)));
+				this.contentWi.SetBboxChanged();
+			}
+		}
+	
+		boundContent(){
+			if(this.contentWi.GetHeight(true)<=this.wi.GetHeight(true)){ //the content is snapped to the top
+				this.contentWi.SetY(this.wi.GetBoundingBox().getTop()+(this.contentWi.GetY()-this.contentWi.GetBoundingBox().getTop()));
+			}else{
+				//checking the vertical boundaries of the content
+				var diff_topY = this.contentWi.GetBoundingBox().getTop()-this.wi.GetBoundingBox().getTop();
+				var diff_bottomY = this.wi.GetBoundingBox().getBottom()-this.contentWi.GetBoundingBox().getBottom();
+				if(diff_topY>0 || diff_bottomY>0){
+					this.contentWi.SetY(C3.clamp(this.contentWi.GetY(),this.contentWi.GetY()+diff_bottomY,this.contentWi.GetY() - diff_topY));
+				}
+			}
+			
+			if(this.contentWi.GetWidth(true)<=this.wi.GetWidth(true)){//the content is snapped to the left
+				this.contentWi.SetX(this.wi.GetBoundingBox().getLeft() + (this.contentWi.GetX() - this.contentWi.GetBoundingBox().getLeft()));
+			}else{
+				//checking the horizontal boundaries of the content
+				var diff_rightX = this.wi.GetBoundingBox().getRight()-this.contentWi.GetBoundingBox().getRight();
+				var diff_leftX = this.contentWi.GetBoundingBox().getLeft()-this.wi.GetBoundingBox().getLeft();
+				if(diff_rightX>0 || diff_leftX>0){
+					this.contentWi.SetX(C3.clamp(this.contentWi.GetX(),this.contentWi.GetX() + diff_rightX,this.contentWi.GetX() - diff_leftX));
+				}				
+			}
+			
+			this.contentWi.SetBboxChanged();
+		}
+		
+		boundContentX(elasticF){
+			if(this.isHScrollEnabled){
+				var isOutOfBound;
+				this.contentWi.SetBboxChanged();
+				if(this.contentWi.GetWidth(true)<=this.wi.GetWidth(true)){//the content is snapped to the left
+					this.contentWi.SetX(this.wi.GetBoundingBox().getLeft() + (this.contentWi.GetX() - this.contentWi.GetBoundingBox().getLeft()));
+					isOutOfBound = true;
+				}else{
+					//checking the horizontal boundaries of the content
+					var diff_rightX = this.wi.GetBoundingBox().getRight()-this.contentWi.GetBoundingBox().getRight();
+					var diff_leftX = this.contentWi.GetBoundingBox().getLeft()-this.wi.GetBoundingBox().getLeft();
+					isOutOfBound = diff_rightX>0 || diff_leftX>0;
+	
+					if(isOutOfBound){
+						if(elasticF && this.elasticF!=1){
+							this.contentWi.SetX(C3.clamp(this.contentWi.GetX(),C3.lerp(this.contentWi.GetX(),this.contentWi.GetX() + diff_rightX,this.elasticF),C3.lerp(this.contentWi.GetX(),this.contentWi.GetX() - diff_leftX,this.elasticF)));
+						}else{
+							this.contentWi.SetX(C3.clamp(this.contentWi.GetX(),this.contentWi.GetX() + diff_rightX,this.contentWi.GetX() - diff_leftX));
+						}
+					}
+				}
+				this.contentWi.SetBboxChanged();
+				return isOutOfBound;
+			}
+		}
+	
+		boundContentY(elasticF){
+			if(this.isVScrollEnabled){
+				var isOutOfBound;
+				this.contentWi.SetBboxChanged();
+				if(this.contentWi.GetHeight(true)<=this.wi.GetHeight(true)){
+					this.contentWi.SetY(this.wi.GetBoundingBox().getTop() + (this.contentWi.GetY() - this.contentWi.GetBoundingBox().getTop())); //the content is snapped to the top
+					isOutOfBound = true;
+				}else{
+					//checking the horizontal boundaries of the content
+					var diff_topY = this.contentWi.GetBoundingBox().getTop()-this.wi.GetBoundingBox().getTop();
+					var diff_bottomY = this.wi.GetBoundingBox().getBottom()-this.contentWi.GetBoundingBox().getBottom();
+					isOutOfBound = diff_topY>0 || diff_bottomY>0;
+	
+					if(isOutOfBound){
+						if(elasticF && this.elasticF!=1){
+							this.contentWi.SetY(C3.clamp(this.contentWi.GetY(),C3.lerp(this.contentWi.GetY(),this.contentWi.GetY() + diff_bottomY,this.elasticF),C3.lerp(this.contentWi.GetY(),this.contentWi.GetY() - diff_topY,this.elasticF)));
+						}else{
+							this.contentWi.SetY(C3.clamp(this.contentWi.GetY(),this.contentWi.GetY() + diff_bottomY,this.contentWi.GetY() - diff_topY));
+						}
+					}
+				}
+				this.contentWi.SetBboxChanged();
+				return isOutOfBound;
+			}
+		}
+	
+		scrollTo(targetX,targetY,targetType,smooth){
+			if(!this.isEnabled)return;
+	
+			this.scroll.scrollToSmooth = smooth;
+			this.scroll.scrollToTargetY = null;
+			this.scroll.scrollToTargetX = null;
+			this.scroll.scrollToX = false;
+			this.scroll.scrollToY = false;
+			this.onScrollToStarted = false;
+			
+			
+			if(this.isVScrollEnabled && this.isContentScrollableV ){
+				
+				var viewportCenterY = (this.wi.GetBoundingBox().getTop() + this.wi.GetBoundingBox().getBottom())/2;
+				if(targetType){//Percentage
+					targetY = C3.clamp(targetY,0,1);
+					targetY = this.contentWi.GetBoundingBox().getTop() + targetY*this.contentWi.GetHeight(true);
+				}
+				this.scroll.scrollToTargetY = this.contentWi.GetY() + (viewportCenterY-targetY);
+				this.scroll.scrollToY = true;
+				this.scroll.isIdle = false;
+				this._StartTicking();
+				this.onScrollToStarted = true;
+			}
+	
+			
+			if(this.isHScrollEnabled && this.isContentScrollableH){
+				var viewportCenterX = (this.wi.GetBoundingBox().getLeft() + this.wi.GetBoundingBox().getRight())/2;
+				if(targetType){//Percentage
+					targetX = C3.clamp(targetX,0,1);
+					targetX = this.contentWi.GetBoundingBox().getLeft() + targetX*this.contentWi.GetWidth(true);
+				}
+				this.scroll.scrollToTargetX = this.contentWi.GetX() + (viewportCenterX-targetX);
+				this.scroll.scrollToX = true;
+				this.scroll.isIdle = false;
+				this._StartTicking();
+				this.onScrollToStarted = true;
+			}
+			
+			this.contentWi.SetBboxChanged();
+		}
+
+		scrollBy(distanceX,distanceY,targetType,smooth){
+			if(!this.isEnabled)return;
+	
+			this.scroll.scrollToSmooth = smooth;
+			this.scroll.scrollToTargetY = null;
+			this.scroll.scrollToTargetX = null;
+			this.scroll.scrollToX = false;
+			this.scroll.scrollToY = false;
+			this.onScrollToStarted = false;
+			
+			this.boundContent();
+
+			if(this.isVScrollEnabled && this.isContentScrollableV){
+				if(targetType){//Percentage
+					distanceY = C3.clamp(distanceY,-1,1);
+					distanceY = distanceY*this.contentWi.GetHeight(true);
+
+				}
+				this.scroll.scrollToTargetY = this.contentWi.GetY() - distanceY;
+				this.scroll.scrollToY = true;
+				this.scroll.isIdle = false;
+				this._StartTicking();
+				this.onScrollToStarted = true;
+			}
+
+			if(this.isHScrollEnabled && this.isContentScrollableH){
+				if(targetType){//Percentage
+					distanceX = C3.clamp(distanceX,-1,1);
+					distanceX = distanceX*this.contentWi.GetWidth(true);
+				}
+				this.scroll.scrollToTargetX = this.contentWi.GetX() - distanceX;
+				this.scroll.scrollToX = true;
+				this.scroll.isIdle = false;
+				this._StartTicking();
+				this.onScrollToStarted = true;
+			}
+			
+			this.contentWi.SetBboxChanged();	
+		}
+		
+		boundSlider(slider){
+			if(slider == "v" && this.vSlider && this.vScrollBar){
+				var sy = this.vScrollBarWi.GetBoundingBox().getTop()+(this.vSliderWi.GetY()-this.vSliderWi.GetBoundingBox().getTop())+(this.vScrollBarWi.GetHeight(true)-this.vSliderWi.GetHeight(true))*((this.contentWi.GetBoundingBox().getTop()-this.wi.GetBoundingBox().getTop())/(this.wi.GetHeight(true)-this.contentWi.GetHeight(true)));
+				sy = C3.clamp(sy,this.vScrollBarWi.GetBoundingBox().getTop()+(this.vSliderWi.GetY()-this.vSliderWi.GetBoundingBox().getTop()), this.vScrollBarWi.GetBoundingBox().getBottom()-(this.vSliderWi.GetBoundingBox().getBottom() - this.vSliderWi.GetY()));
+				this.vSliderWi.SetY(sy);
+				this.vSliderWi.SetBboxChanged();
+			}
+			if(slider == "h" && this.hSlider && this.hScrollBar){
+				var sx = this.hScrollBarWi.GetBoundingBox().getLeft()+(this.hSliderWi.GetX()-this.hSliderWi.GetBoundingBox().getLeft())+(this.hScrollBarWi.GetWidth(true)-this.hSliderWi.GetWidth(true))*((this.contentWi.GetBoundingBox().getLeft()-this.wi.GetBoundingBox().getLeft())/(this.wi.GetWidth(true)-this.contentWi.GetWidth(true)));
+				sx = C3.clamp(sx,this.hScrollBarWi.GetBoundingBox().getLeft()+(this.hSliderWi.GetX()-this.hSliderWi.GetBoundingBox().getLeft()), this.hScrollBarWi.GetBoundingBox().getRight()-(this.hSliderWi.GetBoundingBox().getRight() - this.hSliderWi.GetX()));
+				this.hSliderWi.SetX(sx);
+				this.hSliderWi.SetBboxChanged();
+			}
+		}
+		
+		postGridviewUpdate(){
+			var parts = [this.vScrollBar,this.vSlider,this.hScrollBar,this.hSlider];
+	
+			for (var i = 0, l= parts.length; i < l; i++) {
+				if(parts[i]){
+					parts[i].GetSdkInstance().CallAction(parts[i].GetPlugin().constructor.Acts.MoveToTop);
+				}
+			}
+		}
+		
+		OnSizeChanged(){
+			//should be called because the OnSizeChanged is called before SetBboxChanged; and because it's needed in boundContent()
+			this.contentWi.SetBboxChanged();
+			
+			this.boundContent();
+			this.boundSlider("v");
+			this.boundSlider("h");
+			
+			this.isContentScrollableV = true;
+			this.isContentScrollableH = true;
+			//Scrolling is deactivated if the content is too small to scroll
+			if(this.contentWi.GetHeight(true)<=this.wi.GetHeight(true)){
+				this.isContentScrollableV = false;
+			}
+	
+			if(this.contentWi.GetWidth(true)<=this.wi.GetWidth(true)){
+				this.isContentScrollableH = false;
+			}
+		}
+		
+		isMoving(){
+			//console.log(Math.abs(this.scroll.decelerationVelocityX));
+			return this.isTouchMoving; //|| Math.abs(this.scroll.decelerationVelocityX)>1 || Math.abs(this.scroll.decelerationVelocityY)>1;	
+		}
+		
+		Tick(){
+			//console.log("tick");
+			//console.log(Math.abs(this.scroll.decelerationVelocityY));
+			if(this.scroll.isIdle || !this.content || !this.isEnabled){
+				this._StopTicking();
+				//console.log("Scroll idle");
+			}		
+			//****************************************
+			//SWIPE SCROLLING
+			if(this.onTouchStarted && this.isSwipeScrollEnabled && !this.onSliderTouchStarted){ //&& this.isInTouch(this.inst)
+				if(this.isHScrollEnabled && this.isContentScrollableH){
+					this.contentWi.SetX(this.touchX - this.scroll.offsetX);
+				}
+				if(this.isVScrollEnabled && this.isContentScrollableV){
+					this.contentWi.SetY(this.touchY - this.scroll.offsetY);
+				}
+				this.contentWi.SetBboxChanged();
+			}
+	
+			//Inertia: used with swipe and wheel scrolling
+			if(this.inertia){
+				if(this.isHScrollEnabled && Math.abs(this.scroll.decelerationVelocityX) >1){
+					this.contentWi.OffsetX(this.scroll.decelerationVelocityX*this.runtime.GetDt(this.content));
+					this.scroll.decelerationVelocityX *= 0.95;
+					this.contentWi.SetBboxChanged();
+				}
+	
+				if(this.isVScrollEnabled && Math.abs(this.scroll.decelerationVelocityY) >1){
+					this.contentWi.OffsetY(this.scroll.decelerationVelocityY*this.runtime.GetDt(this.content));
+					this.scroll.decelerationVelocityY *= 0.95;
+					this.contentWi.SetBboxChanged();
+				}
+			}
+			
+			
+			//****************************************
+			//SCROLL TO 
+			if(this.scroll.scrollToY && this.scroll.scrollToTargetY!=null && 
+			this.isVScrollEnabled && this.isContentScrollableV && !this.onSliderTouchStarted){
+				this.contentWi.SetY(C3.lerp(this.contentWi.GetY(),this.scroll.scrollToTargetY,this.scroll.scrollToSmooth));
+	
+				if(this.boundContentY()){ //if the content was bounded then we stop the scrollTo
+					this.scroll.scrollToY = false;
+					this.boundContentY();
+				}else if(Math.abs(this.contentWi.GetY()-this.scroll.scrollToTargetY)<1){ //if we reach the target then we stop the scrollTo
+					this.contentWi.SetY(this.scroll.scrollToTargetY);
+					this.contentWi.SetBboxChanged();
+					this.scroll.scrollToY = false;
+				}
+			}
+	
+			if(this.scroll.scrollToX && this.scroll.scrollToTargetX!=null && 
+			this.isHScrollEnabled && this.isContentScrollableH && !this.onSliderTouchStarted){
+				this.contentWi.SetX(C3.lerp(this.contentWi.GetX(),this.scroll.scrollToTargetX,this.scroll.scrollToSmooth));
+				
+				if(this.boundContentX()){
+					this.scroll.scrollToX = false;
+					this.boundContentX();
+				}else if(Math.abs(this.contentWi.GetX()-this.scroll.scrollToTargetX)<1){
+					this.contentWi.SetX(this.scroll.scrollToTargetX);
+					this.contentWi.SetBboxChanged();
+					this.scroll.scrollToX = false;				
+				}
+			}
+	
+			//Disable the core loop when scrollTo finishes (whether inertia on or off)
+			if(this.onScrollToStarted && !this.scroll.scrollToX && !this.scroll.scrollToY){
+				this.scroll.isIdle = true;
+				this.onScrollToStarted = false;
+				//console.log("Scroll TO disabled");
+			}
+			
+			//****************************************
+			
+			//we position the sliders according to the content's position: (when scrolling by swiping or mousewheel or scrollTo)
+			if(this.isVScrollEnabled && this.isContentScrollableV){
+				this.boundSlider("v");				
+			}
+			if(this.isHScrollEnabled && this.isContentScrollableH){
+				this.boundSlider("h");
+			}
+			
+			//BOUNDING THE CONTENT (when scrolling by swiping or mousewheel)
+			if(this.isVScrollEnabled  && !this.scroll.scrollToY){
+				//checking the vertical boundaries of the content
+				this.boundContentY(true);
+			}
+	
+			if(this.isHScrollEnabled && !this.scroll.scrollToX){
+				//checking the horizontal boundaries of the content
+				this.boundContentX(true);
+			}
+			
+			//In case of inertia, disable the core loop when scrolling (swipe or wheel) finishes
+			if(!this.onTouchStarted  && Math.abs(this.scroll.decelerationVelocityX)<=1 && Math.abs(this.scroll.decelerationVelocityY)<=1 && !this.scroll.scrollToX && !this.scroll.scrollToY ){
+				this.scroll.isIdle = true;
+				this.boundContent();
+			}
+		}
+	
+		Release(){
+			this.aekiro_scrollViewManager.remove(this.GetObjectInstance());
+			this.goManager.eventManager.removeListener(this.SetForceOwnTextureListener);
+			super.Release();
+		}
+	
+		SaveToJson(){
+			return {
+				"isEnabled" : this.isEnabled,
+				"direction" : this.direction,
+				"isSwipeScrollEnabled" : this.isSwipeScrollEnabled,
+				"isMouseScroll" : this.isMouseScroll,
+				"inertia" : this.inertia,
+				"movement" : this.movement,
+				"contentUID" : this.contentUID,
+				"vSliderUID" : this.vSliderUID,
+				"vScrollBarUID" : this.vScrollBarUID,
+				"hSliderUID" : this.hSliderUID,
+				"hScrollBarUID" : this.hScrollBarUID			
+			};
+		}
+	
+		LoadFromJson(o){
+			this.isEnabled = o["isEnabled"];
+			this.direction = o["direction"];
+			this.isSwipeScrollEnabled = o["isSwipeScrollEnabled"];
+			this.isMouseScroll = o["isMouseScroll"];
+			this.inertia = o["inertia"];
+			this.movement = o["movement"];
+			this.contentUID = o["contentUID"];
+			this.vSliderUID = o["vSliderUID"];
+			this.vScrollBarUID = o["vScrollBarUID"];
+			this.hSliderUID = o["hSliderUID"];
+			this.hScrollBarUID = o["hScrollBarUID"];
+		}
+	
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_scrollView.Cnds =
+	{
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_scrollView.Acts = {		
+		ScrollTo(targetX,targetY,targetType,smooth){
+			this.scrollTo(targetX,targetY,targetType,smooth);
+		},
+		ScrollBy(distanceX,distanceY,targetType,smooth){
+			this.scrollBy(distanceX,distanceY,targetType,smooth);
+		},
+		setEnabled(isEnabled){
+			this.isEnabled = isEnabled;
+		}
+	
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_scrollView.Exps =
+	{
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridView = class aekiro_gridViewBehavior extends C3.SDKBehaviorBase
+	{
+		constructor(opts)
+		{
+			super(opts);
+		}
+		
+		Release()
+		{
+			super.Release();
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridView.Type = class aekiro_gridViewType extends C3.SDKBehaviorTypeBase
+	{
+		constructor(behaviorType)
+		{
+			super(behaviorType);
+		}
+		
+		Release()
+		{
+			super.Release();
+		}
+		
+		OnCreate()
+		{	
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridView.Instance = class aekiro_gridViewInstance extends C3.SDKBehaviorInstanceBase
+	{
+		constructor(behInst, properties)
+		{
+			super(behInst);
+			
+			this.proui = this.GetRuntime().GetSingleGlobalObjectClassByCtor(C3.Plugins.aekiro_proui);
+			if(this.proui){
+				this.proui = this.proui.GetSingleGlobalInstance().GetSdkInstance();
+			}
+			
+			//properties
+			if (properties){
+				this.itemName = properties[0];
+				this.columns = properties[1];
+				this.rows = properties[2];
+				this.vspace = properties[3];
+				this.hspace = properties[4];
+				this.VPadding  = properties[5];
+				this.HPadding = properties[6];
+			}
+	
+			//********************
+			this.GetObjectInstance().GetUnsavedDataMap().aekiro_gridview = this;
+			this.inst = this.GetObjectInstance();
+			this.wi = this.GetWorldInfo();
+			this.acts = this.GetObjectInstance().GetPlugin().constructor.Acts;
+			this.goManager = globalThis.aekiro_goManager;
+			//********************
+			this.template = {};
+			this.isTemplateSet = false;
+	
+			this.value = [];
+			this.items = [];
+			this.it_column = 0; //column iterator
+			this.it_row = 0; //row iterator
+			
+			
+			this.goManager.eventManager.on("childrenRegistred",() =>{
+				var children = this.GetObjectInstance().GetUnsavedDataMap().aekiro_gameobject.children;
+				for (var i = 0, l= children.length; i < l; i++) {
+					this.items.push(children[i]);
+				}
+			},{"once":true}); 
+			
+		}
+	
+		
+		PostCreate(){
+			this.aekiro_gameobject = this.GetObjectInstance().GetUnsavedDataMap().aekiro_gameobject;
+		}
+		
+		setItemTemplate (){
+			if(this.isTemplateSet){
+				return;
+			}
+			
+			var item = this.goManager.gos[this.itemName];
+			if(!item){
+				throw new Error("ProUI-GRIDVIEW: Grid item not found, please check the grid item's name");
+				return;
+			}
+			this.proui.isTypeValid(this.GetObjectInstance(),[C3.Plugins.Sprite,C3.Plugins.NinePatch,C3.Plugins.TiledBg],"ProUI-GRIDVIEW: Grid item can only be Sprite, 9-patch or tiled backgrounds objects.");
+			var go = item.GetUnsavedDataMap().aekiro_gameobject;
+			this.template = go.getTemplate();//console.log(this.template);
+			go.destroyHierarchy();
+			
+			this.isTemplateSet = true;
+		}
+		
+		build (){
+			if(this.rows<=0 && this.columns<=0){
+				console.error("ProUI-GRIDVIEW: max rows and max columns can't be both -1 or 0");
+				return;
+			}
+	
+			this.setItemTemplate();
+			
+			var diff = this.value.length - this.items.length;
+			//console.log(diff);
+			//console.log("%cGRIDVIEW %d : Build","color:blue", this.inst.uid);
+			var item, l;
+			if(diff>0){
+				l = this.value.length;
+				for (var i = this.items.length; i < l ; i++) {
+					item = this.add(i);
+					if(!this.nextRowColumn()){
+						break;
+					}
+				}
+				
+			}else if(diff<0){
+				l = this.items.length;
+				for (var i = this.value.length; i < l ; i++) {
+					this.items[i].GetUnsavedDataMap().aekiro_gameobject.destroyHierarchy();
+					if(!this.previousRowColumn()){
+						break;
+					}
+				}
+				this.items.splice(this.value.length,-diff);
+			}
+			this.resize();
+			
+			l = this.value.length;
+			for (var i = 0; i < l ; i++) {
+				this.mapData(this.items[i],this.value[i],i);
+			}
+	
+			var self = this;
+			setTimeout(function(){
+				self.Trigger(C3.Behaviors.aekiro_gridView.Cnds.OnRender);
+			},0);
+			
+		}
+	
+		add (itemIndex){
+			//console.log("%cGRIDVIEW %d : Add item %d","color:blue", this.inst.uid,itemIndex);
+	
+			var self = this;
+			var item = this.goManager.clone(this.template,null,this.inst,this.wi.GetLayer(),0,0);
+			
+			var wi  = item.GetWorldInfo();
+			var offsetX = wi.GetX() - wi.GetBoundingBox().getLeft();
+			var offsetY = wi.GetY() - wi.GetBoundingBox().getTop();
+			wi.SetX(this.wi.GetBoundingBox().getLeft() + offsetX + (this.vspace + wi.GetWidth())*this.it_column + this.HPadding);
+			wi.SetY(this.wi.GetBoundingBox().getTop() + offsetY + (this.hspace + wi.GetHeight())*this.it_row + this.VPadding);
+			wi.SetBboxChanged();
+			
+			
+			this.items.push(item);
+	
+			//if(this.onAdd)this.onAdd(item);
+	
+			return item;
+		}
+		
+		clear (){
+			//in case the template is not set yet
+			this.setItemTemplate();
+
+			//console.log("%cGRIDVIEW %d : Clear","color:blue", this.inst.uid);
+			var items = this.items;
+			for (var i = 0,l=this.items.length; i < l; i++) {
+				items[i].GetUnsavedDataMap().aekiro_gameobject.destroyHierarchy();
+			}
+			items.length = 0;
+			this.it_column = 0; //column iterator
+			this.it_row = 0; //row iterator
+			
+			this.value = [];
+			//Resizing and repositioning
+			this.resize();
+		}
+		
+		resize (){
+			var wi = this.wi;
+			
+			//save current position
+			var prevBboxTop = wi.GetBoundingBox().getTop();
+			var prevBboxLeft = wi.GetBoundingBox().getLeft();
+			var prevX = wi.GetX();
+			var prevY = wi.GetY();
+			
+			if(this.value.length==0){
+				wi.SetWidth(5,true);
+				wi.SetHeight(5,true);
+				wi.SetBboxChanged();
+				
+				wi.SetX(prevBboxLeft + (wi.GetX()-wi.GetBoundingBox().getLeft()));
+				wi.SetY(prevBboxTop + (wi.GetY()-wi.GetBoundingBox().getTop()));
+				wi.SetBboxChanged();
+				return;	
+			}
+	
+			//console.log("%cGRIDVIEW %d : Content Resize","color:blue", this.inst.uid);
+			var row = Math.ceil(this.value.length/this.columns);
+			var column = Math.ceil(this.value.length/this.rows);
+			
+			if(this.rows<0){
+				column = this.columns;
+				if(this.value.length<this.columns){
+					column = this.value.length;
+				}
+			}else if(this.columns<0){
+				row = this.rows;
+				if(this.value.length<this.rows){
+					row = this.value.length;
+				}
+			}else{
+				column = this.columns;
+				row = this.rows;
+			}
+	
+	
+			var itemWidth = this.items[0].GetWorldInfo().GetWidth();
+			var itemHeight = this.items[0].GetWorldInfo().GetHeight();
+			//Resizing and repositioning
+			wi.SetWidth(itemWidth*column+this.vspace*(column-1)+2*this.HPadding,true);
+			wi.SetHeight(itemHeight*row+this.hspace*(row-1)+2*this.VPadding,true);
+			wi.SetBboxChanged();
+			
+			//scrollviews listent to size changes, and then reposition the content (the grid), which is overwritten later below, so to avoid that, we check the condition:
+			if(wi.GetX()!=prevX || wi.GetX()!=prevY){
+				return;
+			}
+			
+			wi.SetX(prevBboxLeft + (wi.GetX()-wi.GetBoundingBox().getLeft()));
+			wi.SetY(prevBboxTop + (wi.GetY()-wi.GetBoundingBox().getTop()));
+			wi.SetBboxChanged();
+		}
+	
+		mapData (inst,data,index){
+			if(!inst)return;
+
+			var binder = inst.GetUnsavedDataMap().aekiro_gridviewbind;
+			if(binder && this.isObject(data)){
+				binder.index = index;
+				binder.setValue(data);
+				binder.gridView = this;
+				binder.triggerOnGridViewRender();
+			}
+			
+			var children = inst.GetUnsavedDataMap().aekiro_gameobject.children;
+			for (var i = 0,l=children.length; i < l; i++) {
+				this.mapData(children[i],data,index);
+			}	
+		}
+	
+		item_setKey (i,key,value){
+			//self["_"]["set"](this.value[i],key,value);
+			//console.log(this.value);
+		}
+	
+		nextRowColumn (){
+			if(this.rows<0){
+				this.it_column++;
+				if(this.it_column == this.columns){
+					this.it_column = 0;
+					this.it_row++;
+				}
+			}else if(this.columns<0){
+				this.it_row++;
+				if(this.it_row == this.rows){
+					this.it_row = 0;
+					this.it_column++;
+				}
+			}else{
+				this.it_column++;
+				if(this.it_column == this.columns){
+					this.it_column = 0;
+					this.it_row++;
+				}
+				if(this.it_row  == this.rows)
+					return false;
+			}
+	
+			return true;
+		}
+	
+		previousRowColumn (){
+			if(this.rows<0){
+				this.it_column--;
+				if(this.it_column < 0){
+					this.it_column = this.columns-1;
+					this.it_row--;
+				}
+			}else if(this.columns<0){
+				this.it_row--;
+				if(this.it_row < 0){
+					this.it_row = this.rows-1;
+					this.it_column--;
+				}
+			}else{
+				this.it_column--;
+				if(this.it_column < 0){
+					this.it_column = this.columns-1;
+					this.it_row--;
+				}
+				if(this.it_row == 0)
+					return false;
+			}
+	
+			return true;
+		}
+		
+		isObject (a) {
+			return (!!a) && (a.constructor === Object);
+		}
+	
+		isArray (a) {
+			return (!!a) && (a.constructor === Array);
+		}
+		
+		Release(){
+			super.Release();
+		}
+	
+		SaveToJson(){
+			return {
+				"itemName": this.itemName,
+				"columns": this.columns,
+				"rows": this.rows,
+				"vspace": this.vspace,
+				"hspace": this.hspace,
+				"VPadding": this.VPadding,
+				"HPadding": this.HPadding,
+				
+				"template" : this.template,
+				"isTemplateSet" : this.isTemplateSet,
+				"value" : this.value,
+				"it_column" : this.it_column,
+				"it_row" : this.it_row
+			};
+		}
+	
+		LoadFromJson(o){
+			this.itemName = o["itemName"];
+			this.columns = o["columns"];
+			this.rows = o["rows"];
+			this.vspace = o["vspace"];
+			this.hspace = o["hspace"];
+			this.VPadding  = o["VPadding"];
+			this.HPadding = o["HPadding"];
+			
+			this.template = o["template"];
+			this.isTemplateSet = o["isTemplateSet"];
+			this.value = o["value"];
+			this.it_column = o["it_column"];
+			this.it_row = o["it_row"];
+		}
+	};
+	
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridView.Cnds =
+	{
+		OnRender(){ return true; }
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridView.Acts = {
+		SetDataByJsonString(data){
+			try {
+				data = JSON.parse(data);
+				//console.log(this.value);
+			} catch(e) {
+				console.error("ProUI-GRIDVIEW: json parse error !");
+				return;
+			}
+			
+			if(!this.isArray(data)){
+				console.error("ProUI-GRIDVIEW: json is not an array !");
+				return;
+			}
+			
+			this.value = data;
+			this.build();
+		},
+		
+		SetDataByJsonObject(jsonObject, root){
+			var data = jsonObject.GetFirstPicked().GetSdkInstance()._data;
+			if(root){
+				data = data[root];
+			}
+
+			if(data && !this.isArray(data)){
+				console.error("ProUI-GRIDVIEW: json is not an array !");
+				return;
+			}
+			this.value = data;
+			this.build();
+		},
+		Clear(){
+			this.clear();
+		}
+	};
+	
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_gridView.Exps = {
+	};
+	
+}
+
+
 
 {
 	const C3 = self.C3;
@@ -6954,6 +8734,13 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Behaviors.aekiro_dialog,
 		C3.Behaviors.aekiro_gameobject,
 		C3.Behaviors.aekiro_button,
+		C3.Behaviors.aekiro_gridviewbind,
+		C3.Plugins.Json,
+		C3.Plugins.aekiro_remoteSprite,
+		C3.Behaviors.aekiro_scrollView,
+		C3.Behaviors.aekiro_gridView,
+		C3.Plugins.Keyboard,
+		C3.Plugins.AJAX,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.System.Cnds.CompareBoolVar,
 		C3.Plugins.Audio.Acts.Play,
@@ -7025,13 +8812,32 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.Sprite.Cnds.CompareFrame,
 		C3.Plugins.Audio.Acts.SetMuted,
 		C3.Plugins.VKBridge.Acts.StorageSet,
+		C3.Plugins.VKBridge.Acts.LeaderSave,
 		C3.Behaviors.aekiro_dialog.Cnds.onDialogClosed,
 		C3.Plugins.System.Acts.SubVar,
 		C3.Plugins.System.Acts.SetTimescale,
 		C3.Plugins.VKBridge.Cnds.AdsMobileSuccess,
 		C3.Plugins.VKBridge.Cnds.AdsMobileFailed,
 		C3.Plugins.TiledBg.Cnds.OnCreated,
+		C3.Behaviors.aekiro_gridView.Acts.Clear,
+		C3.Plugins.Json.Acts.Parse,
+		C3.Plugins.VKBridge.Acts.LeaderBoard,
+		C3.Plugins.VKBridge.Cnds.LeaderBoardSuccess,
+		C3.Plugins.System.Cnds.For,
+		C3.Plugins.VKBridge.Exps.BoardCount,
+		C3.Plugins.Json.Acts.PushValue,
+		C3.Plugins.Json.Acts.SetJSON,
+		C3.Plugins.Json.Exps.ArraySize,
+		C3.Plugins.VKBridge.Exps.BoardProf,
+		C3.Plugins.System.Exps.loopindex,
+		C3.Plugins.VKBridge.Exps.BoardData,
+		C3.Behaviors.aekiro_gridView.Acts.SetDataByJsonObject,
+		C3.Behaviors.aekiro_gridviewbind.Cnds.OnGridViewRender,
+		C3.Behaviors.aekiro_gridviewbind.Exps.index,
+		C3.Plugins.System.Exps.tokenat,
+		C3.Behaviors.aekiro_gridviewbind.Exps.get,
 		C3.Plugins.VKBridge.Acts.BridgeConnect,
+		C3.Plugins.System.Acts.GoToLayout,
 		C3.Plugins.VKBridge.Cnds.BridgeConnectSuccess,
 		C3.Plugins.VKBridge.Acts.Authorization,
 		C3.Plugins.VKBridge.Cnds.AuthorizationSuccess,
@@ -7042,7 +8848,6 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.VKBridge.Acts.FriendsGet,
 		C3.Plugins.VKBridge.Acts.StorageGet,
 		C3.Plugins.VKBridge.Cnds.StorageGetSuccess,
-		C3.Plugins.System.Acts.GoToLayout,
 		C3.Plugins.System.Cnds.Compare,
 		C3.Plugins.VKBridge.Exps.StorageData
 		];
@@ -7084,6 +8889,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		{Button: 0},
 		{Sprite3: 0},
 		{SpriteFont4: 0},
+		{GridViewDataBind: 0},
 		{SpriteFont5: 0},
 		{Sprite4: 0},
 		{Sprite5: 0},
@@ -7091,6 +8897,18 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		{"9patch2": 0},
 		{TiledBackground4: 0},
 		{Sprite7: 0},
+		{JSON: 0},
+		{"9patch3": 0},
+		{"9patch4": 0},
+		{RemoteSprite: 0},
+		{ScrollView: 0},
+		{Sprite8: 0},
+		{GridView: 0},
+		{Sprite9: 0},
+		{Keyboard: 0},
+		{Sprite10: 0},
+		{AJAX: 0},
+		{SpriteFont6: 0},
 		{power: 0},
 		{count: 0},
 		{isintouch: 0},
@@ -7302,9 +9120,40 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		() => "hiscore",
 		() => "button_continue",
 		() => "continue_dialog_close",
+		() => "grid",
+		() => "[]",
+		() => "button_records",
+		() => "dialog_leaderboard",
+		() => "leaderboard",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => and(".", (n0.ExpObject(".") - 1));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const f1 = p._GetNode(1).GetBoundMethod();
+			const f2 = p._GetNode(2).GetBoundMethod();
+			const f3 = p._GetNode(3).GetBoundMethod();
+			const f4 = p._GetNode(4).GetBoundMethod();
+			const f5 = p._GetNode(5).GetBoundMethod();
+			return () => (((((("{\n\"name_score\":\"" + f0(f1("leaderboard"), "first_name")) + "_") + f2(f3("leaderboard"), "lastname_name")) + "_") + f4(f5("leaderboard"), "score")) + "\"\n}");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => and("#", (n0.ExpBehavior() + 1));
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			const f2 = p._GetNode(2).GetBoundMethod();
+			const n3 = p._GetNode(3);
+			const f4 = p._GetNode(4).GetBoundMethod();
+			const n5 = p._GetNode(5);
+			return () => (((((f0(n1.ExpBehavior("name_score"), 0, "_") + " ") + f2(n3.ExpBehavior("name_score"), 1, "_")) + ": ") + f4(n5.ExpBehavior("name_score"), 2, "_")) + " очков");
 		},
 		() => "photo_200, status",
 		() => "status",
