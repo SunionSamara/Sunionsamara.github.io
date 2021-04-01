@@ -4833,7 +4833,7 @@ renderer.SetColor(tmpColor);didChangeColor=true;tmpQuad.setFromRect(this._bbox);
 		// Save leaderboard
 		LeaderSave(activ, value){
 			vkBridge
-				.send("VKWebAppCallAPIMethod", {"method": "secure.addAppEvent", "request_id": "leader", "params": {"user_id": this.user_id, "activity_id": activ+1, "value": value, "v": "5.130", "access_token": this.app_service_key}})
+				.send("VKWebAppCallAPIMethod", {"method": "secure.addAppEvent", "request_id": "leader", "params": {"user_id": this.user_id, "activity_id": activ+1, "value": value, "v": "5.130", "access_token": this.app_service_key, "client_secret": this.app_secret_key}})
 				.then(data => {
 					this.Trigger(this.conditions.LeaderSaveSuccess);
 				})
