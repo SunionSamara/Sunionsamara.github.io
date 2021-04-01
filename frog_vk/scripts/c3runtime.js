@@ -8837,7 +8837,6 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.System.Exps.tokenat,
 		C3.Behaviors.aekiro_gridviewbind.Exps.get,
 		C3.Plugins.VKBridge.Acts.BridgeConnect,
-		C3.Plugins.System.Acts.GoToLayout,
 		C3.Plugins.VKBridge.Cnds.BridgeConnectSuccess,
 		C3.Plugins.VKBridge.Acts.Authorization,
 		C3.Plugins.VKBridge.Cnds.AuthorizationSuccess,
@@ -8848,6 +8847,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.VKBridge.Acts.FriendsGet,
 		C3.Plugins.VKBridge.Acts.StorageGet,
 		C3.Plugins.VKBridge.Cnds.StorageGetSuccess,
+		C3.Plugins.System.Acts.GoToLayout,
 		C3.Plugins.System.Cnds.Compare,
 		C3.Plugins.VKBridge.Exps.StorageData
 		];
