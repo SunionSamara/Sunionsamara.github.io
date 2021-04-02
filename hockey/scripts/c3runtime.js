@@ -7096,33 +7096,22 @@ onedit:v=>this._speed=C3.toRadians(v)},{name:prefix+".properties.acceleration.na
 		C3.Plugins.Sprite.Exps.X,
 		C3.Plugins.System.Exps.dt,
 		C3.Plugins.Sprite.Exps.Y,
-		C3.Behaviors.Physics.Cnds.CompareVelocity,
-		C3.Plugins.Sprite.Acts.Spawn,
-		C3.Plugins.Sprite.Acts.MoveToBottom,
-		C3.Plugins.System.Cnds.TriggerOnce,
-		C3.Behaviors.Pin.Acts.PinByProperties,
-		C3.Plugins.Sprite.Acts.SetDefaultColor,
-		C3.Plugins.Sprite.Cnds.OnCollision,
-		C3.Plugins.Particles.Acts.SetAngle,
-		C3.Plugins.Particles.Acts.MoveToBottom,
-		C3.Plugins.Particles.Acts.SetDefaultColor,
-		C3.Plugins.System.Acts.CreateObject,
-		C3.Plugins.Sprite.Exps.Angle,
 		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Spritefont2.Acts.SetText,
 		C3.Behaviors.Rotate.Exps.Speed,
+		C3.Plugins.System.Cnds.TriggerOnce,
 		C3.Behaviors.Rotate.Acts.SetEnabled,
 		C3.Behaviors.Tween.Acts.TweenOneProperty,
 		C3.Plugins.Sprite.Cnds.CompareX,
 		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.Sprite.Cnds.OnDestroyed,
+		C3.Plugins.System.Acts.CreateObject,
 		C3.Behaviors.Tween.Acts.TweenValue,
 		C3.Plugins.System.Acts.Wait,
 		C3.Plugins.Audio.Acts.Play,
-		C3.Plugins.System.Acts.SetLayerEffectParam,
-		C3.Behaviors.Tween.Exps.Value,
-		C3.Plugins.Spritefont2.Acts.SetEffectParam,
+		C3.Plugins.Sprite.Cnds.OnCollision,
 		C3.Plugins.Sprite.Cnds.IsBoolInstanceVarSet,
+		C3.Behaviors.Physics.Cnds.CompareVelocity,
 		C3.Behaviors.aekiro_button.Cnds.OnClicked,
 		C3.Plugins.Spritefont2.Cnds.CompareText,
 		C3.Behaviors.aekiro_dialog.Acts.Open,
@@ -7339,20 +7328,6 @@ onedit:v=>this._speed=C3.toRadians(v)},{name:prefix+".properties.acceleration.na
 			const f2 = p._GetNode(2).GetBoundMethod();
 			return () => C3.clamp(((v0.GetValue() - n1.ExpObject()) / f2()), (-3000), 3000);
 		},
-		() => "graphics",
-		() => -239150810667007,
-		() => -568465363608575,
-		p => {
-			const n0 = p._GetNode(0);
-			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			const n3 = p._GetNode(3);
-			return () => C3.toDegrees(C3.angleTo(n0.ExpObject(), n1.ExpObject(), n2.ExpObject(), n3.ExpObject()));
-		},
-		p => {
-			const n0 = p._GetNode(0);
-			return () => n0.ExpObject();
-		},
 		() => "Score",
 		p => {
 			const v0 = p._GetNode(0).GetVar();
@@ -7382,14 +7357,6 @@ onedit:v=>this._speed=C3.toRadians(v)},{name:prefix+".properties.acceleration.na
 		() => -5,
 		() => "main",
 		() => "hit",
-		() => "BlurVertical",
-		p => {
-			const n0 = p._GetNode(0);
-			return () => n0.ExpBehavior("");
-		},
-		() => "BlurHorizontal",
-		() => "border",
-		() => "bg",
 		() => "bot",
 		() => -2,
 		p => {
