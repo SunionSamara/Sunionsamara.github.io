@@ -9285,7 +9285,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.System.Exps.tokenat,
 		C3.Behaviors.aekiro_gridviewbind.Exps.get,
 		C3.Plugins.NinePatch.Acts.SetInstanceVar,
-		C3.Plugins.Browser.Acts.GoToURLWindow,
+		C3.Plugins.Browser.Acts.GoToURL,
 		C3.Plugins.NinePatch.Cnds.CompareInstanceVar,
 		C3.Behaviors.aekiro_button.Acts.SetFocused,
 		C3.Plugins.VKBridge.Acts.BridgeConnect,
@@ -9626,7 +9626,6 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 			const n0 = p._GetNode(0);
 			return () => and("https://vk.com/id", n0.ExpInstVar());
 		},
-		() => "NewWindow",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
