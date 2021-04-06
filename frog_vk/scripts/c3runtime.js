@@ -9270,6 +9270,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Behaviors.aekiro_gridView.Acts.Clear,
 		C3.Plugins.Json.Acts.Parse,
 		C3.Plugins.VKBridge.Acts.LeaderBoard,
+		C3.Plugins.NinePatch.Cnds.CompareInstanceVar,
 		C3.Plugins.VKBridge.Cnds.LeaderBoardSuccess,
 		C3.Plugins.System.Cnds.For,
 		C3.Plugins.VKBridge.Exps.BoardCount,
@@ -9285,8 +9286,6 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.System.Exps.tokenat,
 		C3.Behaviors.aekiro_gridviewbind.Exps.get,
 		C3.Plugins.NinePatch.Acts.SetInstanceVar,
-		C3.Plugins.Browser.Acts.GoToURL,
-		C3.Plugins.NinePatch.Cnds.CompareInstanceVar,
 		C3.Behaviors.aekiro_button.Acts.SetFocused,
 		C3.Plugins.VKBridge.Acts.BridgeConnect,
 		C3.Plugins.VKBridge.Cnds.BridgeConnectSuccess,
@@ -9376,7 +9375,8 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		{death_counter: 0},
 		{hiscore: 0},
 		{rewarded: 0},
-		{gold_player: 0}
+		{gold_player: 0},
+		{enabled_vos: 0}
 	];
 }
 
@@ -9621,10 +9621,6 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 			const f0 = p._GetNode(0).GetBoundMethod();
 			const n1 = p._GetNode(1);
 			return () => f0((n1.ExpBehavior() + 1), "id");
-		},
-		p => {
-			const n0 = p._GetNode(0);
-			return () => and("https://vk.com/id", n0.ExpInstVar());
 		},
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
