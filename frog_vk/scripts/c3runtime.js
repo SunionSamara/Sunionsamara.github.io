@@ -9589,7 +9589,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		() => "leaderboard",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => (f0() - 5);
+			return () => (f0() - 6);
 		},
 		p => {
 			const n0 = p._GetNode(0);
