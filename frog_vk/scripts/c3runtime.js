@@ -5168,6 +5168,39 @@ t*1E3},SetHeader(n,v){this._nextRequestHeaders.set(n,v)},SetResponseBinary(objec
 'use strict';{const C3=self.C3;C3.Plugins.AJAX.Exps={LastData(){return this._lastData},Progress(){return this._progress},Tag(){return this._curTag}}};
 
 
+'use strict';{const C3=self.C3;C3.Plugins.Browser=class BrowserPlugin extends C3.SDKPluginBase{constructor(opts){super(opts)}Release(){super.Release()}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Browser.Type=class BrowserType extends C3.SDKTypeBase{constructor(objectClass){super(objectClass)}Release(){super.Release()}OnCreate(){}}};
+
+
+'use strict';{const C3=self.C3;const DOM_COMPONENT_ID="browser";C3.Plugins.Browser.Instance=class BrowserInstance extends C3.SDKInstanceBase{constructor(inst,properties){super(inst,DOM_COMPONENT_ID);this._initLocationStr="";this._isOnline=false;this._referrer="";this._docTitle="";this._isCookieEnabled=false;this._screenWidth=0;this._screenHeight=0;this._windowOuterWidth=0;this._windowOuterHeight=0;this._isScirraArcade=false;this.AddDOMMessageHandlers([["online-state",e=>this._OnOnlineStateChanged(e)],
+["backbutton",()=>this._OnBackButton()],["sw-message",e=>this._OnSWMessage(e)],["hashchange",e=>this._OnHashChange(e)]]);const rt=this.GetRuntime().Dispatcher();this._disposables=new C3.CompositeDisposable(C3.Disposable.From(rt,"afterfirstlayoutstart",()=>this._OnAfterFirstLayoutStart()),C3.Disposable.From(rt,"window-resize",()=>this._OnWindowResize()),C3.Disposable.From(rt,"suspend",()=>this._OnSuspend()),C3.Disposable.From(rt,"resume",()=>this._OnResume()));this._runtime.AddLoadPromise(this.PostToDOMAsync("get-initial-state",
+{"exportType":this._runtime.GetExportType()}).then(data=>{this._initLocationStr=data["location"];this._isOnline=data["isOnline"];this._referrer=data["referrer"];this._docTitle=data["title"];this._isCookieEnabled=data["isCookieEnabled"];this._screenWidth=data["screenWidth"];this._screenHeight=data["screenHeight"];this._windowOuterWidth=data["windowOuterWidth"];this._windowOuterHeight=data["windowOuterHeight"];this._isScirraArcade=data["isScirraArcade"]}))}Release(){super.Release()}_OnAfterFirstLayoutStart(){this.PostToDOM("ready-for-sw-messages")}async _OnOnlineStateChanged(e){const isOnline=
+!!e["isOnline"];if(this._isOnline===isOnline)return;this._isOnline=isOnline;if(this._isOnline)await this.TriggerAsync(C3.Plugins.Browser.Cnds.OnOnline);else await this.TriggerAsync(C3.Plugins.Browser.Cnds.OnOffline)}async _OnWindowResize(){await this.TriggerAsync(C3.Plugins.Browser.Cnds.OnResize)}_OnSuspend(){this.Trigger(C3.Plugins.Browser.Cnds.OnPageHidden)}_OnResume(){this.Trigger(C3.Plugins.Browser.Cnds.OnPageVisible)}async _OnBackButton(){await this.TriggerAsync(C3.Plugins.Browser.Cnds.OnBackButton)}_OnSWMessage(e){const messageType=
+e["type"];if(messageType==="downloading-update")this.Trigger(C3.Plugins.Browser.Cnds.OnUpdateFound);else if(messageType==="update-ready"||messageType==="update-pending")this.Trigger(C3.Plugins.Browser.Cnds.OnUpdateReady);else if(messageType==="offline-ready")this.Trigger(C3.Plugins.Browser.Cnds.OnOfflineReady)}_OnHashChange(e){this._initLocationStr=e["location"];this.Trigger(C3.Plugins.Browser.Cnds.OnHashChange)}GetDebuggerProperties(){const prefix="plugins.browser.debugger";return[{title:"plugins.browser.name",
+properties:[{name:prefix+".user-agent",value:navigator.userAgent},{name:prefix+".is-online",value:this._isOnline},{name:prefix+".is-fullscreen",value:this._runtime.GetCanvasManager().IsDocumentFullscreen()}]}]}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Browser.Cnds={IsOnline(){return this._isOnline},OnOnline(){return true},OnOffline(){return true},OnResize(){return true},CookiesEnabled(){return this._isCookieEnabled},IsFullscreen(){return this._runtime.GetCanvasManager().IsDocumentFullscreen()},OnBackButton(){return true},IsPortraitLandscape(p){const lastInnerWidth=this._runtime.GetCanvasManager().GetLastWidth();const lastInnerHeight=this._runtime.GetCanvasManager().GetLastHeight();const current=lastInnerWidth<=
+lastInnerHeight?0:1;return current===p},OnUpdateFound(){return true},OnUpdateReady(){return true},OnOfflineReady(){return true},OnHashChange(){return true},PageVisible(){return!this._runtime.IsSuspended()},OnPageHidden(){return true},OnPageVisible(){return true},HasJava(){return false},IsDownloadingUpdate(){return false},OnMenuButton(){return false},OnSearchButton(){return false},IsMetered(){return false},IsCharging(){return true},SupportsFullscreen(){return true}}};
+
+
+'use strict';{const C3=self.C3;const ORIENTATIONS=["portrait","landscape","portrait-primary","portrait-secondary","landscape-primary","landscape-secondary"];C3.Plugins.Browser.Acts={Alert(message){this.PostToDOM("alert",{"message":message.toString()})},Close(){if(this._isScirraArcade)return;if(this._runtime.IsDebug())self.C3Debugger.CloseWindow();else this.PostToDOM("close")},Focus(){this.PostToDOM("set-focus",{"isFocus":true})},Blur(){this.PostToDOM("set-focus",{"isFocus":false})},GoBack(){if(this._isScirraArcade)return;
+this.PostToDOM("navigate",{"type":"back"})},GoForward(){if(this._isScirraArcade)return;this.PostToDOM("navigate",{"type":"forward"})},GoHome(){if(this._isScirraArcade)return;this.PostToDOM("navigate",{"type":"home"})},Reload(){if(this._isScirraArcade)return;if(this._runtime.IsDebug())this._runtime.PostToDebugger({"type":"reload"});else this.PostToDOM("navigate",{"type":"reload"})},GoToURL(url,target){this._PostToDOMMaybeSync("navigate",{"type":"url","url":url,"target":target,"exportType":this._runtime.GetExportType()})},
+GoToURLWindow(url,tag){this._PostToDOMMaybeSync("navigate",{"type":"new-window","url":url,"tag":tag,"exportType":this._runtime.GetExportType()})},RequestFullScreen(mode,navUi){if(mode>=2)mode+=1;if(mode===6)mode=2;if(mode===1)mode=0;const modeStr=C3.CanvasManager._FullscreenModeNumberToString(mode);this._runtime.GetCanvasManager().SetDocumentFullscreenMode(modeStr);this._PostToDOMMaybeSync("request-fullscreen",{"navUI":navUi})},CancelFullScreen(){this._PostToDOMMaybeSync("exit-fullscreen")},Vibrate(pattern){const arr=
+pattern.split(",");for(let i=0,len=arr.length;i<len;++i)arr[i]=parseInt(arr[i],10);this._PostToDOMMaybeSync("vibrate",{"pattern":arr})},async InvokeDownload(url,filename){if(!filename)return;const urlToDownload=await this._runtime.GetAssetManager().GetProjectFileUrl(url);this._runtime.InvokeDownload(urlToDownload,filename)},InvokeDownloadString(str,mimeType,filename){if(!filename)return;const dataUri=`data:${mimeType},${encodeURIComponent(str)}`;this._runtime.InvokeDownload(dataUri,filename)},ConsoleLog(type,
+msg){msg=msg.toString();if(type===0)console.log(msg);else if(type===1)console.warn(msg);else if(type===2)console.error(msg)},ConsoleGroup(name){console.group(name)},ConsoleGroupEnd(){console.groupEnd()},ExecJs(jsStr){try{eval(jsStr)}catch(err){console.error("Error executing JavaScript: ",err)}},LockOrientation(o){o=Math.floor(o);if(o<0||o>=ORIENTATIONS.length)return;const orientation=ORIENTATIONS[o];this._PostToDOMMaybeSync("lock-orientation",{"orientation":orientation})},UnlockOrientation(){this._PostToDOMMaybeSync("unlock-orientation")},
+LoadStyleSheet(url){this._runtime.GetAssetManager().LoadStyleSheet(url)},SetHash(h){this.PostToDOM("set-hash",{"hash":h})}}};
+
+
+'use strict';{const C3=self.C3;C3.Plugins.Browser.Exps={URL(){if(this._runtime.IsInWorker())return this._initLocationStr;else return location.toString()},Protocol(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).protocol;else return location.protocol},Domain(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).hostname;else return location.hostname},Port(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).port;else return location.port},PathName(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).pathname;
+else return location.pathname},Hash(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).hash;else return location.hash},QueryString(){if(this._runtime.IsInWorker())return(new URL(this._initLocationStr)).search;else return location.search},QueryParam(param){const search=this._runtime.IsInWorker()?(new URL(this._initLocationStr)).search:location.search;const match=RegExp("[?&]"+param+"=([^&]*)").exec(search);if(match)return decodeURIComponent(match[1].replace(/\+/g," "));else return""},
+Referrer(){return this._referrer},Title(){return this._docTitle},Language(){return navigator.language},Platform(){return navigator.platform},UserAgent(){return navigator.userAgent},ExecJS(jsStr){let result=0;try{result=eval(jsStr)}catch(err){console.error("Error executing JavaScript: ",err)}if(typeof result==="number"||typeof result==="string")return result;if(typeof result==="boolean")return result?1:0;else return 0},Name(){return navigator.appName},Version(){return navigator.appVersion},Product(){return navigator.product},
+Vendor(){return navigator.vendor},BatteryLevel(){return 1},BatteryTimeLeft(){return Infinity},Bandwidth(){const connection=navigator["connection"];if(connection)return connection["downlink"]||connection["downlinkMax"]||connection["bandwidth"]||Infinity;else return Infinity},ConnectionType(){const connection=navigator["connection"];if(connection)return connection["type"]||"unknown";else return"unknown"},DevicePixelRatio(){return self.devicePixelRatio},ScreenWidth(){return this._screenWidth},ScreenHeight(){return this._screenHeight},
+WindowInnerWidth(){return this._runtime.GetCanvasManager().GetLastWidth()},WindowInnerHeight(){return this._runtime.GetCanvasManager().GetLastHeight()},WindowOuterWidth(){return this._windowOuterWidth},WindowOuterHeight(){return this._windowOuterWidth}}};
+
+
 'use strict';{const C3=self.C3;C3.Behaviors.Bullet=class BulletBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
 
 
@@ -8710,6 +8743,417 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 }
 
 
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_sliderbar = class aekiro_sliderbarBehavior extends C3.SDKBehaviorBase
+	{
+		constructor(a) {
+			super(a);
+			const b = this._runtime.Dispatcher();
+			this._disposables = new C3.CompositeDisposable(
+				C3.Disposable.From(b, "pointerdown", (a)=>this._OnPointerDown(a.data)),
+				C3.Disposable.From(b, "pointermove", (a)=>this._OnPointerMove(a.data)),
+				C3.Disposable.From(b, "pointerup", (a)=>this._OnPointerUp(a.data, !1)),
+				C3.Disposable.From(b, "pointercancel", (a)=>this._OnPointerUp(a.data, !0)))
+		}
+		Release() {
+			this._disposables.Release(),
+			this._disposables = null,
+			super.Release()
+		}
+		_OnPointerDown(a) {
+			this._OnInputDown(a["pointerId"].toString(), a["clientX"] - this._runtime.GetCanvasClientX(), a["clientY"] - this._runtime.GetCanvasClientY())
+		}
+		_OnPointerMove(a) {
+			this._OnInputMove(a["pointerId"].toString(), a["clientX"] - this._runtime.GetCanvasClientX(), a["clientY"] - this._runtime.GetCanvasClientY())
+		}
+		_OnPointerUp(a) {
+			this._OnInputUp(a["pointerId"].toString(), a["clientX"] - this._runtime.GetCanvasClientX(), a["clientY"] - this._runtime.GetCanvasClientY())
+		}
+
+		async _OnInputDown(source, b, c) {
+			const insts = this.GetInstances();
+			for (const inst of insts) {
+				const beh = inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.aekiro_sliderbar);
+				const wi = inst.GetWorldInfo(),
+				layer = wi.GetLayer(),
+				[x,y] = layer.CanvasCssToLayer(b, c, wi.GetTotalZElevation());
+				if(beh.OnAnyInputDown)
+					await beh.OnAnyInputDown(x,y,source);
+			}
+		}
+		_OnInputMove(source, b, c) {
+			const insts = this.GetInstances();
+			for (const inst of insts) {
+				const beh = inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.aekiro_sliderbar);
+				/*if (!d.IsEnabled() || !d.IsDragging() || d.IsDragging() && d.GetDragSource() !== a)
+					continue;*/
+				const wi = inst.GetWorldInfo() 
+				  , layer = wi.GetLayer()
+				  , [x,y] = layer.CanvasCssToLayer(b, c, wi.GetTotalZElevation());
+				if(beh.OnAnyInputMove)
+					beh.OnAnyInputMove(x, y,source);
+			}
+		}
+		async _OnInputUp(a,b,c) {
+			const insts = this.GetInstances();
+			for (const inst of insts) {
+				const beh = inst.GetBehaviorSdkInstanceFromCtor(C3.Behaviors.aekiro_sliderbar);
+				const wi = inst.GetWorldInfo(),
+				layer = wi.GetLayer(),
+				[x,y] = layer.CanvasCssToLayer(b, c, wi.GetTotalZElevation());
+				
+				if(beh.OnAnyInputUp)
+					await beh.OnAnyInputUp(x,y);
+			}
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_sliderbar.Type = class aekiro_sliderbarType extends C3.SDKBehaviorTypeBase
+	{
+		constructor(behaviorType)
+		{
+			super(behaviorType);
+		}
+		
+		Release()
+		{
+			super.Release();
+		}
+		
+		OnCreate()
+		{	
+		}
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_sliderbar.Instance = class aekiro_sliderbarInstance extends C3.SDKBehaviorInstanceBase
+	{
+		constructor(behInst, properties)
+		{
+			super(behInst);
+			
+			//properties
+			if (properties){
+				this.isEnabled = properties[0];
+				this.value  = properties[1];
+				this.minValue = properties[2];
+				this.maxValue = properties[3];
+				this.step  = C3.clamp(properties[4],1,Infinity);
+				this.padding = properties[5];
+			}
+			
+			this.proui = this.GetRuntime().GetSingleGlobalObjectClassByCtor(C3.Plugins.aekiro_proui);
+			if(this.proui){
+				this.proui = this.proui.GetSingleGlobalInstance().GetSdkInstance();
+			}
+			
+			this.inst = this.GetObjectInstance();
+			this.wi = this.GetWorldInfo();
+			this.GetObjectInstance().GetUnsavedDataMap().aekiro_sliderbar = this;
+			this.goManager = globalThis.aekiro_goManager;
+			this.aekiro_dialogManager = globalThis.aekiro_dialogManager;
+			this.goManager.eventManager.on("childrenRegistred",() => this.init(),{"once":true});	
+			//******************************************
+			this.isSliderBarTouched = false;
+			this.isSliding = false;
+			this.prevValue = this.value;
+					
+		}
+	
+		PostCreate(){
+			this.aekiro_gameobject = this.GetObjectInstance().GetUnsavedDataMap().aekiro_gameobject;
+			if(this.aekiro_gameobject){
+				this.aekiro_gameobject.eventManager.on("cloned",() => this.init(),{"once":true});
+			}
+		}
+		
+		init (){
+			if(!this.aekiro_gameobject){
+				return;	
+			}
+			
+			this.sliderButton = this.aekiro_gameobject.children[0];
+			if(!this.sliderButton){
+				console.error("ProUI-SLIDERBAR: Slider button not found, please check its name");
+				return;
+			}
+			this.sliderWi = this.sliderButton.GetWorldInfo();
+			var min_x = this.wi.GetBoundingBox().getLeft()+this.padding;
+			var max_x = this.wi.GetBoundingBox().getRight()-this.padding;
+			var width = this.wi.GetWidth()-2*this.padding;
+			
+			//placing the sliderbutton at the left-center of the bar
+			this.sliderWi.SetX(min_x);
+			this.sliderWi.SetY( (this.wi.GetBoundingBox().getBottom()+this.wi.GetBoundingBox().getTop())/2);
+			this.sliderWi.SetBboxChanged();
+	
+			this.widthStep = (this.step/(this.maxValue-this.minValue))*width;
+			this.thres = this.widthStep*2/3;
+
+			this.precis = this.step/(this.maxValue-this.minValue);
+			this.lastStop = min_x;
+			
+			//
+			this.wi.SetWidth_old2 = this.wi.SetWidth;
+			this.wi.SetWidth = function(v,onlyNode){
+				var prev = this.GetWidth();
+				this.SetWidth_old2(v,onlyNode);
+				if(v != prev){
+					this.GetInstance().GetUnsavedDataMap().aekiro_sliderbar.OnSizeChanged();
+				}
+			};
+
+			this.setValue(this.value);
+		}
+
+		OnSizeChanged(){
+			this.sliderWi.SetBboxChanged();
+			this.wi.SetBboxChanged();
+			
+			var width = this.wi.GetWidth()-2*this.padding;
+			
+			this.widthStep = (this.step/(this.maxValue-this.minValue))*width;
+			this.thres = this.widthStep*2/3;
+			this.updateView();
+			
+			//console.log("sliderBar OnSizeChanged");
+		}
+
+
+		isValueValid(value){
+			if(value == null || isNaN(value) || value === ""){
+				return false;
+			}
+			return true;			
+		}
+
+		// step=3 v=6+2/3
+		// test2: step=3 min=0 max=6+2/3 ; v=6+2/3 
+		// test3: step=3 min=1 max=7+2/3 ; v=6+2/3 v=0
+		setValue (value){
+			if(!this.isValueValid(value)){
+				return false;
+			}
+			this.value = value - value%this.step + (value%this.step>=this.step*2/3?this.step:0);
+			this.value = C3.clamp(this.value, this.minValue, this.maxValue);
+			this.updateView();
+		}
+		
+		updateView (){
+			var min_x = this.wi.GetBoundingBox().getLeft()+this.padding;
+			var max_x = this.wi.GetBoundingBox().getRight()-this.padding;
+			//var width = this.wi.GetWidth()-2*this.padding;
+			
+			var x = min_x + ((this.value-this.minValue)/this.step)*this.widthStep;
+			this.sliderWi.SetX(C3.clamp(x,min_x,max_x));
+			this.sliderWi.SetY((this.wi.GetBoundingBox().getBottom()+this.wi.GetBoundingBox().getTop())/2);
+			this.sliderWi.SetBboxChanged();
+	
+			this.lastStop = this.sliderWi.GetX()-min_x;
+			//console.log(this.lastStop);
+		}
+		
+		onX (touchX){
+			var min_x = this.wi.GetBoundingBox().getLeft()+this.padding;
+			var max_x = this.wi.GetBoundingBox().getRight()-this.padding;
+			var width = this.wi.GetWidth()-2*this.padding;
+			
+			if(this.precis>0.04){
+				//console.log(this.lastStop);
+				touchX =  C3.clamp(touchX,min_x-1,max_x+1);
+				var diff = touchX-(min_x+this.lastStop);
+				if(Math.abs(diff) > this.thres){
+					diff = C3.clamp(diff,-this.widthStep,this.widthStep);
+					this.lastStop = this.lastStop + Math.sign(diff)*this.widthStep;
+					this.sliderWi.SetX(C3.clamp(min_x+this.lastStop,min_x,max_x));
+					this.sliderWi.SetBboxChanged();
+					this.value += Math.sign(diff)*this.step;
+					this.value = C3.clamp(this.value,this.minValue,this.maxValue);
+				}
+			}else{
+				var x = touchX - this.sliderOffsetX;
+				x =  C3.clamp(x,min_x-1,max_x+1);
+				
+				this.sliderWi.SetX(C3.clamp(x,min_x,max_x));
+				this.sliderWi.SetBboxChanged();
+				this.value = ((this.sliderWi.GetX()-min_x)/width)*(this.maxValue-this.minValue);
+				this.value = this.minValue+Math.round(this.value/this.step)*this.step;
+				this.value = C3.clamp(this.value,this.minValue,this.maxValue);
+				
+				//console.log("x");
+			}
+		}
+			
+		
+		OnAnyInputDown(x, y){
+			if(!this.isEnabled || !this.isInteractible(x,y))return;
+			
+			this.prevValue = this.value;
+			
+			this.sliderOffsetX = 0;
+			if(this.sliderButton && this.sliderButton.GetWorldInfo().ContainsPoint(x, y)){
+				this.sliderOffsetX = x - this.sliderWi.GetX();
+				this.isSliding = true;
+			}
+
+			if(this.wi.ContainsPoint(x, y)){
+				this.onX(x);
+			}	
+		}
+		
+		OnAnyInputMove(x) {
+			if(this.isSliding){
+				this.onX(x); 
+			}
+		}
+		
+		OnAnyInputUp(x, y) {
+			if(!this.isEnabled){
+				return;
+			}
+			
+			this.isSliding = false;
+			
+			if(this.prevValue != this.value){
+				this.Trigger(C3.Behaviors.aekiro_sliderbar.Cnds.OnChanged);
+			}
+		}
+		
+		isInteractible(x,y){
+			if(this.proui.ignoreInput){
+				return false;
+			}
+			
+			var isUnder = false;
+			if(this.aekiro_dialogManager){
+				isUnder = this.aekiro_dialogManager.isInstanceUnder(this.wi.GetLayer().GetIndex());
+			}
+			//console.log(isUnder,isOverlaped);
+			return !isUnder;
+		}
+		
+		Release()
+		{
+			super.Release();
+		}
+	
+		SaveToJson()
+		{
+			return {
+			"isEnabled": this.isEnabled,
+			"value" : this.value,
+			"minValue" : this.minValue,
+			"maxValue" : this.maxValue,
+			"step"  : this.step 
+			};
+		}
+	
+		LoadFromJson(o)
+		{
+			this.isEnabled = o["isEnabled"];
+			this.value  = o["value"];
+			this.minValue = o["minValue"];
+			this.maxValue = o["maxValue"];
+			this.step  = o["step"];
+		}
+	};
+	
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_sliderbar.Cnds = {
+		IsSliding(){ return this.isSliding; },
+		
+		OnChanged(){ return true; }
+	};
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_sliderbar.Acts = {
+		setEnabled(state){
+			this.isEnabled = !!state;
+		},
+		
+		setValue(value){
+			this.setValue(value);
+		},
+
+		setMaxValue(max){
+			if(max == this.maxValue)return;
+			
+			var width = this.wi.GetWidth()-2*this.padding;
+			this.maxValue = max;
+			this.widthStep = (this.step/(this.maxValue-this.minValue))*width;
+			this.thres = this.widthStep*2/3;
+			this.precis = this.step/(this.maxValue-this.minValue);
+			
+			//this.updateView();
+			this.setValue(this.value);
+		},
+		
+		setMinValue(min){
+			if(min == this.minValue)return;
+			
+			var width = this.wi.GetWidth()-2*this.padding;
+			this.minValue = min;
+			this.widthStep = (this.step/(this.maxValue-this.minValue))*width;
+			this.thres = this.widthStep*2/3;
+			this.precis = this.step/(this.maxValue-this.minValue);
+			
+			//this.updateView();
+			this.setValue(this.value);
+		},
+		
+		setStep(step){
+			if(step == this.step)return;
+			
+			this.step = step;
+			var width = this.wi.GetWidth()-2*this.padding;
+			this.widthStep = (this.step/(this.maxValue-this.minValue))*width;
+			this.thres = this.widthStep*2/3;
+			this.precis = this.step/(this.maxValue-this.minValue);
+			
+			//this.updateView();
+			this.setValue(this.value);
+		}
+		
+	};
+	
+}
+
+
+"use strict";
+
+{
+	const C3 = self.C3;
+	C3.Behaviors.aekiro_sliderbar.Exps = {
+		value(){ return this.value; }
+	};
+}
+
+
 
 {
 	const C3 = self.C3;
@@ -8741,6 +9185,8 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Behaviors.aekiro_gridView,
 		C3.Plugins.Keyboard,
 		C3.Plugins.AJAX,
+		C3.Plugins.Browser,
+		C3.Behaviors.aekiro_sliderbar,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.System.Cnds.CompareBoolVar,
 		C3.Plugins.Audio.Acts.Play,
@@ -8750,6 +9196,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.Touch.Cnds.IsInTouch,
 		C3.Plugins.System.Cnds.TriggerOnce,
 		C3.Plugins.System.Cnds.CompareVar,
+		C3.Behaviors.aekiro_button.Cnds.IsFocused,
 		C3.Plugins.Touch.Cnds.OnTouchEnd,
 		C3.Plugins.Audio.Acts.FadeVolume,
 		C3.Behaviors.Timer.Cnds.IsTimerRunning,
@@ -8801,6 +9248,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Plugins.VKBridge.Acts.ShowWall,
 		C3.Behaviors.Bullet.Cnds.CompareSpeed,
 		C3.Plugins.Sprite.Acts.SetAnim,
+		C3.Plugins.Particles.Acts.SetPosToObject,
 		C3.Behaviors.Bullet.Exps.AngleOfMotion,
 		C3.Plugins.Sprite.Acts.SetSize,
 		C3.Plugins.Sprite.Exps.Width,
@@ -8836,6 +9284,10 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Behaviors.aekiro_gridviewbind.Exps.index,
 		C3.Plugins.System.Exps.tokenat,
 		C3.Behaviors.aekiro_gridviewbind.Exps.get,
+		C3.Plugins.NinePatch.Acts.SetInstanceVar,
+		C3.Plugins.Browser.Acts.GoToURLWindow,
+		C3.Plugins.NinePatch.Cnds.CompareInstanceVar,
+		C3.Behaviors.aekiro_button.Acts.SetFocused,
 		C3.Plugins.VKBridge.Acts.BridgeConnect,
 		C3.Plugins.VKBridge.Cnds.BridgeConnectSuccess,
 		C3.Plugins.VKBridge.Acts.Authorization,
@@ -8909,6 +9361,13 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		{Sprite10: 0},
 		{AJAX: 0},
 		{SpriteFont6: 0},
+		{Browser: 0},
+		{Particles2: 0},
+		{Sprite11: 0},
+		{SliderBar: 0},
+		{"9patch5": 0},
+		{Sprite12: 0},
+		{Sprite13: 0},
 		{power: 0},
 		{count: 0},
 		{isintouch: 0},
@@ -8916,7 +9375,8 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		{game_start: 0},
 		{death_counter: 0},
 		{hiscore: 0},
-		{rewarded: 0}
+		{rewarded: 0},
+		{gold_player: 0}
 	];
 }
 
@@ -9098,12 +9558,14 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 			return () => (and("Я набрал ", v0.GetValue()) + " очков, слабо набрать больше?");
 		},
 		() => "photo555144095_457245963, https://vk.com/app7802700",
+		() => "idle_gold",
 		() => "idle",
 		() => 200,
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior();
 		},
+		() => "jump_gold",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => n0.ExpObject();
@@ -9127,7 +9589,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		() => "leaderboard",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
-			return () => f0();
+			return () => (f0() - 5);
 		},
 		p => {
 			const n0 = p._GetNode(0);
@@ -9140,7 +9602,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 			const f3 = p._GetNode(3).GetBoundMethod();
 			const f4 = p._GetNode(4).GetBoundMethod();
 			const f5 = p._GetNode(5).GetBoundMethod();
-			return () => (((((("{\n\"name_score\":\"" + f0(f1("leaderboard"), "first_name")) + "_") + f2(f3("leaderboard"), "lastname_name")) + "_") + f4(f5("leaderboard"), "score")) + "\"\n}");
+			return () => (((((("{\n\"name_score\":\"" + f0(f1("leaderboard"), "first_name")) + "_") + f2(f3("leaderboard"), "last_name")) + "_") + f4(f5("leaderboard"), "score")) + "\"\n}");
 		},
 		p => {
 			const n0 = p._GetNode(0);
@@ -9154,6 +9616,20 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 			const f4 = p._GetNode(4).GetBoundMethod();
 			const n5 = p._GetNode(5);
 			return () => (((((f0(n1.ExpBehavior("name_score"), 0, "_") + " ") + f2(n3.ExpBehavior("name_score"), 1, "_")) + ": ") + f4(n5.ExpBehavior("name_score"), 2, "_")) + " очков");
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			const n1 = p._GetNode(1);
+			return () => f0((n1.ExpBehavior() + 1), "id");
+		},
+		p => {
+			const n0 = p._GetNode(0);
+			return () => and("https://vk.com/id", n0.ExpInstVar());
+		},
+		() => "NewWindow",
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0();
 		},
 		() => "photo_200, status",
 		() => "status",
