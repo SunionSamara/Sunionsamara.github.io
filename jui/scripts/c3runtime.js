@@ -4565,6 +4565,393 @@ await this.TriggerAsync(C3.Plugins.TiledBg.Cnds.OnURLLoaded)}}};
 'use strict';{const C3=self.C3;C3.Plugins.TiledBg.Exps={ImageWidth(){return this.GetCurrentImageInfo().GetWidth()},ImageHeight(){return this.GetCurrentImageInfo().GetHeight()},ImageOffsetX(){return this._imageOffsetX},ImageOffsetY(){return this._imageOffsetY},ImageScaleX(){return this._imageScaleX*100},ImageScaleY(){return this._imageScaleY*100},ImageAngle(){return C3.toDegrees(this._imageAngle)}}};
 
 
+"use strict";
+{
+	C3.Plugins.VKBridge = class VKBridgePlugin extends C3.SDKPluginBase {
+		constructor(opts){
+			super(opts);
+		}
+		
+		Release(){
+			super.Release();
+		}
+	};
+}
+
+"use strict";
+{
+	C3.Plugins.VKBridge.Type = class VKBridgeType extends C3.SDKTypeBase {
+		constructor(objectClass){
+			super(objectClass);
+		}
+		
+		Release(){
+			super.Release();
+		}
+		
+		OnCreate(){}
+	};
+}
+
+"use strict";
+{
+	C3.Plugins.VKBridge.Instance = class VKBridgeInstance extends C3.SDKInstanceBase {
+        constructor(inst, properties = []){
+			super(inst);
+            this.init(properties);
+            this.conditions = C3.Plugins.VKBridge.Cnds;
+		}
+		
+        async init(properties){
+			// Properties
+            this.app_id				= properties[0];
+            this.app_secret_key		= properties[1];
+            this.app_service_key	= properties[2];			
+			// Error
+			this.error_code			= 0;
+			this.error_reason		= "";
+			// User
+			this.user_id			= 0;
+			this.user_token			= "";
+			this.user_data			= [];
+			// Friends
+			this.friends_count		= 0;
+			this.friends_id			= [];
+			this.friends_data		= [];
+			// Storage
+			this.storage_keys		= "";
+			this.storage_data		= [];
+			// Leaderboard
+			this.leaderboard_count	= 0;
+			this.leaderboard_data	= [];
+        }
+		
+        Release(){
+            super.Release();
+        }
+        SaveToJson(){
+            return {
+                // data to be saved for savegames
+            };
+        }
+        LoadFromJson(o){
+            // load state for savegames
+        }
+		GetScriptInterfaceClass(){
+			return VKBInstance;
+		}
+	};
+}
+
+"use strict";
+{
+	C3.Plugins.VKBridge.Cnds = {
+		// Bridge connected
+		BridgeConnectSuccess()				{console.log("VK Bridge connected");															return true;},
+		// Bridge not connected
+		BridgeConnectFailed()				{console.log("VK Bridge not connected");														return true;},
+		// User is authorized
+		AuthorizationSuccess()				{console.log("User is authorized");																return true;},
+		// Authorization error
+		AuthorizationFailed()				{console.log("Authorization error");															return true;},
+		// User data received
+		UserGetSuccess()					{console.log("User data received");																return true;},
+		// User data not received
+		UserGetFailed()						{console.log("User data not received");															return true;},
+		// Friends data received
+		FriendsGetSuccess()					{console.log("Friends data received");															return true;},
+		// Friends data not received
+		FriendsGetFailed()					{console.log("Friends data not received");														return true;},
+		// Variables loaded
+		StorageGetSuccess()					{console.log("Variables loaded");																return true;},
+		// Variables not loaded
+		StorageGetFailed()					{console.log("Variables not loaded");															return true;},
+		// Variable saved
+		StorageSetSuccess(set_keys)			{if(this.storage_keys == set_keys) console.log("Variable " + set_keys + " saved");				return true;},
+		// Variable not saved
+		StorageSetFailed(set_keys)			{if(this.storage_keys == set_keys) console.log("Variable " + set_keys + " not saved");			return true;},
+		// Friends invited
+		ShowInviteSuccess()					{console.log("Friends invited");																return true;},
+		// Friends not invited
+		ShowInviteFailed()					{console.log("Friends not invited");															return true;},
+		// Wall post created
+		ShowWallSuccess()					{console.log("Wall post created");																return true;},
+		// Wall post failed
+		ShowWallFailed()					{console.log("Wall post failed");																return true;},
+		// Purchase success
+		ShowOrderSuccess()					{console.log("Purchase success");																return true;},
+		// Purchase failed
+		ShowOrderFailed()					{console.log("Purchase failed");																return true;},
+		// Advertising start
+		ShowAdsStart()						{console.log("Advertising start");																return true;},
+		// Advertising success
+		ShowAdsSuccess()					{console.log("Advertising success");															return true;},
+		// Advertising failed
+		ShowAdsFailed()						{console.log("Advertising failed");																return true;},
+		// Advertising mobile success
+		AdsMobileSuccess()					{console.log("Advertising mobile success");														return true;},
+		// Advertising mobile failed
+		AdsMobileFailed()					{console.log("Advertising mobile failed");														return true;},
+		// Leaderboard success
+		LeaderBoardSuccess()				{console.log("Leaderboard success");															return true;},
+		// Leaderboard failed
+		LeaderBoardFailed()					{console.log("Leaderboard failed");																return true;},
+		// Leadersave success
+		LeaderSaveSuccess()					{console.log("Leadersave success");																return true;},
+		// Leadersave failed
+		LeaderSaveFailed()					{console.log("Leadersave failed");																return true;}
+	};
+}
+
+"use strict";
+{
+	C3.Plugins.VKBridge.Acts = {
+		// Bridge connect
+		BridgeConnect(){
+			// Подключение VK Bridge
+			vkBridge.send('VKWebAppInit');
+			console.log("Connect VK Bridge");
+			// Подключение событий, отправленных нативным клиентом
+			vkBridge.subscribe((e) => console.log(e));
+			// Получение прав доступа
+			vkBridge
+				.send("VKWebAppGetAuthToken", {"app_id": this.app_id, "scope": "friends,status,wall"})
+				.then(data => {
+					this.user_token = data.access_token;
+					this.Trigger(this.conditions.BridgeConnectSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.BridgeConnectFailed);
+				});
+		},
+		// Authorization
+		Authorization(){
+			vkBridge
+				.send("VKWebAppGetUserInfo")
+				.then(data => {
+					this.user_id = data["id"];
+					this.Trigger(this.conditions.AuthorizationSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.AuthorizationFailed);
+				});
+		},
+		// User get
+		UserGet(get_user_id, get_fields){
+			vkBridge
+				.send("VKWebAppCallAPIMethod", {"method": "users.get", "request_id": "user", "params": {"user_ids": get_user_id, "fields": get_fields, "v": "5.130", "access_token": this.user_token}})
+				.then(data => {
+					this.user_data = data.response[0];
+					this.Trigger(this.conditions.UserGetSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.UserGetFailed);
+				});
+		},
+		// Friends get
+		FriendsGet(get_fields){
+			vkBridge
+				.send("VKWebAppCallAPIMethod", {"method": "friends.getAppUsers", "request_id": "friends", "params": {"v": "5.130", "access_token": this.user_token}})
+				.then(data => {
+					this.friends_id = data.response;
+					this.friends_count = this.friends_id.length;
+						vkBridge
+							.send("VKWebAppCallAPIMethod", {"method": "users.get", "request_id": "friends", "params": {"user_ids": this.friends_id.join(','), "fields": get_fields, "v": "5.130", "access_token": this.user_token}})
+							.then(data => {
+								this.friends_data = data.response;
+								this.Trigger(this.conditions.FriendsGetSuccess);
+							})
+							.catch(error => {
+								if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+								this.Trigger(this.conditions.FriendsGetFailed);
+							});
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.FriendsGetFailed);
+				});				
+		},
+		// Storage get
+		StorageGet(get_keys, keys){
+			
+			var separator = /\s*,\s*/;
+			keys = get_keys.split(separator);
+			
+			vkBridge
+				.send("VKWebAppStorageGet", {"keys": keys})
+				.then(data => {
+					this.storage_data = data.keys;
+					this.Trigger(this.conditions.StorageGetSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.StorageGetFailed);
+				});				
+		},
+		// Storage set
+		StorageSet(get_keys, get_value){
+			vkBridge
+				.send("VKWebAppStorageSet", {"key": get_keys, "value": get_value})
+				.then(data => {
+					this.storage_keys = get_keys;
+					this.Trigger(this.conditions.StorageSetSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.StorageSetFailed);
+				});				
+		},
+		// Show invite box
+		ShowInvite(){
+			vkBridge
+				.send("VKWebAppShowInviteBox")
+				.then(data => {
+					this.Trigger(this.conditions.ShowInviteSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.ShowInviteFailed);
+				});				
+		},
+		// Create post
+		ShowWall(message, attachments){
+			vkBridge
+				.send("VKWebAppShowWallPostBox", {"message": message, "attachments": attachments})
+				.then(data => {
+					this.Trigger(this.conditions.ShowWallSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.ShowWallFailed);
+				});				
+		},
+		// Purchase item
+		ShowOrder(item){
+			vkBridge
+				.send("VKWebAppShowOrderBox", {"type": "item", "item": item})
+				.then(data => {
+					this.Trigger(this.conditions.ShowOrderSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.ShowOrderFailed);
+				});				
+		},
+		// Advertising connection
+		ConnectAds(){
+			function addScript(src){
+				var script = document.createElement('script');
+				script.src = src;
+				script.async = true;
+				document.head.appendChild(script);
+				script.onload = function(){console.log('Script ' + src + ' loaded');};
+			};
+
+			addScript('https://vk.com/js/api/xd_connection.js?2');
+			addScript('https://ad.mail.ru/static/admanhtml/rbadman-html5.min.js');
+			addScript('https://vk.com/js/api/adman_init.js');
+
+			window.addEventListener('load', function(){var user_id = this.user_id; var app_id = this.app_id;});
+		},
+		// Show ads
+		async ShowAds(format){
+			
+		//	var ads_start	 = this.Trigger(this.conditions.ShowAdsStart);
+		//	var ads_success	 = this.Trigger(this.conditions.ShowAdsSuccess);
+		//	var ads_failed	 = this.Trigger(this.conditions.ShowAdsFailed);
+			
+			var ads_format = "rewarded";
+			if (format === 0) ads_format = "preloader";
+				
+			admanInit({user_id: this.user_id, app_id: this.app_id,
+				// mobile: true,
+				// params: {preview: 1},
+				type: ads_format
+			}, onAdsReady, onNoAds);
+			
+			function onAdsReady(adman){
+				adman.onStarted(function(){console.log("Start");});
+				adman.onCompleted(function(){console.log("Success");});
+				adman.onSkipped(function(){});
+				adman.onClicked(function(){});
+				adman.start('preroll');
+			};
+			
+			function onNoAds(){console.log("Failed");};
+		},
+		// Advertising mobile
+		AdsMobile(format){
+			
+			var ads_format = "interstitial";
+			if (format === 0) ads_format = "preloader";
+			else if (format === 1) ads_format = "reward";
+			
+			vkBridge
+				.send("VKWebAppShowNativeAds", {"ad_format": ads_format})
+				.then(data => {
+					this.Trigger(this.conditions.AdsMobileSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.AdsMobileFailed);
+				});				
+		},
+		// Leaderboard
+		LeaderBoard(type, global){
+			var leader_type = "score";
+			if (type === 0) leader_type = "level";
+			
+			vkBridge
+				.send("VKWebAppCallAPIMethod", {"method": "apps.getLeaderboard", "request_id": "leader", "params": {"type": leader_type, "global": global, "extended": 1, "v": "5.130", "access_token": this.user_token}})
+				.then(data => {
+					var data = data.response;
+					this.leaderboard_count = data.count;
+					this.leaderboard_data = data.items;
+					this.Trigger(this.conditions.LeaderBoardSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.LeaderBoardFailed);
+				});				
+		},
+		// Save leaderboard
+		LeaderSave(activ, value){
+			vkBridge
+				.send("VKWebAppCallAPIMethod", {"method": "secure.addAppEvent", "request_id": "leader", "params": {"user_id": this.user_id, "activity_id": activ+1, "value": value, "v": "5.130", "access_token": this.app_service_key}})
+				.then(data => {
+					this.Trigger(this.conditions.LeaderSaveSuccess);
+				})
+				.catch(error => {
+					if (error.error_data){var error_data = error.error_data;this.error_code = error_data["error_code"];this.error_reason = error_data["error_reason"];}
+					this.Trigger(this.conditions.LeaderSaveFailed);
+				});				
+		}
+	};
+}
+
+"use strict";
+{
+	C3.Plugins.VKBridge.Exps = {
+		// Error
+		ErrorCode()							{return this.error_code;},
+		ErrorReason()						{return this.error_reason;},
+		// User
+		UserID()							{return this.user_id;},
+		UserData(type)						{if (this.user_data[type]){return this.user_data[type];};},
+		// Friends
+		FriendsCount()						{return this.friends_count;},
+		FriendsData(number, type, data)		{if (this.friends_data[number]){data = this.friends_data[number];if (data[type]){return data[type];};};},
+		// Storage
+		StorageData(keys)					{for (let i = 0; i < this.storage_data.length; i++){if (this.storage_data[i].key === keys){return this.storage_data[i].value;break;};};},
+		// Leaderboard
+		BoardCount()						{return this.leaderboard_count;},
+		BoardData(user)					{if (this.leaderboard_data[user]){return this.leaderboard_data[user]};}
+	};
+}
+
 'use strict';{const C3=self.C3;C3.Behaviors.Pin=class PinBehavior extends C3.SDKBehaviorBase{constructor(opts){super(opts)}Release(){super.Release()}}};
 
 
@@ -6228,6 +6615,7 @@ this.GetAngle();ux=Math.cos(a);uy=Math.sin(a);collisionEngine.PushOutSolid(inst,
 		C3.Behaviors.Rotate,
 		C3.Behaviors.LOS,
 		C3.Behaviors.custom,
+		C3.Plugins.VKBridge,
 		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Plugins.Sprite.Cnds.OnCreated,
 		C3.Plugins.Sprite.Acts.SetPosToObject,
@@ -6373,7 +6761,10 @@ this.GetAngle();ux=Math.cos(a);uy=Math.sin(a);collisionEngine.PushOutSolid(inst,
 		C3.Behaviors.Platform.Cnds.IsByWall,
 		C3.Behaviors.aekiro_gameobject.Exps.parent,
 		C3.Behaviors.aekiro_gameobject.Exps.name,
-		C3.Behaviors.aekiro_button.Acts.setEnabled
+		C3.Behaviors.aekiro_button.Acts.setEnabled,
+		C3.Plugins.VKBridge.Acts.BridgeConnect,
+		C3.Plugins.VKBridge.Cnds.BridgeConnectSuccess,
+		C3.Plugins.VKBridge.Acts.Authorization
 		];
 	};
 	self.C3_JsPropNameTable = [
@@ -6463,6 +6854,7 @@ this.GetAngle();ux=Math.cos(a);uy=Math.sin(a);collisionEngine.PushOutSolid(inst,
 		{LavaDrops: 0},
 		{Path: 0},
 		{stopwatch: 0},
+		{VKBridge: 0},
 		{Coins: 0},
 		{record: 0},
 		{speedrun: 0},
