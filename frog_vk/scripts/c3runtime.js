@@ -9624,7 +9624,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 			const n1 = p._GetNode(1);
 			return () => f0((n1.ExpBehavior() + 1), "id");
 		},
-		() => "money_10",
+		() => "item_id_1",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();
