@@ -27,7 +27,7 @@ else {
 	switch ($input['notification_type']){
 		case 'get_item':
 			// Получение информации о товаре
-			$item = $input['money_10']; // наименование товара
+			$item = $input['item']; // наименование товара
 
 			if ($item == 'item_id_1'){
 				$response['response'] = array(
@@ -41,7 +41,7 @@ else {
 
 		case 'get_item_test':
 			// Получение информации о товаре в тестовом режиме
-			$item = $input['money_10'];
+			$item = $input['item'];
 			if ($item == 'item_id_1'){
 				$response['response'] = array(
 					'item_id' => 201,
