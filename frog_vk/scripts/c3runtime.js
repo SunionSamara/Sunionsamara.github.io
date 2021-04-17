@@ -9287,6 +9287,8 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 		C3.Behaviors.aekiro_gridviewbind.Exps.get,
 		C3.Plugins.NinePatch.Acts.SetInstanceVar,
 		C3.Behaviors.aekiro_button.Acts.SetFocused,
+		C3.Plugins.Keyboard.Cnds.OnKey,
+		C3.Plugins.VKBridge.Acts.ShowOrder,
 		C3.Plugins.VKBridge.Acts.BridgeConnect,
 		C3.Plugins.VKBridge.Cnds.BridgeConnectSuccess,
 		C3.Plugins.VKBridge.Acts.Authorization,
@@ -9622,6 +9624,7 @@ value:this.WaveFunc(this._i)*this._mag}]}]}}};
 			const n1 = p._GetNode(1);
 			return () => f0((n1.ExpBehavior() + 1), "id");
 		},
+		() => "money_10",
 		p => {
 			const f0 = p._GetNode(0).GetBoundMethod();
 			return () => f0();

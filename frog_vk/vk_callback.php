@@ -1,7 +1,7 @@
 <?php
 header("Content-Type: application/json; encoding=utf-8");
 
-$secret_key = 'bNJ2ftzZdqerLfrS3j7R'; // Защищенный ключ приложения
+$secret_key = 'tiITznFhsBBKDegowuuK'; // Защищенный ключ приложения
 
 $input = $_POST;
 
@@ -27,13 +27,13 @@ else {
 	switch ($input['notification_type']){
 		case 'get_item':
 			// Получение информации о товаре
-			$item = $input['item']; // наименование товара
+			$item = $input['money_10']; // наименование товара
 
 			if ($item == 'item_id_1'){
 				$response['response'] = array(
 					'item_id' => 101,
-					'title' => '500 рефиков',
-					'photo_url' => 'http://hivegame.ru/games/vkbridge/ref.png',
+					'title' => '10 монет',
+					'photo_url' => 'https://sunionsamara.github.io/frog_vk/money.png',
 					'price' => 1
 				);
 			}
@@ -41,12 +41,12 @@ else {
 
 		case 'get_item_test':
 			// Получение информации о товаре в тестовом режиме
-			$item = $input['item'];
+			$item = $input['money_10'];
 			if ($item == 'item_id_1'){
 				$response['response'] = array(
 					'item_id' => 201,
-					'title' => '500 рефиков (тестовый режим)',
-					'photo_url' => 'http://hivegame.ru/games/vkbridge/ref.png',
+					'title' => '10 монет (тестовый режим)',
+					'photo_url' => 'https://sunionsamara.github.io/frog_vk/money.png',
 					'price' => 1
 				);
 			}
