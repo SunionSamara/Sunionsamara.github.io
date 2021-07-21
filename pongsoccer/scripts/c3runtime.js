@@ -12461,6 +12461,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Plugins.Sprite.Acts.SetCollisions,
 		C3.Plugins.Sprite.Cnds.OnCollision,
 		C3.Behaviors.Bullet.Exps.Speed,
+		C3.Behaviors.EightDir.Exps.VectorX,
 		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.Spritefont2.Cnds.CompareInstanceVar,
 		C3.Plugins.Spritefont2.Acts.SetText,
@@ -12485,6 +12486,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Plugins.Sprite.Acts.SetAngle,
 		C3.Behaviors.Tween.Cnds.OnTweensFinished,
 		C3.Plugins.System.Exps.tokenat,
+		C3.Plugins.Multiplayer.Cnds.ComparePeerCount,
 		C3.Plugins.Multiplayer.Acts.SignallingConnect,
 		C3.Plugins.Multiplayer.Cnds.OnSignallingConnected,
 		C3.Plugins.Multiplayer.Cnds.IsSupported,
@@ -12495,30 +12497,24 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		C3.Plugins.Multiplayer.Acts.SignallingJoinRoom,
 		C3.Plugins.Multiplayer.Acts.SignallingAutoJoinRoom,
 		C3.Plugins.Multiplayer.Cnds.SignallingIsInRoom,
-		C3.Plugins.Multiplayer.Cnds.ComparePeerCount,
 		C3.Plugins.System.Cnds.TriggerOnce,
-		C3.Behaviors.Timer.Acts.StopTimer,
 		C3.Behaviors.aekiro_button.Acts.setEnabled,
 		C3.Plugins.aekiro_proui.Acts.Init,
 		C3.Behaviors.aekiro_button.Cnds.OnClicked,
-		C3.Plugins.Multiplayer.Acts.SignallingRequestRoomList,
 		C3.Behaviors.aekiro_dialog.Acts.Open,
+		C3.Plugins.Multiplayer.Acts.SignallingRequestRoomList,
 		C3.Plugins.Timeline.Acts.PlayTimeline,
-		C3.Behaviors.Timer.Cnds.IsTimerRunning,
-		C3.Behaviors.Timer.Acts.StartTimer,
-		C3.Behaviors.aekiro_dialog.Cnds.isOpened,
+		C3.Behaviors.aekiro_dialog.Acts.Close,
+		C3.Plugins.Multiplayer.Acts.SignallingLeaveRoom,
 		C3.Plugins.Sprite.Acts.SetOpacity,
 		C3.Plugins.Timeline.Acts.SetTimelinePlaybackRateByTags,
 		C3.Plugins.System.Acts.GoToLayout,
-		C3.Behaviors.Timer.Cnds.OnTimer,
-		C3.Plugins.Multiplayer.Acts.SignallingLeaveRoom,
 		C3.Behaviors.aekiro_dialog.Cnds.onDialogClosed,
 		C3.Plugins.aekiro_proui.Cnds.IsDialogOpened,
 		C3.Behaviors.Tween.Acts.TweenValue,
 		C3.Behaviors.Tween.Cnds.IsPlaying,
 		C3.Plugins.System.Acts.SetLayerOpacity,
-		C3.Behaviors.Tween.Exps.Value,
-		C3.Behaviors.Bullet.Exps.AngleOfMotion
+		C3.Behaviors.Tween.Exps.Value
 		];
 	};
 	self.C3_JsPropNameTable = [
@@ -12582,6 +12578,10 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		{Sprite10: 0},
 		{Multiplayer: 0},
 		{Sprite11: 0},
+		{Sprite12: 0},
+		{Sprite13: 0},
+		{Sprite14: 0},
+		{Sprite15: 0},
 		{gameStarted: 0},
 		{paddlesMoveBlocked: 0},
 		{ballSpeed: 0},
@@ -12856,6 +12856,22 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			const n0 = p._GetNode(0);
 			return () => (n0.ExpBehavior() + 20);
 		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(230, 250);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(280, 300);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(55, 75);
+		},
+		p => {
+			const f0 = p._GetNode(0).GetBoundMethod();
+			return () => f0(105, 125);
+		},
 		() => 10,
 		p => {
 			const v0 = p._GetNode(0).GetVar();
@@ -12955,8 +12971,6 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 		() => "PongSoccerSberTroxy",
 		() => "default",
 		() => "room",
-		() => "search_game",
-		() => 15,
 		() => -1,
 		() => "darkness",
 		() => 80,
@@ -12965,18 +12979,7 @@ WaypointYAt(i){return this._GetWaypointYAt(i)}}};
 			const n0 = p._GetNode(0);
 			return () => n0.ExpBehavior("darkness");
 		},
-		() => 9,
-		p => {
-			const n0 = p._GetNode(0);
-			const n1 = p._GetNode(1);
-			const n2 = p._GetNode(2);
-			const n3 = p._GetNode(3);
-			const n4 = p._GetNode(4);
-			const n5 = p._GetNode(5);
-			const n6 = p._GetNode(6);
-			const n7 = p._GetNode(7);
-			return () => ((((n0.ExpObject()) > (n1.ExpObject()) ? 1 : 0)) ? (((n2.ExpBehavior() + n3.ExpObject()) - n4.ExpObject())) : (((n5.ExpBehavior() - n6.ExpObject()) - n7.ExpObject())));
-		}
+		() => 9
 	];
 }
 
