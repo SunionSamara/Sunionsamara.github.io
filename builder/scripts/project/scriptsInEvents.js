@@ -3,21 +3,21 @@
 
 const scriptsInEvents = {
 
-		async EventSheet1_Event116_Act2(runtime, localVars)
+		async EventSheet1_Event111_Act2(runtime, localVars)
 		{
 			const colorPrimary = document.getElementById("color-primary");
 			colorPrimary.type = "color";
 			
 		},
 
-		async EventSheet1_Event117_Act2(runtime, localVars)
+		async EventSheet1_Event112_Act2(runtime, localVars)
 		{
 			const colorPrimary = document.getElementById("color-primary");
 			colorPrimary.type = "color";
 			
 		},
 
-		async EventSheet1_Event119_Act2(runtime, localVars)
+		async EventSheet1_Event114_Act2(runtime, localVars)
 		{
 			const s = localVars.colorStr;
 			runtime.globalVars.r=parseInt("0x"+ s.slice(1,3));
@@ -26,21 +26,21 @@ const scriptsInEvents = {
 			
 		},
 
-		async EventSheet1_Event121_Act2(runtime, localVars)
+		async EventSheet1_Event116_Act2(runtime, localVars)
 		{
 			const colorPrimary = document.getElementById("color-primary-grid");
 			colorPrimary.type = "color";
 			
 		},
 
-		async EventSheet1_Event122_Act2(runtime, localVars)
+		async EventSheet1_Event117_Act2(runtime, localVars)
 		{
 			const colorPrimary = document.getElementById("color-primary-grid");
 			colorPrimary.type = "color";
 			
 		},
 
-		async EventSheet1_Event124_Act2(runtime, localVars)
+		async EventSheet1_Event119_Act2(runtime, localVars)
 		{
 			const s = localVars.colorStr;
 			runtime.globalVars.r2=parseInt("0x"+ s.slice(1,3));
