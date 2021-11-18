@@ -2,6 +2,7 @@
 ### дада, а ты как, где найти твои контактики
 ### жесть сколько лет не общалсиь, телега @wrkpro
 ### вот они через комиты на гитхабе говорят
+### я думал тут мёртвая репа )
 
 [<img width="134" src="https://vk.com/images/apps/mini_apps/vk_mini_apps_logo.svg">](https://vk.com/services)
 
