@@ -4331,6 +4331,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Cnds.IsVisible,
 		C3.Plugins.Sprite.Acts.SetVisible,
 		C3.Plugins.Shape3D.Acts.SetTowardPosition,
+		C3.Plugins.System.Acts.SetGroupActive,
 		C3.Behaviors.Bullet.Acts.SetEnabled,
 		C3.Behaviors.Sin.Acts.SetEnabled,
 		C3.Behaviors.Bullet.Acts.SetAngleOfMotion
